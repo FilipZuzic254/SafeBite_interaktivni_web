@@ -788,7 +788,7 @@ app.post("/korisnik", (req, res) => {
 
     // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
     const sqlInsertStavka = `
-        INSERT INTO Stavka_jelovnika 
+        INSERT INTO Korisnik 
         (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
         VALUES (?, ?, ?, ?, ?)
     `;
