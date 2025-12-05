@@ -15,3 +15,10 @@ quasar dev
 npm install
 node api.js / nodemon api.js
 ```
+
+## Obrazac
+
+```
+Izgled se može uzeti iz RegistracijeKorisnika ako hoćete da bude slično
+```
+
