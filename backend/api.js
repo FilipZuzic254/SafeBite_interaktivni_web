@@ -649,17 +649,17 @@ app.post("/objekti", (req, res) => {
     const unos=req.body;
 
     // provjerava ako su uneseni podaci u jsonu
-    if (!unos.Ime_objekta || !unos.Adresa_objekta || !unos.Opis_objekta || !unos.ID_admina || !unos.ID_vlasnika || !unos.Postanski_broj || !unos.Tip_objekta) {
+    if (!unos.Ime_objekta || !unos.Adresa_objekta || !unos.Opis_objekta || !unos.ID_admina || !unos.ID_vlasnika || !unos.Postanski_broj || !unos.Tip_objekta || !unos.Email_objekta || !unos.OIB_objekta) {
         return res.status(400).send("Missing required fields.");
     }
 
     console.log(req.body);
 
     // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = 'INSERT INTO Poslovni_objekt VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)';
+    const sqlQuery = 'INSERT INTO Poslovni_objekt VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
     // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlQuery, [unos.Ime_objekta, unos.Adresa_objekta, unos.Opis_objekta, unos.ID_admina, unos.ID_vlasnika, unos.Postanski_broj, unos.Tip_objekta], (err, result) => {
+    db.query(sqlQuery, [unos.Ime_objekta, unos.Adresa_objekta, unos.Opis_objekta, unos.ID_admina, unos.ID_vlasnika, unos.Postanski_broj, unos.Tip_objekta, unos.Email_objekta, unos.OIB_objekta], (err, result) => {
         if (err) {
             console.error('Greška pri dohvatu podataka:', err);
             return res.status(500).send("Greška na serveru");
@@ -680,17 +680,17 @@ app.post("/vlasnik", (req, res) => {
     const unos=req.body;
 
     // provjerava ako su uneseni podaci u jsonu
-    if (!unos.Ime_vlasnika || !unos.Lozinka_vlasnika || !unos.Prezime_vlasnika || !unos.Email_objekta || !unos.OIB_objekta || !unos.Korisnicko_ime_vlasnika) {
+    if (!unos.Ime_vlasnika || !unos.Lozinka_vlasnika || !unos.Prezime_vlasnika || !unos.Email_vlasnika) {
         return res.status(400).send("Missing required fields.");
     }
 
     console.log(req.body);
 
     // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = 'INSERT INTO Vlasnik_objekta VALUES (NULL, ?, ?, ?, ?, ?, ?)';
+    const sqlQuery = 'INSERT INTO Vlasnik_objekta VALUES (NULL, ?, ?, ?, ?)';
 
     // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlQuery, [unos.Ime_vlasnika, unos.Lozinka_vlasnika, unos.Prezime_vlasnika, unos.Email_objekta, unos.OIB_objekta, unos.Korisnicko_ime_vlasnika], (err, result) => {
+    db.query(sqlQuery, [unos.Ime_vlasnika, unos.Lozinka_vlasnika, unos.Prezime_vlasnika, unos.Email_vlasnika], (err, result) => {
         if (err) {
             console.error('Greška pri dohvatu podataka:', err);
             return res.status(500).send("Greška na serveru");

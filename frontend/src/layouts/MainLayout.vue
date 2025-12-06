@@ -53,8 +53,8 @@
             <q-item clickable v-ripple to="/prijava/administrator">
               <q-item-section>Administrator</q-item-section>
             </q-item>
-            <q-item clickable v-ripple to="/prijava/objekt">
-              <q-item-section>Poslovni objekt</q-item-section>
+            <q-item clickable v-ripple to="/prijava/vlasnik">
+              <q-item-section>Vlasnik objekta</q-item-section>
             </q-item>
           </q-list>
         </q-expansion-item>
@@ -65,11 +65,11 @@
             <q-item clickable v-ripple to="/registracija/korisnik">
               <q-item-section>Korisnik</q-item-section>
             </q-item>
-            <q-item clickable v-ripple to="/registracija/admin">
+            <q-item clickable v-ripple to="/registracija/administrator">
               <q-item-section>Administrator</q-item-section>
             </q-item>
-            <q-item clickable v-ripple to="/registracija/objekt">
-              <q-item-section>Poslovni objekt</q-item-section>
+            <q-item clickable v-ripple to="/registracija/vlasnik">
+              <q-item-section>Vlasnik objekta</q-item-section>
             </q-item>
           </q-list>
         </q-expansion-item>
