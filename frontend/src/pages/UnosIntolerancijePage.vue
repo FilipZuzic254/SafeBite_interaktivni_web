@@ -7,15 +7,22 @@
 
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="ObrazacIntolerancija">
-          <!-- Polja za unos -->
           <q-input filled v-model="naziv_pi" label="Naziv intolerancije" required />
-          <q-input filled v-model="id_admina" label="ID Admina" type="number" required class="q-mt-sm" />
+
+          <q-input
+            filled
+            v-model.number="id_admina"
+            label="ID admina"
+            type="number"
+            min="1"
+            required
+            class="q-mt-sm"
+          />
 
           <div class="q-mt-md">
             <q-btn type="submit" label="Unesi" color="primary" :loading="loading" />
           </div>
 
-          <!-- Poruke o grešci ili uspjehu -->
           <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
           <div v-if="success" class="text-positive q-mt-sm">{{ success }}</div>
         </q-form>
@@ -28,38 +35,34 @@
 import { ref } from 'vue'
 import axios from 'axios'
 
-
 const naziv_pi = ref('')
-const id_admina = ref('')
-
+const id_admina = ref(null)
 const loading = ref(false)
 const error = ref(null)
 const success = ref(null)
-
 const ObrazacIntolerancija = ref(null)
 
-// Funkcija za slanje obrasca
 const submitForm = async () => {
   loading.value = true
   error.value = null
   success.value = null
 
   try {
-    await axios.post('http://localhost:3000/prehrambene_intolerancije', {
+    const res = await axios.post('http://localhost:3000/pi', {
       Naziv_pi: naziv_pi.value,
       ID_admina: id_admina.value
     })
 
-    success.value = 'Intolerancija uspješno unesena!'
+    success.value = res.data.message || 'Intolerancija uspješno unesena!'
 
     setTimeout(() => {
       ObrazacIntolerancija.value?.reset()
       naziv_pi.value = ''
-      id_admina.value = ''
+      id_admina.value = null
     }, 2000)
   } catch (err) {
     if (err.response) {
-      error.value = err.response.data.message || 'Greška prilikom unosa'
+      error.value = err.response.data.message || 'Greška prilikom unosa.'
     } else {
       error.value = 'Greška u mreži, provjerite backend server.'
     }

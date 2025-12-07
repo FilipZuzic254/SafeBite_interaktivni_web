@@ -6,20 +6,32 @@
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit.prevent="submitForm" ref="ObrazacJelo">
-          <!-- Polja za unos jela -->
-          <q-input filled v-model="naziv_stavke" label="Naziv jela" required />
-          <q-input filled v-model.number="cijena_stavke" label="Cijena (EUR)" type="number" min="0" step="0.01" required class="q-mt-sm" />
-          <q-input filled v-model="sastav_stavke" label="Sastav jela" type="textarea" required class="q-mt-sm" />
-          <q-input filled v-model.number="id_objekta" label="ID objekta" type="number" min="1" required class="q-mt-sm" />
-          <q-input filled v-model.number="id_admina" label="ID admina" type="number" min="1" required class="q-mt-sm" />
-          <q-input filled v-model.number="id_vlasnika" label="ID vlasnika" type="number" min="1" required class="q-mt-sm" />
+        <q-form @submit.prevent="submitForm" ref="formJelo">
+          <q-input filled v-model="naziv" label="Naziv jela" required />
+          <q-input filled v-model.number="cijena" label="Cijena (EUR)" type="number" min="0" step="0.01" required class="q-mt-sm" />
+          <q-input filled v-model="sastav" label="Sastav jela" type="textarea" class="q-mt-sm" />
+          <q-input filled v-model.number="idObjekta" label="ID objekta" type="number" min="1" required class="q-mt-sm" />
+          <q-input filled v-model.number="idAdmina" label="ID admina" type="number" min="1" required class="q-mt-sm" />
+
+          <!-- Multi-select za postojeće intolerancije -->
+          <q-select
+            filled
+            v-model="selectedIntolerances"
+            :options="piOptions"
+            option-value="ID_pi"
+            option-label="Naziv_pi"
+            label="Odaberite intolerancije"
+            multiple
+            emit-value
+            map-options
+            use-chips
+            class="q-mt-sm"
+          />
 
           <div class="q-mt-md">
             <q-btn type="submit" label="Unesi jelo" color="primary" :loading="loading" />
           </div>
 
-          <!-- Poruke o grešci ili uspjehu -->
           <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
           <div v-if="success" class="text-positive q-mt-sm">{{ success }}</div>
         </q-form>
@@ -29,54 +41,73 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const naziv_stavke = ref('')
-const cijena_stavke = ref(0)
-const sastav_stavke = ref('')
-const id_objekta = ref('')
-const id_admina = ref('')
-const id_vlasnika = ref('')
+const naziv = ref('')
+const cijena = ref(null)
+const sastav = ref('')
+const idObjekta = ref(null)
+const idAdmina = ref(null)
+const selectedIntolerances = ref([])
 
+const piOptions = ref([])
 const loading = ref(false)
 const error = ref(null)
 const success = ref(null)
+const formJelo = ref(null)
 
-const ObrazacJelo = ref(null)
+// Dohvati sve postojeće intolerancije iz baze
+onMounted(async () => {
+  try {
+    const res = await axios.get('http://localhost:3000/pi')
+    piOptions.value = res.data
+      .filter(p => p.ID_pi != null)
+      .map(p => ({ ID_pi: Number(p.ID_pi), Naziv_pi: p.Naziv_pi }))
+  } catch (err) {
+    console.error("Greška pri dohvaćanju intolerancija:", err)
+    error.value = "Backend nije dostupan."
+  }
+})
 
+// Funkcija za unos stavke
 const submitForm = async () => {
   loading.value = true
   error.value = null
   success.value = null
 
-  try {
-    await axios.post('http://localhost:3000/jela', {
-      Naziv_stavke: naziv_stavke.value,
-      Cijena_stavke: cijena_stavke.value,
-      Sastav_stavke: sastav_stavke.value,
-      ID_objekta: id_objekta.value,
-      ID_admina: id_admina.value,
-      ID_vlasnika: id_vlasnika.value
-    })
+  // filtriraj null i konvertiraj u broj
+  const selectedIDs = selectedIntolerances.value
+    .filter(n => n != null)
+    .map(n => Number(n))
 
-    success.value = 'Jelo uspješno uneseno!'
+  const dataToSend = {
+    Naziv_stavke: naziv.value,
+    Cijena_stavke: cijena.value,
+    ID_admina: idAdmina.value,
+    ID_objekta: idObjekta.value,
+    Sastav_stavke: sastav.value,
+    Intolerancije: selectedIDs
+  }
+
+  console.log("Šaljem na API:", JSON.stringify(dataToSend, null, 2))
+
+  try {
+    const res = await axios.post('http://localhost:3000/jelovnici', dataToSend)
+    success.value = res.data.message
 
     setTimeout(() => {
-      ObrazacJelo.value?.reset()
-      naziv_stavke.value = ''
-      cijena_stavke.value = 0
-      sastav_stavke.value = ''
-      id_objekta.value = ''
-      id_admina.value = ''
-      id_vlasnika.value = ''
-    }, 2000)
+      formJelo.value?.reset()
+      naziv.value = ''
+      cijena.value = null
+      sastav.value = ''
+      idObjekta.value = null
+      idAdmina.value = null
+      selectedIntolerances.value = []
+    }, 1500)
   } catch (err) {
-    if (err.response) {
-      error.value = err.response.data.message || 'Greška prilikom unosa jela'
-    } else {
-      error.value = 'Greška u mreži, provjerite backend server.'
-    }
+    if (err.response) error.value = err.response.data.message
+    else error.value = 'Greška – backend nije dostupan'
     console.error(err)
   } finally {
     loading.value = false
@@ -85,8 +116,5 @@ const submitForm = async () => {
 </script>
 
 <style scoped>
-.q-page {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
+.q-page { min-height: 100vh; background-color: #f5f5f5; }
 </style>
