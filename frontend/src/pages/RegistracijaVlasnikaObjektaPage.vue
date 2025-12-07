@@ -2,7 +2,7 @@
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 400px">
       <q-card-section>
-        <div class="text-h6">Registracija objekta</div>
+        <div class="text-h6">Registracija vlasnika objekata</div>
       </q-card-section>
 
       <q-card-section>

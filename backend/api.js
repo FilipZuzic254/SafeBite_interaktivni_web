@@ -1042,14 +1042,14 @@ app.get("/objekti", (req, res) => {
 
 app.get("/vlasnik", (req, res) => { 
 
-    // povlaci query ako je unesen ( /vlasnik?id=2 )
-    const {id} = req.query;
+    // povlaci query ako je unesen ( /vlasnik?mail=2 )
+    const {mail} = req.query;
 
-    console.log(id);
+    console.log(mail);
 
     // provjerava ukoliko je unesen req.query
     // ako nije sql query nema WHERE
-    if (isNaN(id)){
+    if (mail == null){
         const sqlQuery = 'SELECT * FROM Vlasnik_objekta;';
 
         db.query(sqlQuery, (err, result) => {
@@ -1064,9 +1064,9 @@ app.get("/vlasnik", (req, res) => {
     // ako je sql query ima WHERE
     else {
         // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-        const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE ID_vlasnika = ?;';
+        const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE Email_vlasnika = ?;';
 
-        db.query(sqlQuery, [Number(id)], (err, result) => {
+        db.query(sqlQuery, [mail], (err, result) => {
             if (err) {
                 console.error('Greška pri dohvatu podataka:', err);
                 return res.status(500).send("Greška na serveru");
