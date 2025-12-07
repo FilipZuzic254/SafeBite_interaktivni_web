@@ -25,7 +25,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
 
 // Reactive varijable
 const email = ref('')
