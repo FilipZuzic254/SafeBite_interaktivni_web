@@ -543,102 +543,72 @@ app.put("/korisnik/:id", (req, res) => {
   ██     █     ███  ██     ██  ██     ▄█  ██   ▀██▄      ██     
 ▄████▄ ▄███▄    ██  █▀█████▀  ██████████ ████▄ ▄███▄   ▄████▄   
 */
+// --- Dohvati sve postojeće intolerancije
+app.get('/pi', (req, res) => {
+  db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => {
+    if (err) {
+      console.error('Greška pri dohvaćanju intolerancija:', err);
+      return res.status(500).json({ message: 'Greška pri dohvaćanju intolerancija.' });
+    }
+    res.json(rows);
+  });
+});
 
-// unos prehrambenih intolerancija
+// --- Unos nove intolerancije
+app.post('/pi', (req, res) => {
+  const { Naziv_pi, ID_admina } = req.body;
 
-app.post("/pi", (req, res) => { 
+  if (!Naziv_pi || !ID_admina) {
+    return res.status(400).json({ message: 'Nedostaju obavezna polja.' });
+  }
 
-    // povlaci json koji salje aplikacija
-    const unos=req.body;
-
-    // provjerava ako su uneseni podaci u jsonu
-    if (!unos.Naziv_pi || !unos.ID_admin) {
-        return res.status(400).send("Missing required fields.");
+  const sql = 'INSERT INTO Prehrambena_intolerancija (Naziv_pi, ID_admina) VALUES (?, ?)';
+  db.query(sql, [Naziv_pi, ID_admina], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
     }
 
-    console.log(req.body);
+    res.json({ message: 'Intolerancija uspješno unesena!', id: result.insertId });
+  });
+});
 
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = 'INSERT INTO Prehrambena_intolerancija VALUES (NULL, ?, ?)';
+// --- Unos stavke u jelovniku s odabranim intolerancijama
+app.post('/jelovnici', (req, res) => {
+  const { Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke, Intolerancije } = req.body;
 
-    // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlQuery, [unos.Naziv_pi, unos.ID_admin], (err, result) => {
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
+  if (!Naziv_stavke || !Cijena_stavke || !ID_admina || !ID_objekta) {
+    return res.status(400).json({ message: 'Nedostaju obavezna polja.' });
+  }
 
-        // vraca rezultat ako je uspjesno upisano
-        res.json(result);
-    })
+  db.query(
+    'INSERT INTO Stavka_jelovnika (Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke) VALUES (?, ?, ?, ?, ?)',
+    [Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: 'Greška pri unosu stavke.' });
 
-})
+      const stavkaID = result.insertId;
 
+      if (!Intolerancije || Intolerancije.length === 0)
+        return res.json({ message: 'Stavka unesena bez intolerancija.' });
 
-// unos stavke u jelovniku
+      // Provjeri da li su odabrane intolerancije valjane
+      db.query('SELECT ID_pi FROM Prehrambena_intolerancija WHERE ID_pi IN (?)', [Intolerancije], (errCheck, rows) => {
+        if (errCheck) return res.status(500).json({ message: 'Greška pri provjeri intolerancija.' });
 
-app.post("/jelovnici", (req, res) => { 
+        const validIDs = rows.map(r => r.ID_pi);
+        if (validIDs.length === 0)
+          return res.json({ message: 'Stavka unesena, ali nijedna od navedenih intolerancija ne postoji.' });
 
-    // povlaci json koji salje aplikacija i odvaja ga u zasebne varijable
-    const {
-        Naziv_stavke,
-        Cijena_stavke,
-        ID_vlasnika,
-        ID_objekta,
-        Sastav_stavke,
-        Intolerancije
-    } = req.body;
-
-
-    // provjerava ako su uneseni potrebni podaci u jsonu
-
-    if (!Naziv_stavke || !Cijena_stavke || !ID_vlasnika || !ID_objekta) {
-        return res.status(400).json({ message: "Missing required fields." });
-    }
-
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlInsertStavka = `
-        INSERT INTO Stavka_jelovnika 
-        (Naziv_stavke, Cijena_stavke, ID_vlasnika, ID_objekta, Sastav_stavke)
-        VALUES (?, ?, ?, ?, ?)
-    `;
-
-    // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlInsertStavka, [Naziv_stavke, Cijena_stavke, ID_vlasnika, ID_objekta, Sastav_stavke], (err, result) => {
-        if (err) {
-            console.error("Insert error (menu item):", err);
-            return res.status(500).json({ message: "Error inserting menu item." });
-        }
-
-        // povlaci id zadnje unesene stavke
-        const insertStavkaID = result.insertId;
-
-        // provjerava ako su unesene intolerancije, ako nisu vraca da nema intolerancija
-        if (!Intolerancije || Intolerancije.length === 0) {
-            return res.json({ message: "Stavka u jelovniku uspješno unesena (nema intolerancija)." });
-        }
-
-        // priprema grupni insert
-        const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertStavkaID, id_pi]);
-
-        // stavara sql query
-        const sqlInsertIntolerancije = `
-            INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi)
-            VALUES ?
-        `;
-
-        // salje query sa svim intolerancijama (npr. id stavke je 2 pa ce bit VALUES (2, 1), (2, 2)...)
-        db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
-            if (err2) {
-                console.error("Insert error (intolerances):", err2);
-                return res.status(500).json({ message: "Error inserting intolerances." });
-            }
-
-            res.json({ message: "Stavka u jelovniku i intolerancije uspješno unesene." });
+        const intolerancesData = validIDs.map(id => [stavkaID, id]);
+        db.query('INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi) VALUES ?', [intolerancesData], (err2) => {
+          if (err2) return res.status(500).json({ message: 'Greška pri unosu intolerancija.' });
+          res.json({ message: 'Stavka i intolerancije uspješno unesene.' });
         });
-    });
-
-})
+      });
+    }
+  );
+});
 
 
 // unos poslovnog objekta
