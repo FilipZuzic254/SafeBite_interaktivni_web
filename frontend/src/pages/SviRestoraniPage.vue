@@ -13,7 +13,7 @@
   <div class="q-pa-md text-center naslov-container">
     <h1 class="naslov">Grad Rijeka</h1>
     <p class="citat">
-      Rijeka je živahan hrvatski grad prepun šarmantnih kafića u kojima se uvijek može uživati u opuštenoj atmosferi i dobrom društvu.
+     “Mjesta gdje razgovori traju dulje od obroka.”
     </p>
   </div>
 
