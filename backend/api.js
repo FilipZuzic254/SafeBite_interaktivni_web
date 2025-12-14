@@ -800,6 +800,52 @@ app.post("/korisnik", (req, res) => {
 
 })
 
+//unos admina
+app.post("/admin", (req, res) => { 
+    const unos = req.body;
+
+    if (!unos.ime || !unos.prezime || !unos.Ime_admina || !unos.Lozinka_admina) {
+        return res.status(400).send("Missing required fields.");
+    }
+
+    const sqlQuery = 'INSERT INTO Administrator (ime, prezime, Ime_admina, Lozinka_admina) VALUES (?, ?, ?, ?)';
+
+    db.query(sqlQuery, [unos.ime, unos.prezime, unos.Ime_admina, unos.Lozinka_admina], (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu podataka:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+
+        res.json(result);
+    });
+});
+
+// login admina
+app.post("/admin/login", (req, res) => {
+    const { Ime_admina, Lozinka_admina } = req.body;
+
+    if (!Ime_admina || !Lozinka_admina) {
+        return res.status(400).json({ message: "Nedostaju podaci za login." });
+    }
+
+    const sqlQuery = 'SELECT * FROM Administrator WHERE Ime_admina = ? AND Lozinka_admina = ?';
+
+    db.query(sqlQuery, [Ime_admina, Lozinka_admina], (err, result) => {
+        if (err) {
+            console.error("Greška pri provjeri admina:", err);
+            return res.status(500).json({ message: "Greška na serveru." });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Neispravno korisničko ime ili lozinka." });
+        }
+
+        // admin je pronađen
+        res.json({ message: "Uspješan login!", admin: result[0] });
+    });
+});
+
+
 /*
  ▄█▀▀▀█▄█ ███▀▀▀███ ▀████▀     ███▀▀▀███    ▄▄█▀▀▀█▄  ███▀▀██▀▀███
 ▄██    ▀█  ██    ▀█   ██        ██    ▀█  ▄██▀     ▀█ █▀   ██   ▀█
