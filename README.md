@@ -1,6 +1,14 @@
 # SafeBite web aplikacija
 
+## Radnje s githubom
+
+```
+git clone https://github.com/FilipZuzic254/SafeBite_interaktivni_web .
+```
+
 Pri inicijalizaciji frontend-a i backend-a potrebno je preuzeti sve potrebne module
+
+
 
 ## Frontend
 
