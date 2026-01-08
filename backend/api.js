@@ -619,11 +619,11 @@ app.post("/jelovnici", (req, res) => {
         }
 
         // priprema grupni insert
-        const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertStavkaID, id_pi]);
+        const intolerancijeZaUnos = Intolerancije.map(id_pi => [id_pi, insertStavkaID]);
 
         // stavara sql query
         const sqlInsertIntolerancije = `
-            INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi)
+            INSERT INTO PI_u_stavci_jelovnika (ID_pi, ID_stavke)
             VALUES ?
         `;
 
