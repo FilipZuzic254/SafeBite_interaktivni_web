@@ -74,6 +74,11 @@
           </q-list>
         </q-expansion-item>
 
+        <!-- Profil -->
+        <q-item clickable v-ripple to="/profil">
+          <q-item-section>Profil</q-item-section>
+        </q-item>
+
       </q-list>
     </q-drawer>
 

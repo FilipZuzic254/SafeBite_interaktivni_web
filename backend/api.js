@@ -543,42 +543,64 @@ app.put("/korisnik/:id", (req, res) => {
   ██     █     ███  ██     ██  ██     ▄█  ██   ▀██▄      ██     
 ▄████▄ ▄███▄    ██  █▀█████▀  ██████████ ████▄ ▄███▄   ▄████▄   
 */
+// --- Dohvati sve postojeće intolerancije
+app.get('/pi', (req, res) => {
+  db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => {
+    if (err) {
+      console.error('Greška pri dohvaćanju intolerancija:', err);
+      return res.status(500).json({ message: 'Greška pri dohvaćanju intolerancija.' });
+    }
+    res.json(rows);
+  });
+});
 
-// unos prehrambenih intolerancija
+// --- Unos nove intolerancije
+app.post('/pi', (req, res) => {
+  const { Naziv_pi, ID_admina } = req.body;
 
-app.post("/pi", (req, res) => { 
+  if (!Naziv_pi || !ID_admina) {
+    return res.status(400).json({ message: 'Nedostaju obavezna polja.' });
+  }
 
-    // povlaci json koji salje aplikacija
-    const unos=req.body;
-
-    // provjerava ako su uneseni podaci u jsonu
-    if (!unos.Naziv_pi || !unos.ID_admin) {
-        return res.status(400).send("Missing required fields.");
+  const sql = 'INSERT INTO Prehrambena_intolerancija (Naziv_pi, ID_admina) VALUES (?, ?)';
+  db.query(sql, [Naziv_pi, ID_admina], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
     }
 
-    console.log(req.body);
+    res.json({ message: 'Intolerancija uspješno unesena!', id: result.insertId });
+  });
+});
 
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = 'INSERT INTO Prehrambena_intolerancija VALUES (NULL, ?, ?)';
+// --- Unos stavke u jelovniku s odabranim intolerancijama
+app.post('/jelovnici', (req, res) => {
+  const { Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke, Intolerancije } = req.body;
 
-    // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlQuery, [unos.Naziv_pi, unos.ID_admin], (err, result) => {
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
+  if (!Naziv_stavke || !Cijena_stavke || !ID_admina || !ID_objekta) {
+    return res.status(400).json({ message: 'Nedostaju obavezna polja.' });
+  }
 
-        // vraca rezultat ako je uspjesno upisano
-        res.json(result);
-    })
+  db.query(
+    'INSERT INTO Stavka_jelovnika (Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke) VALUES (?, ?, ?, ?, ?)',
+    [Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: 'Greška pri unosu stavke.' });
 
-})
+      const stavkaID = result.insertId;
 
+      if (!Intolerancije || Intolerancije.length === 0)
+        return res.json({ message: 'Stavka unesena bez intolerancija.' });
 
-// unos stavke u jelovniku
+      // Provjeri da li su odabrane intolerancije valjane
+      db.query('SELECT ID_pi FROM Prehrambena_intolerancija WHERE ID_pi IN (?)', [Intolerancije], (errCheck, rows) => {
+        if (errCheck) return res.status(500).json({ message: 'Greška pri provjeri intolerancija.' });
 
-app.post("/jelovnici", (req, res) => { 
+        const validIDs = rows.map(r => r.ID_pi);
+        if (validIDs.length === 0)
+          return res.json({ message: 'Stavka unesena, ali nijedna od navedenih intolerancija ne postoji.' });
 
+<<<<<<< HEAD
     // povlaci json koji salje aplikacija i odvaja ga u zasebne varijable
     const {
         Naziv_stavke,
@@ -635,10 +657,17 @@ app.post("/jelovnici", (req, res) => {
             }
 
             res.json({ message: "Stavka u jelovniku i intolerancije uspješno unesene." });
+=======
+        const intolerancesData = validIDs.map(id => [stavkaID, id]);
+        db.query('INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi) VALUES ?', [intolerancesData], (err2) => {
+          if (err2) return res.status(500).json({ message: 'Greška pri unosu intolerancija.' });
+          res.json({ message: 'Stavka i intolerancije uspješno unesene.' });
+>>>>>>> 4e7b4176bfb54b81ac2c80df9df0787c187e2527
         });
-    });
-
-})
+      });
+    }
+  );
+});
 
 
 // unos poslovnog objekta
@@ -829,6 +858,52 @@ app.post("/korisnik", (req, res) => {
     });
 
 })
+
+//unos admina
+app.post("/admin", (req, res) => { 
+    const unos = req.body;
+
+    if (!unos.ime || !unos.prezime || !unos.Ime_admina || !unos.Lozinka_admina) {
+        return res.status(400).send("Missing required fields.");
+    }
+
+    const sqlQuery = 'INSERT INTO Administrator (ime, prezime, Ime_admina, Lozinka_admina) VALUES (?, ?, ?, ?)';
+
+    db.query(sqlQuery, [unos.ime, unos.prezime, unos.Ime_admina, unos.Lozinka_admina], (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu podataka:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+
+        res.json(result);
+    });
+});
+
+// login admina
+app.post("/admin/login", (req, res) => {
+    const { Ime_admina, Lozinka_admina } = req.body;
+
+    if (!Ime_admina || !Lozinka_admina) {
+        return res.status(400).json({ message: "Nedostaju podaci za login." });
+    }
+
+    const sqlQuery = 'SELECT * FROM Administrator WHERE Ime_admina = ? AND Lozinka_admina = ?';
+
+    db.query(sqlQuery, [Ime_admina, Lozinka_admina], (err, result) => {
+        if (err) {
+            console.error("Greška pri provjeri admina:", err);
+            return res.status(500).json({ message: "Greška na serveru." });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Neispravno korisničko ime ili lozinka." });
+        }
+
+        // admin je pronađen
+        res.json({ message: "Uspješan login!", admin: result[0] });
+    });
+});
+
 
 /*
  ▄█▀▀▀█▄█ ███▀▀▀███ ▀████▀     ███▀▀▀███    ▄▄█▀▀▀█▄  ███▀▀██▀▀███
