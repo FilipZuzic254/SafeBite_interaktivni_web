@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const mysql = require('mysql2');
+const multer = require('multer')
 
 // Stvaranje veze na mysql
 const db = mysql.createConnection({
@@ -27,6 +28,91 @@ const port = 3000;
 
 app.use(express.json());
 app.use(cors()); //cors je način da server dozvoli pristup svojim resursima iz različitih domena
+
+
+/**
+ * THIS IS THE IMPORTANT PART
+ * It exposes the "uploads" folder as a public URL
+ */
+app.use("/uploads", express.static("uploads"));
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const folder = `./uploads/restorani/${req.body.id}`;
+
+        if (!fs.existsSync(folder)) {
+        fs.mkdirSync(folder, { recursive: true });
+        }
+
+        cb(null, folder);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.originalname);
+    }
+});
+
+const upload = multer({ storage });
+
+
+
+app.post("/test/create", upload.single("image"), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imagePath = `/uploads/restorani/${id}/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    res.json({
+        message: "Slika uspješno uploadana",
+        image_path: imagePath
+    });
+});
+
+
+/*
+app.post("/test/create/", (req, res) => {
+    const {id, image} = req.body;
+
+    const folderPath = "./uploads/restorani/";
+
+
+    try {
+        if (!fs.existsSync(folderPath+id)) {
+            fs.mkdirSync(folderPath+id);
+
+            console.log("Folder uspjesno kreiran");
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+
+    console.log(image)
+
+    res.json({message: image});
+})
+*/
+
+app.get("/test/delete/:id", (req, res) => {
+    const {id} = req.params;
+
+    const folderPath = "./uploads/restorani/";
+
+    fs.rm(folderPath+id, { recursive: true, force: true }, err => {
+        if (err) {
+            throw err;
+        }
+
+        res.json({message: `${folderPath+id} is deleted!`});
+    });
+
+})
+
 
 /*
 ▀███▀▀▀██▄   ███▀▀▀███ ▀████▀     ███▀▀▀████ ██▀▀██▀▀███ ███▀▀▀███ 
@@ -600,69 +686,10 @@ app.post('/jelovnici', (req, res) => {
         if (validIDs.length === 0)
           return res.json({ message: 'Stavka unesena, ali nijedna od navedenih intolerancija ne postoji.' });
 
-<<<<<<< HEAD
-    // povlaci json koji salje aplikacija i odvaja ga u zasebne varijable
-    const {
-        Naziv_stavke,
-        Cijena_stavke,
-        ID_vlasnika,
-        ID_objekta,
-        Sastav_stavke,
-        Intolerancije
-    } = req.body;
-
-
-    // provjerava ako su uneseni potrebni podaci u jsonu
-
-    if (!Naziv_stavke || !Cijena_stavke || !ID_vlasnika || !ID_objekta) {
-        return res.status(400).json({ message: "Missing required fields." });
-    }
-
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlInsertStavka = `
-        INSERT INTO Stavka_jelovnika 
-        (Naziv_stavke, Cijena_stavke, ID_vlasnika, ID_objekta, Sastav_stavke)
-        VALUES (?, ?, ?, ?, ?)
-    `;
-
-    // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlInsertStavka, [Naziv_stavke, Cijena_stavke, ID_vlasnika, ID_objekta, Sastav_stavke], (err, result) => {
-        if (err) {
-            console.error("Insert error (menu item):", err);
-            return res.status(500).json({ message: "Error inserting menu item." });
-        }
-
-        // povlaci id zadnje unesene stavke
-        const insertStavkaID = result.insertId;
-
-        // provjerava ako su unesene intolerancije, ako nisu vraca da nema intolerancija
-        if (!Intolerancije || Intolerancije.length === 0) {
-            return res.json({ message: "Stavka u jelovniku uspješno unesena (nema intolerancija)." });
-        }
-
-        // priprema grupni insert
-        const intolerancijeZaUnos = Intolerancije.map(id_pi => [id_pi, insertStavkaID]);
-
-        // stavara sql query
-        const sqlInsertIntolerancije = `
-            INSERT INTO PI_u_stavci_jelovnika (ID_pi, ID_stavke)
-            VALUES ?
-        `;
-
-        // salje query sa svim intolerancijama (npr. id stavke je 2 pa ce bit VALUES (2, 1), (2, 2)...)
-        db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
-            if (err2) {
-                console.error("Insert error (intolerances):", err2);
-                return res.status(500).json({ message: "Error inserting intolerances." });
-            }
-
-            res.json({ message: "Stavka u jelovniku i intolerancije uspješno unesene." });
-=======
         const intolerancesData = validIDs.map(id => [stavkaID, id]);
         db.query('INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi) VALUES ?', [intolerancesData], (err2) => {
           if (err2) return res.status(500).json({ message: 'Greška pri unosu intolerancija.' });
           res.json({ message: 'Stavka i intolerancije uspješno unesene.' });
->>>>>>> 4e7b4176bfb54b81ac2c80df9df0787c187e2527
         });
       });
     }
