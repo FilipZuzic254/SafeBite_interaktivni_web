@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const mysql = require('mysql2');
+const multer = require('multer')
 
 // Stvaranje veze na mysql
 const db = mysql.createConnection({
@@ -27,6 +28,91 @@ const port = 3000;
 
 app.use(express.json());
 app.use(cors()); //cors je način da server dozvoli pristup svojim resursima iz različitih domena
+
+
+/**
+ * THIS IS THE IMPORTANT PART
+ * It exposes the "uploads" folder as a public URL
+ */
+app.use("/uploads", express.static("uploads"));
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const folder = `./uploads/restorani/${req.body.id}`;
+
+        if (!fs.existsSync(folder)) {
+        fs.mkdirSync(folder, { recursive: true });
+        }
+
+        cb(null, folder);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.originalname);
+    }
+});
+
+const upload = multer({ storage });
+
+
+
+app.post("/test/create", upload.single("image"), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imagePath = `/uploads/restorani/${id}/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    res.json({
+        message: "Slika uspješno uploadana",
+        image_path: imagePath
+    });
+});
+
+
+/*
+app.post("/test/create/", (req, res) => {
+    const {id, image} = req.body;
+
+    const folderPath = "./uploads/restorani/";
+
+
+    try {
+        if (!fs.existsSync(folderPath+id)) {
+            fs.mkdirSync(folderPath+id);
+
+            console.log("Folder uspjesno kreiran");
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+
+    console.log(image)
+
+    res.json({message: image});
+})
+*/
+
+app.get("/test/delete/:id", (req, res) => {
+    const {id} = req.params;
+
+    const folderPath = "./uploads/restorani/";
+
+    fs.rm(folderPath+id, { recursive: true, force: true }, err => {
+        if (err) {
+            throw err;
+        }
+
+        res.json({message: `${folderPath+id} is deleted!`});
+    });
+
+})
+
 
 /*
 ▀███▀▀▀██▄   ███▀▀▀███ ▀████▀     ███▀▀▀████ ██▀▀██▀▀███ ███▀▀▀███ 
