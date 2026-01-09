@@ -92,7 +92,7 @@ const error = ref(null)
 onMounted(async () => {
   try {
     // ID korisnika koji je spremljen nakon prijave
-    const userId = 3
+    const userId = 2
 
     if (!userId) {
       error.value = 'Korisnik nije prijavljen'

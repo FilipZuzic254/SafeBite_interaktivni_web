@@ -1452,7 +1452,7 @@ app.get('/korisnik/profil/:id', (req, res) => {
 
   console.log('Zahtjev za profil korisnika ID:', id)
 
-  // 1️⃣ Dohvat osnovnih podataka korisnika
+  // Dohvat osnovnih podataka korisnika
   const sqlKorisnik = `
     SELECT 
       Ime_korisnika,
@@ -1463,7 +1463,7 @@ app.get('/korisnik/profil/:id', (req, res) => {
     WHERE ID_korisnika = ?
   `
 
-  // 2️⃣ Dohvat prehrambenih intolerancija (samo nazivi)
+  // Dohvat prehrambenih intolerancija (samo nazivi)
   const sqlIntolerancije = `
     SELECT pi.Naziv_pi
     FROM PI_korisnika pik
@@ -1472,7 +1472,7 @@ app.get('/korisnik/profil/:id', (req, res) => {
     WHERE pik.ID_korisnika = ?
   `
 
-  // 3️⃣ Dohvat komentara korisnika + naziv objekta za svaki komentar
+  // Dohvat komentara korisnika + naziv objekta za svaki komentar
   const sqlKomentari = `
     SELECT 
       k.ID_komentara,
@@ -1518,5 +1518,46 @@ app.get('/korisnik/profil/:id', (req, res) => {
     })
   })
 })
+
+app.get('/vlasnik/profil/:id', (req, res) => {
+  const { id } = req.params;
+
+  const sqlVlasnik = `
+    SELECT Ime_vlasnika, Prezime_vlasnika, Email_vlasnika
+    FROM Vlasnik_objekta
+    WHERE ID_vlasnika = ?
+  `;
+
+  const sqlObjekti = `
+    SELECT 
+      po.ID_objekta,
+      po.Ime_objekta,
+      po.Adresa_objekta,
+      po.Tip_objekta,
+      po.Opis_objekta,
+      po.Slika_objekta,
+      IFNULL(AVG(k.Ocjena), 0) AS prosjecna_ocjena
+    FROM Poslovni_objekt po
+    LEFT JOIN Komentar k ON po.ID_objekta = k.ID_objekta
+    WHERE po.ID_vlasnika = ?
+    GROUP BY po.ID_objekta
+  `;
+
+  db.query(sqlVlasnik, [id], (err, vlasnikResult) => {
+    if (err) return res.status(500).json({ message: 'Greška vlasnik', err })
+    if (vlasnikResult.length === 0) return res.status(404).json({ message: 'Vlasnik ne postoji' })
+
+    db.query(sqlObjekti, [id], (err2, objektiResult) => {
+      if (err2) return res.status(500).json({ message: 'Greška objekti', err2 })
+
+      res.json({
+        vlasnik: vlasnikResult[0],
+        objekti: objektiResult
+      })
+    })
+  })
+})
+
+
 
 
