@@ -81,21 +81,15 @@
 
         <!-- Profil -->
         <q-item v-if="token" clickable v-ripple to="/profil">Profil</q-item>
-        <!-- Profil Korisnika -->
         <q-item clickable v-ripple to="/profilKorisnik">
           <q-item-section>Profil Korisnik</q-item-section>
         </q-item>
-
-        <!-- Profil Vlasnik -->
         <q-item clickable v-ripple to="/profilVlasnik">
           <q-item-section>Profil Vlasnik</q-item-section>
         </q-item>
-
-         <!-- Profil Admin -->
         <q-item clickable v-ripple to="/profilAdmin">
           <q-item-section>Profil Admin</q-item-section>
         </q-item>
-
       </q-list>
     </q-drawer>
 
@@ -104,6 +98,13 @@
       <router-view />
     </q-page-container>
   </q-layout>
+
+  <!-- PRAVI FOOTER KOJI SE VIDI TEK KAD SE SKROLLA DO DNA -->
+  <footer class="page-footer text-white">
+    <div class="footer-content text-center">
+      SafeBite
+    </div>
+  </footer>
 </template>
 
 <script setup>
@@ -119,13 +120,9 @@ window.addEventListener('prijava', (event) => {
   token.value = event.detail
 })
 
-
-console.log(token)
-// watchEffect prati promjene u localStorage
 watchEffect(() => {
   const t = JSON.parse(localStorage.getItem('token'))
   token.value = t
-  console.log(token.value)
 })
 
 // logout
@@ -136,12 +133,18 @@ function logout() {
 }
 </script>
 
-<style>
+<style lang="scss">
 .top-drawer {
   position: absolute;
   top: 0;
   height: auto;
   max-height: none;
   border-radius: 0 0 12px 0;
+}
+
+.page-footer {
+  background-color: $primary; // tvoja zelena #088e35
+  padding: 16px 0;
+  width: 100%;
 }
 </style>
