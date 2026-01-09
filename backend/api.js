@@ -1296,3 +1296,29 @@ app.get("/korisnik/:id", (req, res) => {
 app.listen(port, () => {
     console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
 });
+
+
+// login korisnika
+
+app.post("/korisnik/prijava", (req, res) => {
+    const { Korisnicko_ime, Lozinka_korisnika } = req.body;
+
+    if (!Korisnicko_ime || !Lozinka_korisnika) {
+        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." });
+    }
+
+    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ? AND Lozinka_korisnika = ?';
+    db.query(sqlQuery, [Korisnicko_ime, Lozinka_korisnika], (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
+        }
+
+        // Login uspješan
+        res.json({ message: "Login uspješan", user: result[0] });
+    });
+});

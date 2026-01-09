@@ -13,7 +13,9 @@ const routes = [
       { path: '/registracija/vlasnik', component: () => import('src/pages/RegistracijaVlasnikaObjektaPage.vue') },
       { path: '/unosJela', component: () => import('pages/UnosJelaPage.vue') },
       { path: '/unosPI', component: () => import('pages/UnosIntolerancijePage.vue') },
-      { path: '/profil', component: () => import('pages/ProfilPage.vue') }
+      { path: '/profilKorisnik', component: () => import('pages/KorisnikProfilPage.vue') },
+      { path: '/profilAdmin', component: () => import('pages/AdminProfilPage.vue') }, 
+      { path: '/profilVlasnik', component: () => import('pages/VlasnikProfilPage.vue') }
     ],
   },
 
