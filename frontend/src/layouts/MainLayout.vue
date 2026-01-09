@@ -1,13 +1,26 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <!-- Header -->
+    <!-- HEADER -->
     <q-header elevated>
       <q-toolbar>
         <q-btn flat dense round icon="menu" @click="leftDrawer = true" />
+        <q-space />
+        <!-- Ime prijavljenog korisnika -->
+        <div v-if="token" class="q-mr-md text-weight-medium">
+          {{ token.korIme }}
+        </div>
+        <!-- Logout gumb -->
+        <q-btn
+          v-if="token"
+          flat
+          dense
+          icon="logout"
+          @click="logout"
+        />
       </q-toolbar>
     </q-header>
 
-    <!-- Drawer -->
+    <!-- DRAWER -->
     <q-drawer
       v-model="leftDrawer"
       side="left"
@@ -18,7 +31,6 @@
       class="top-drawer"
     >
       <q-list>
-
         <!-- Početna -->
         <q-item clickable v-ripple to="/">
           <q-item-section>Početna</q-item-section>
@@ -34,8 +46,13 @@
           <q-item-section>Kafići</q-item-section>
         </q-item>
 
-        <!-- Unos jela -->
-        <q-item clickable v-ripple to="/unosJela">
+        <!-- Unos jela – admin + vlasnik -->
+        <q-item
+          v-if="token && (token.uloga === 'admin' || token.uloga === 'vlasnik')"
+          clickable
+          v-ripple
+          to="/unosJela"
+        >
           <q-item-section>Unos jela</q-item-section>
         </q-item>
 
@@ -45,35 +62,25 @@
         </q-item>
 
         <!-- Prijava dropdown -->
-        <q-expansion-item icon="login" label="Prijava" expand-separator>
+        <q-expansion-item v-if="!token" icon="login" label="Prijava" expand-separator>
           <q-list>
-            <q-item clickable v-ripple to="/prijava/korisnik">
-              <q-item-section>Korisnik</q-item-section>
-            </q-item>
-            <q-item clickable v-ripple to="/prijava/administrator">
-              <q-item-section>Administrator</q-item-section>
-            </q-item>
-            <q-item clickable v-ripple to="/prijava/vlasnik">
-              <q-item-section>Vlasnik objekta</q-item-section>
-            </q-item>
+            <q-item clickable v-ripple to="/prijava/korisnik">Korisnik</q-item>
+            <q-item clickable v-ripple to="/prijava/administrator">Administrator</q-item>
+            <q-item clickable v-ripple to="/prijava/vlasnik">Vlasnik objekta</q-item>
           </q-list>
         </q-expansion-item>
 
         <!-- Registracija dropdown -->
-        <q-expansion-item icon="person_add" label="Registracija" expand-separator>
+        <q-expansion-item v-if="!token" icon="person_add" label="Registracija" expand-separator>
           <q-list>
-            <q-item clickable v-ripple to="/registracija/korisnik">
-              <q-item-section>Korisnik</q-item-section>
-            </q-item>
-            <q-item clickable v-ripple to="/registracija/administrator">
-              <q-item-section>Administrator</q-item-section>
-            </q-item>
-            <q-item clickable v-ripple to="/registracija/vlasnik">
-              <q-item-section>Vlasnik objekta</q-item-section>
-            </q-item>
+            <q-item clickable v-ripple to="/registracija/korisnik">Korisnik</q-item>
+            <q-item clickable v-ripple to="/registracija/administrator">Administrator</q-item>
+            <q-item clickable v-ripple to="/registracija/vlasnik">Vlasnik objekta</q-item>
           </q-list>
         </q-expansion-item>
 
+        <!-- Profil -->
+        <q-item v-if="token" clickable v-ripple to="/profil">Profil</q-item>
         <!-- Profil Korisnika -->
         <q-item clickable v-ripple to="/profilKorisnik">
           <q-item-section>Profil Korisnik</q-item-section>
@@ -92,22 +99,41 @@
       </q-list>
     </q-drawer>
 
-    <!-- Page content -->
+    <!-- CONTENT -->
     <q-page-container>
       <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
-<script>
-export default {
-  name: "TopHamburgerNav",
-  data() {
-    return {
-      leftDrawer: false,
-    };
-  },
-};
+<script setup>
+import { ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
+
+const leftDrawer = ref(false)
+const router = useRouter()
+
+// reactive token koji prati localStorage
+const token = ref(JSON.parse(localStorage.getItem('token')) || null)
+window.addEventListener('prijavaAdmin', (event) => {
+  token.value = event.detail
+})
+
+
+console.log(token)
+// watchEffect prati promjene u localStorage
+watchEffect(() => {
+  const t = JSON.parse(localStorage.getItem('token'))
+  token.value = t
+  console.log(token.value)
+})
+
+// logout
+function logout() {
+  localStorage.removeItem('token')
+  token.value = null
+  router.push('/')
+}
 </script>
 
 <style>
