@@ -1,4 +1,3 @@
-<!-- Ana Krišto -->
 <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 400px">
@@ -26,7 +25,9 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const korIme = ref('')
 const lozinka = ref('')
 const loading = ref(false)
@@ -40,12 +41,24 @@ const submitForm = async () => {
   success.value = null
 
   try {
-    console.log({ Ime_admina: korIme.value, Lozinka_admina: lozinka.value })
-
     const response = await axios.post('http://localhost:3000/admin/login', {
       Ime_admina: korIme.value,
       Lozinka_admina: lozinka.value,
     })
+
+    // Spremi token u localStorage
+    const tokenObj = {
+    id: response.data.admin.ID_admina,
+    korIme: response.data.admin.Ime_admina,
+    uloga: 'admin'
+    }
+    localStorage.setItem('token', JSON.stringify(tokenObj))
+    window.dispatchEvent(new CustomEvent('prijavaAdmin', { detail: tokenObj }))
+
+
+    // Navigacija na admin stranicu
+    router.push('/')
+    
 
     success.value = response.data.message
     ObrazacPrijava.value?.reset()
