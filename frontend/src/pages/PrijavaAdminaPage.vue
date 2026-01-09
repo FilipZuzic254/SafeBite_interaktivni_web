@@ -56,7 +56,7 @@ const submitForm = async () => {
     window.dispatchEvent(new CustomEvent('prijava', { detail: tokenObj }))
 
 
-    // Navigacija na admin stranicu
+    // Navigacija na pocetnu stranicu
     router.push('/')
     
 
