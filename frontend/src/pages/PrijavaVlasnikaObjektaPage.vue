@@ -1,21 +1,22 @@
-
-
 <!-- Filip Žužić -->
-
 <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 400px">
+      <!-- Naslov obrasca -->
       <q-card-section>
         <div class="text-h6">Prijava vlasnika objekta</div>
       </q-card-section>
 
+      <!-- Forma za login -->
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="ObrazacPrijava">
+          <!-- Polja -->
           <q-input filled v-model="email" label="Email" type="email" required class="q-mt-sm" />
           <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" />
 
+          <!-- Gumb za prijavu -->
           <div class="q-mt-md">
-            <q-btn type="submit" label="Registracija" color="primary" :loading="loading" />
+            <q-btn type="submit" label="Prijava" color="primary" :loading="loading" />
           </div>
 
           <!-- Poruke o grešci / uspjehu -->
@@ -29,48 +30,57 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
-// Reactive varijable
+// Reaktivne varijable
 const email = ref('')
 const lozinka = ref('')
-
 const loading = ref(false)
 const error = ref(null)
 const success = ref(null)
-
-// Ref na formu
+const router = useRouter()
 const ObrazacPrijava = ref(null)
 
-// Submit funkcija
+// Funkcija za login
 const submitForm = async () => {
   loading.value = true
   error.value = null
   success.value = null
 
   try {
-    console.log({
+    console.log("Login vlasnika:", {
       Email_vlasnika: email.value,
       Lozinka_vlasnika: lozinka.value
     })
 
-    let url = `http://localhost:3000/vlasnik?mail=${email.value}`;
-    const response = await fetch(url);
-    const data = await response.json();
+    // POST request na backend
+    const response = await axios.post('http://localhost:3000/vlasnik/prijava', {
+      Email_vlasnika: email.value,
+      Lozinka_vlasnika: lozinka.value
+    })
 
-    if (data.length == 0 || data[0].Email_vlasnika != email.value || data[0].Lozinka_vlasnika != lozinka.value) {
-      error.value = "Pogrešni mail i/ili lozinka";
-    } else {
-      // Ako je prijava uspješna
-      success.value = 'Vlasnik uspješno prijavljen!'
+    // backend vraća: { message, user }
+    const tokenObj = {
+      id: response.data.user.ID_vlasnika,
+      korIme: response.data.user.Email_vlasnika,
+      uloga: 'vlasnik'
     }
 
+    // Spremi token i trigger event za MainLayout
+    localStorage.setItem('token', JSON.stringify(tokenObj))
+    window.dispatchEvent(new CustomEvent('prijava', { detail: tokenObj }))
+
+    // Poruka uspjeha
+    success.value = 'Vlasnik uspješno prijavljen!'
 
     // Reset forme
     ObrazacPrijava.value?.reset()
-
-    // Ručno reset polja
     email.value = ''
     lozinka.value = ''
+
+    // Navigacija na početnu stranicu
+    router.push('/')
   } catch (err) {
     if (err.response) {
       error.value = err.response.data.message || 'Greška prilikom prijave'

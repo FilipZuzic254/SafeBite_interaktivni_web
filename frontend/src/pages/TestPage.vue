@@ -58,8 +58,8 @@ const submitForm = async () => {
     formData.append('id', id_restorana.value)
     formData.append('image', image.value) // THIS is the file
 
-    const res = await axios.post(
-      'http://localhost:3000/test/create',
+    const res = await axios.put(
+      'http://localhost:3000/img/create/objekt',
       formData,
       {
         headers: {

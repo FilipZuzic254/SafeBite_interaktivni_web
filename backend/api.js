@@ -39,7 +39,7 @@ app.use("/uploads", express.static("uploads"));
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const folder = `./uploads/restorani/${req.body.id}`;
+        const folder = `./uploads/${req.body.id}`;
 
         if (!fs.existsSync(folder)) {
         fs.mkdirSync(folder, { recursive: true });
@@ -56,49 +56,108 @@ const upload = multer({ storage });
 
 
 
-app.post("/test/create", upload.single("image"), (req, res) => {
+app.post("/img/create/galerija", upload.single("image"), (req, res) => {
     const { id } = req.body;
 
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const imagePath = `/uploads/restorani/${id}/${req.file.filename}`;
+    const imagePath = `/uploads/${id}/galerija/${req.file.filename}`;
 
     console.log("Saved image:", imagePath);
 
-    res.json({
-        message: "Slika uspješno uploadana",
-        image_path: imagePath
-    });
+    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
+
+    db.query(sql, [imagePath, id], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
+    }
+
+    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+  });
 });
 
 
-/*
-app.post("/test/create/", (req, res) => {
-    const {id, image} = req.body;
-
-    const folderPath = "./uploads/restorani/";
 
 
-    try {
-        if (!fs.existsSync(folderPath+id)) {
-            fs.mkdirSync(folderPath+id);
+app.put("/img/create/objekt", upload.single("image"), (req, res) => {
+    const { id } = req.body;
 
-            console.log("Folder uspjesno kreiran");
-        }
-
-    } catch (err) {
-        console.error(err);
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
     }
 
-    console.log(image)
+    /* Brisanje stare slike */
 
-    res.json({message: image});
-})
-*/
+    db.query("SELECT Slika_objekta FROM Poslovni_objekt WHERE ID_objekta=?", [id], (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu podataka:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+        else if (result[0].Slika_objekta != null) {
+            fs.rm(`.${result[0].Slika_objekta}`, { recursive: true, force: true }, err => {
+                if (err) {
+                    throw err;
+                }
 
-app.get("/test/delete/:id", (req, res) => {
+                console.log(`.${result[0].Slika_objekta}`)
+            });
+        }
+        else {
+            console.log(`.${result[0].Slika_objekta}`)
+        }
+
+        
+    })
+    
+
+
+    /* Dodavanje nove slike */
+
+    const imagePath = `/uploads/${id}/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    const sqlUpdate = 'UPDATE Poslovni_objekt SET Slika_objekta=? WHERE ID_objekta=?';
+
+    db.query(sqlUpdate, [imagePath, id], (err, result) => {
+        if (err) {
+        console.error('Greška pri upisu u bazu:', err);
+        return res.status(500).json({ message: 'Greška na serveru.' });
+        }
+
+        res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+    });
+});
+
+app.put("/img/create/stavka", upload.single("image"), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imagePath = `/uploads/${id}/stavke/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
+
+    db.query(sql, [imagePath, id], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
+    }
+
+    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+  });
+});
+
+
+
+app.get("/img/delete/objekt/:id", (req, res) => {
     const {id} = req.params;
 
     const folderPath = "./uploads/restorani/";
@@ -110,7 +169,6 @@ app.get("/test/delete/:id", (req, res) => {
 
         res.json({message: `${folderPath+id} is deleted!`});
     });
-
 })
 
 
@@ -1417,10 +1475,6 @@ app.get("/korisnik/:id", (req, res) => {
 
 })
 
-app.listen(port, () => {
-    console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
-});
-
 
 // login korisnika
 
@@ -1447,6 +1501,37 @@ app.post("/korisnik/prijava", (req, res) => {
     });
 });
 
+// login vlasnika objekta
+app.post("/vlasnik/prijava", (req, res) => {
+    const { Email_vlasnika, Lozinka_vlasnika } = req.body;
+
+    // provjera da su oba polja unesena
+    if (!Email_vlasnika || !Lozinka_vlasnika) {
+        return res.status(400).json({ message: "Unesite email i lozinku." });
+    }
+
+    // SQL query za provjeru vlasnika
+    const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE Email_vlasnika = ? AND Lozinka_vlasnika = ?';
+    db.query(sqlQuery, [Email_vlasnika, Lozinka_vlasnika], (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a vlasnika:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Email ili lozinka nisu ispravni" });
+        }
+
+        // Login uspješan
+        res.json({ message: "Login uspješan", user: result[0] });
+    });
+});
+
+
+
+app.listen(port, () => {
+    console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
+});
 app.get('/korisnik/profil/:id', (req, res) => {
   const { id } = req.params
 
