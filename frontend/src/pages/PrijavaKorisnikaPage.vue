@@ -11,7 +11,7 @@
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="ObrazacPrijava">
           <!-- Polja -->
-          <q-input filled v-model="korisnickoIme" label="Korisničko ime" required />
+          <q-input filled v-model="korIme" label="Korisničko ime" required />
           <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" />
 
           <!-- Gumb za prijavu -->
@@ -37,7 +37,7 @@ import axios from 'axios'
 const router = useRouter()
 
 // Reaktivne varijable
-const korisnickoIme = ref('')
+const korIme = ref('')
 const lozinka = ref('')
 const loading = ref(false)
 const error = ref(null)
@@ -54,7 +54,7 @@ const submitForm = async () => {
 
   // Logiraj što šaljemo
   console.log("Slanje podataka:", {
-    Korisnicko_ime: korisnickoIme.value,
+    Korisnicko_ime: korIme.value,
     Lozinka_korisnika: lozinka.value
   });
 
@@ -62,13 +62,26 @@ const submitForm = async () => {
     const response = await axios.post(
       'http://localhost:3000/korisnik/prijava',
       {
-        Korisnicko_ime: korisnickoIme.value,
+        Korisnicko_ime: korIme.value,
         Lozinka_korisnika: lozinka.value
       },
       {
         headers: { 'Content-Type': 'application/json' }
       }
     );
+
+    // Spremi token u localStorage
+    const tokenObj = {
+    id: response.data.user.ID_korisnika,
+    korIme: response.data.user.Korisnicko_ime,
+    uloga: 'korisnik'
+    }
+    localStorage.setItem('token', JSON.stringify(tokenObj))
+    window.dispatchEvent(new CustomEvent('prijava', { detail: tokenObj }))
+
+
+    // Navigacija na pocetnu stranicu
+    router.push('/')
 
     console.log("Odgovor backend-a:", response.data);
 
@@ -78,7 +91,7 @@ const submitForm = async () => {
     // Reset i redirect nakon 1.5 sekunde
     setTimeout(() => {
       ObrazacPrijava.value?.reset()
-      korisnickoIme.value = ''
+      korIme.value = ''
       lozinka.value = ''
 
       router.push('/') // ili neki dashboard
