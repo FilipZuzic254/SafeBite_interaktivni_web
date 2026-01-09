@@ -36,26 +36,42 @@ app.use(cors()); //cors je način da server dozvoli pristup svojim resursima iz 
  */
 app.use("/uploads", express.static("uploads"));
 
-
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const folder = `./uploads/${req.body.id}`;
+  destination: (req, file, cb) => {
+    const { id } = req.body;
 
-        if (!fs.existsSync(folder)) {
-        fs.mkdirSync(folder, { recursive: true });
-        }
-
-        cb(null, folder);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
+    if (!id) {
+      return cb(new Error("Missing restoran ID"));
     }
+
+    let uploadPath = `./uploads/${id}`;
+
+    // If gallery → put in /gallery
+    if (file.fieldname === "galerija") {
+      uploadPath = uploadPath+'/galerija'
+    }
+    else if (file.filename === "jelovnik") {
+        uploadPath = uploadPath+'/jelovnik'
+    }
+
+    // Ensure directory exists
+    fs.mkdirSync(uploadPath, { recursive: true });
+
+    cb(null, uploadPath);
+  },
+
+  filename: (req, file, cb) => {
+    const uniqueName =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+    cb(null, `${uniqueName}${path.extname(file.originalname)}`);
+  },
 });
 
 const upload = multer({ storage });
 
 
-
+/* NEDOVRSENO */
 app.post("/img/create/galerija", upload.single("image"), (req, res) => {
     const { id } = req.body;
 
@@ -80,7 +96,32 @@ app.post("/img/create/galerija", upload.single("image"), (req, res) => {
 });
 
 
+/* NEDOVRSENO */
+app.put("/img/create/objekt", upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "gallery", maxCount: 10 }]), (req, res) => {
+    const { id } = req.body;
 
+    if (!req.files?.thumbnail) {
+      return res.status(400).json({ message: "Thumbnail is required" });
+    }
+
+    // Thumbnail path
+    const thumbnailPath = `/uploads/${id}/${req.files.thumbnail[0].filename}`;
+
+    // Gallery paths
+    const galleryPaths = (req.files.gallery || []).map(
+      file => `/uploads/${id}/gallery/${file.filename}`
+    );
+
+    res.json({
+      message: "Images uploaded successfully",
+      thumbnail: thumbnailPath,
+      gallery: galleryPaths,
+    });
+  }
+);
+
+
+/* NEDOVRSENO */
 
 app.put("/img/create/objekt", upload.single("image"), (req, res) => {
     const { id } = req.body;
@@ -89,48 +130,52 @@ app.put("/img/create/objekt", upload.single("image"), (req, res) => {
         return res.status(400).json({ message: "No file uploaded" });
     }
 
-    /* Brisanje stare slike */
+    const newImagePath = `/uploads/${id}/${req.file.filename}`;
 
-    db.query("SELECT Slika_objekta FROM Poslovni_objekt WHERE ID_objekta=?", [id], (err, result) => {
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
-        else if (result[0].Slika_objekta != null) {
-            fs.rm(`.${result[0].Slika_objekta}`, { recursive: true, force: true }, err => {
-                if (err) {
-                    throw err;
+    // 1️⃣ Get old image path
+    db.query(
+        "SELECT Slika_objekta FROM Poslovni_objekt WHERE ID_objekta = ?", [id], (err, result) => {
+            if (err) {
+                console.error("Greška pri dohvatu podataka:", err);
+                return res.status(500).json({ message: "Greška na serveru" });
+            }
+
+            const oldImage = result?.[0]?.Slika_objekta;
+
+            // 2️⃣ Delete old image ONLY if it exists
+            if (oldImage) {
+                const filePath = `.${oldImage}`;
+
+                fs.access(filePath, fs.constants.F_OK, (accessErr) => {
+                    if (!accessErr) {
+                        fs.rm(filePath, { force: true }, (rmErr) => {
+                            if (rmErr) {
+                                console.error("Greška pri brisanju slike:", rmErr);
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 3️⃣ Update DB with new image
+            db.query(
+                "UPDATE Poslovni_objekt SET Slika_objekta = ? WHERE ID_objekta = ?", [newImagePath, id], (updateErr) => {
+                    if (updateErr) {
+                        console.error("Greška pri upisu u bazu:", updateErr);
+                        return res.status(500).json({ message: "Greška na serveru" });
+                    }
+
+                    res.json({
+                        message: "Slika uspješno unesena!",
+                        image: newImagePath
+                    });
                 }
-
-                console.log(`.${result[0].Slika_objekta}`)
-            });
+            );
         }
-        else {
-            console.log(`.${result[0].Slika_objekta}`)
-        }
-
-        
-    })
-    
-
-
-    /* Dodavanje nove slike */
-
-    const imagePath = `/uploads/${id}/${req.file.filename}`;
-
-    console.log("Saved image:", imagePath);
-
-    const sqlUpdate = 'UPDATE Poslovni_objekt SET Slika_objekta=? WHERE ID_objekta=?';
-
-    db.query(sqlUpdate, [imagePath, id], (err, result) => {
-        if (err) {
-        console.error('Greška pri upisu u bazu:', err);
-        return res.status(500).json({ message: 'Greška na serveru.' });
-        }
-
-        res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
-    });
+    );
 });
+
+/* NEDOVRSENO */
 
 app.put("/img/create/stavka", upload.single("image"), (req, res) => {
     const { id } = req.body;
@@ -157,6 +202,7 @@ app.put("/img/create/stavka", upload.single("image"), (req, res) => {
 
 
 
+/* NEDOVRSENO */
 app.get("/img/delete/objekt/:id", (req, res) => {
     const {id} = req.params;
 
@@ -1100,6 +1146,7 @@ app.get("/pi", (req, res) => {
     }   
 
 })
+
 
 
 // ispis admina
