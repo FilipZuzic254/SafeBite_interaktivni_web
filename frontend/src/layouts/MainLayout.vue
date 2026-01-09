@@ -5,10 +5,12 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" @click="leftDrawer = true" />
         <q-space />
-        <!-- Ime prijavljenog korisnika -->
+
+        <!-- Ime prijavljenog korisnika / vlasnika / admina -->
         <div v-if="token" class="q-mr-md text-weight-medium">
           {{ token.korIme }}
         </div>
+
         <!-- Logout gumb -->
         <q-btn
           v-if="token"
@@ -25,43 +27,65 @@
       v-model="leftDrawer"
       side="left"
       overlay
-      behavior="mobile"
       :width="250"
-      breakpoint="9999"
       class="top-drawer"
     >
       <q-list>
-        <!-- Početna -->
+
+        <!-- Početna-->
         <q-item clickable v-ripple to="/">
           <q-item-section>Početna</q-item-section>
         </q-item>
+        <!-- Profil korisnika – samo korisnik -->
+        <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/profilKorisnik">
+          <q-item-section>Profil</q-item-section>
+        </q-item>
+
+        <!-- Profil vlasnika – samo vlasnik -->
+        <q-item v-if="token && token.uloga === 'vlasnik'" clickable v-ripple to="/profilVlasnik">
+          <q-item-section>Profil</q-item-section>
+        </q-item>
+
+        <!-- Profil admina – samo admin -->
+        <q-item v-if="token && token.uloga === 'admin'" clickable v-ripple to="/profilAdmin">
+          <q-item-section>Profil</q-item-section>
+        </q-item>
 
         <!-- Restorani -->
-        <q-item clickable v-ripple to="/restorani">
+        <q-item v-if="token && (token.uloga === 'korisnik' || token.uloga === 'admin')" clickable v-ripple to="/restorani">
           <q-item-section>Restorani</q-item-section>
         </q-item>
 
-        <!-- Kafići -->
-        <q-item clickable v-ripple to="/kafici">
+        <!-- Kafići – svi -->
+        <q-item v-if="token && (token.uloga === 'korisnik' || token.uloga === 'admin')" clickable v-ripple to="/kafici">
           <q-item-section>Kafići</q-item-section>
         </q-item>
 
-        <!-- Unos jela – admin + vlasnik -->
-        <q-item
-          v-if="token && (token.uloga === 'admin' || token.uloga === 'vlasnik' || token.uloga === 'korisnik')"
-          clickable
-          v-ripple
-          to="/unosJela"
-        >
+        <!-- Unos komentara – samo korisnik -->
+        <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/unosKomentara">
+          <q-item-section>Unos komentara</q-item-section>
+        </q-item>
+
+        <!-- Unos jela – vlasnik i admin -->
+        <q-item v-if="token && token.uloga === 'vlasnik'" clickable v-ripple to="/unosJela">
           <q-item-section>Unos jela</q-item-section>
         </q-item>
 
-        <!-- Unos prehrambene intolerancije -->
-        <q-item clickable v-ripple to="/unosPI">
+        <!-- Unos prehrambene intolerancije – admin -->
+        <q-item v-if="token && token.uloga === 'admin'" clickable v-ripple to="/unosPI">
           <q-item-section>Unos prehrambene intolerancije</q-item-section>
         </q-item>
 
-        <!-- Prijava dropdown -->
+
+        <!--
+        Brisanje komentara – samo admin
+        <q-item v-if="token && token.uloga === 'admin'" clickable v-ripple to="/brisanjeKomentara">
+          <q-item-section>Brisanje komentara</q-item-section>
+        </q-item>
+        -->
+
+
+        <!-- Prijava dropdown – samo ako nije prijavljen -->
         <q-expansion-item v-if="!token" icon="login" label="Prijava" expand-separator>
           <q-list>
             <q-item clickable v-ripple to="/prijava/korisnik">Korisnik</q-item>
@@ -70,7 +94,7 @@
           </q-list>
         </q-expansion-item>
 
-        <!-- Registracija dropdown -->
+        <!-- Registracija dropdown – samo ako nije prijavljen -->
         <q-expansion-item v-if="!token" icon="person_add" label="Registracija" expand-separator>
           <q-list>
             <q-item clickable v-ripple to="/registracija/korisnik">Korisnik</q-item>
@@ -79,21 +103,12 @@
           </q-list>
         </q-expansion-item>
 
-        <!-- Profil -->
-        <q-item v-if="token" clickable v-ripple to="/profil">Profil</q-item>
-        <!-- Profil Korisnika -->
-        <q-item clickable v-ripple to="/profilKorisnik">
-          <q-item-section>Profil Korisnik</q-item-section>
-        </q-item>
-
-        <!-- Profil Vlasnik -->
-        <q-item clickable v-ripple to="/profilVlasnik">
-          <q-item-section>Profil Vlasnik</q-item-section>
-        </q-item>
-
-         <!-- Profil Admin -->
-        <q-item clickable v-ripple to="/profilAdmin">
-          <q-item-section>Profil Admin</q-item-section>
+        <!-- Logout – ako je prijavljen -->
+        <q-item v-if="token" clickable v-ripple @click="logout">
+          <q-item-section avatar>
+            <q-icon name="logout" />
+          </q-item-section>
+          <q-item-section>Odjava</q-item-section>
         </q-item>
 
       </q-list>
@@ -113,22 +128,21 @@ import { useRouter } from 'vue-router'
 const leftDrawer = ref(false)
 const router = useRouter()
 
-// reactive token koji prati localStorage
+// Token koji prati localStorage
 const token = ref(JSON.parse(localStorage.getItem('token')) || null)
+
+// Event koji dolazi nakon login-a
 window.addEventListener('prijava', (event) => {
   token.value = event.detail
 })
 
-
-console.log(token)
-// watchEffect prati promjene u localStorage
+// Sinkronizacija s localStorage
 watchEffect(() => {
   const t = JSON.parse(localStorage.getItem('token'))
   token.value = t
-  console.log(token.value)
 })
 
-// logout
+// Logout funkcija
 function logout() {
   localStorage.removeItem('token')
   token.value = null
