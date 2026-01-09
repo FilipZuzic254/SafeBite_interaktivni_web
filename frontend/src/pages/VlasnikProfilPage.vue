@@ -1,10 +1,10 @@
-<!-- Petra Grgić-->
 <template>
   <q-page class="q-pa-md flex flex-center">
     <q-card style="width: 900px">
 
+      <!-- Naslov -->
       <q-card-section>
-        <div class="text-h5">Moj profil </div>
+        <div class="text-h5">Moj profil</div>
       </q-card-section>
 
       <q-separator />
@@ -47,7 +47,7 @@
               <div class="text-caption text-grey">{{ obj.Tip_objekta }}</div>
 
               <q-rating
-                :model-value="obj.prosjecna_ocjena"
+                :model-value="obj.prosjecna_ocjena || 0"
                 max="5"
                 size="22px"
                 readonly
@@ -76,8 +76,16 @@ const error = ref(null)
 
 onMounted(async () => {
   try {
-    const vlasnikId = 1 // ID vlasnika iz prijave ili session-a
+    // Dohvat tokena iz localStorage
+    const token = JSON.parse(localStorage.getItem('token'))
+    if (!token || !token.id) {
+      error.value = 'Vlasnik nije prijavljen'
+      return
+    }
 
+    const vlasnikId = token.id
+
+    // Dohvat profila vlasnika
     const response = await axios.get(`http://localhost:3000/vlasnik/profil/${vlasnikId}`)
     vlasnik.value = response.data.vlasnik
     objekti.value = response.data.objekti
