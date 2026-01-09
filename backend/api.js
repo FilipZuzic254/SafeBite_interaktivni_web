@@ -1408,3 +1408,77 @@ app.post("/korisnik/prijava", (req, res) => {
         res.json({ message: "Login uspješan", user: result[0] });
     });
 });
+
+app.get('/korisnik/profil/:id', (req, res) => {
+  const { id } = req.params
+
+  console.log('Zahtjev za profil korisnika ID:', id)
+
+  // 1️⃣ Dohvat osnovnih podataka korisnika
+  const sqlKorisnik = `
+    SELECT 
+      Ime_korisnika,
+      Prezime_korisnika,
+      Email_korisnika,
+      Korisnicko_ime
+    FROM Korisnik
+    WHERE ID_korisnika = ?
+  `
+
+  // 2️⃣ Dohvat prehrambenih intolerancija (samo nazivi)
+  const sqlIntolerancije = `
+    SELECT pi.Naziv_pi
+    FROM PI_korisnika pik
+    JOIN Prehrambena_intolerancija pi 
+      ON pik.ID_pi = pi.ID_pi
+    WHERE pik.ID_korisnika = ?
+  `
+
+  // 3️⃣ Dohvat komentara korisnika + naziv objekta za svaki komentar
+  const sqlKomentari = `
+    SELECT 
+      k.ID_komentara,
+      k.Sadrzaj_komentara,
+      k.Ocjena,
+      po.Ime_objekta
+    FROM Komentar k
+    JOIN Poslovni_objekt po 
+      ON k.ID_objekta = po.ID_objekta
+    WHERE k.ID_korisnika = ?
+  `
+
+  // ---- izvršavanje ----
+  db.query(sqlKorisnik, [id], (err, korisnikResult) => {
+    if (err) {
+      console.error('Greška pri dohvatu korisnika:', err)
+      return res.status(500).json({ message: 'Greška pri dohvatu korisnika', error: err })
+    }
+
+    if (korisnikResult.length === 0) {
+      return res.status(404).json({ message: 'Korisnik ne postoji' })
+    }
+
+    db.query(sqlIntolerancije, [id], (err2, intolerancijeResult) => {
+      if (err2) {
+        console.error('Greška pri dohvatu intolerancija:', err2)
+        return res.status(500).json({ message: 'Greška pri dohvatu intolerancija', error: err2 })
+      }
+
+      db.query(sqlKomentari, [id], (err3, komentariResult) => {
+        if (err3) {
+          console.error('Greška pri dohvatu komentara:', err3)
+          return res.status(500).json({ message: 'Greška pri dohvatu komentara', error: err3 })
+        }
+
+        // vraćamo JSON s korisnikom, njegovim intolerancijama i komentarima
+        res.json({
+          korisnik: korisnikResult[0],
+          intolerancije: intolerancijeResult.map(r => r.Naziv_pi), // samo nazivi
+          komentari: komentariResult // sadrži: ID_komentara, Sadrzaj_komentara, Ocjena, Ime_objekta
+        })
+      })
+    })
+  })
+})
+
+
