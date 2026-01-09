@@ -39,7 +39,7 @@ app.use("/uploads", express.static("uploads"));
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const folder = `./uploads/restorani/${req.body.id}`;
+        const folder = `./uploads/${req.body.id}`;
 
         if (!fs.existsSync(folder)) {
         fs.mkdirSync(folder, { recursive: true });
@@ -79,14 +79,15 @@ app.post("/img/create/galerija", upload.single("image"), (req, res) => {
   });
 });
 
+
+
+
 app.put("/img/create/objekt", upload.single("image"), (req, res) => {
     const { id } = req.body;
 
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
-
-    const folderPath = "./uploads/restorani/";
 
     /* Brisanje stare slike */
 
@@ -95,14 +96,20 @@ app.put("/img/create/objekt", upload.single("image"), (req, res) => {
             console.error('Greška pri dohvatu podataka:', err);
             return res.status(500).send("Greška na serveru");
         }
+        else if (result[0].Slika_objekta != null) {
+            fs.rm(`.${result[0].Slika_objekta}`, { recursive: true, force: true }, err => {
+                if (err) {
+                    throw err;
+                }
 
-        fs.rm(`.${result[0].Slika_objekta}`, { recursive: true, force: true }, err => {
-            if (err) {
-                throw err;
-            }
-
+                console.log(`.${result[0].Slika_objekta}`)
+            });
+        }
+        else {
             console.log(`.${result[0].Slika_objekta}`)
-        });
+        }
+
+        
     })
     
 
