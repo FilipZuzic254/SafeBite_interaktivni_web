@@ -66,9 +66,6 @@
           <q-item-section>Unos komentara</q-item-section>
         </q-item>
         -->
-        <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/unosKomentara">
-          <q-item-section>Unos komentara</q-item-section>
-        </q-item>
 
         <!-- Unos jela – vlasnik i admin -->
         <q-item v-if="token && token.uloga === 'vlasnik'" clickable v-ripple to="/unosJela">
@@ -107,17 +104,7 @@
           </q-list>
         </q-expansion-item>
 
-        <!-- Profil -->
-        <q-item v-if="token" clickable v-ripple to="/profil">Profil</q-item>
-        <q-item clickable v-ripple to="/profilKorisnik">
-          <q-item-section>Profil Korisnik</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple to="/profilVlasnik">
-          <q-item-section>Profil Vlasnik</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple to="/profilAdmin">
-          <q-item-section>Profil Admin</q-item-section>
-        </q-item>
+        
         <!-- Logout – ako je prijavljen -->
         <q-item v-if="token" clickable v-ripple @click="logout">
           <q-item-section avatar>
