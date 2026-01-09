@@ -2,7 +2,6 @@
   <q-page class="q-pa-md flex flex-center">
     <q-card style="width: 900px">
 
-      <!-- Naslov -->
       <q-card-section>
         <div class="text-h5">Moj profil</div>
       </q-card-section>
@@ -28,11 +27,11 @@
           Nemate evidentiranih objekata.
         </div>
 
-        <div class="row justify-start items-start q-gutter-lg" v-else>
+        <div class="row q-gutter-lg kartice">
           <q-card
             v-for="obj in objekti"
             :key="obj.ID_objekta"
-            class="my-card cafe-card"
+            class="my-card cafe-card-half"
             flat
             bordered
           >
@@ -60,6 +59,18 @@
             </q-card-section>
           </q-card>
         </div>
+
+        <!-- Gumb za unos novog objekta -->
+        <div class="q-mt-md flex justify-center">
+          <q-btn
+            color="primary"
+            label="Unos novog poslovnog objekta"
+            icon="add"
+            @click="dodajObjekt"
+            rounded
+          />
+        </div>
+
       </q-card-section>
 
     </q-card>
@@ -68,15 +79,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+const router = useRouter()
 const vlasnik = ref({})
 const objekti = ref([])
 const error = ref(null)
 
 onMounted(async () => {
   try {
-    // Dohvat tokena iz localStorage
     const token = JSON.parse(localStorage.getItem('token'))
     if (!token || !token.id) {
       error.value = 'Vlasnik nije prijavljen'
@@ -84,8 +96,6 @@ onMounted(async () => {
     }
 
     const vlasnikId = token.id
-
-    // Dohvat profila vlasnika
     const response = await axios.get(`http://localhost:3000/vlasnik/profil/${vlasnikId}`)
     vlasnik.value = response.data.vlasnik
     objekti.value = response.data.objekti
@@ -94,18 +104,24 @@ onMounted(async () => {
     error.value = 'Greška pri dohvaćanju profila vlasnika.'
   }
 })
+
+function dodajObjekt() {
+  router.push('/unosObjekta')
+}
+
 </script>
 
 <style scoped>
-.cafe-card {
-  width: 300px;
+.cafe-card-half {
+  width: calc(45%); /* dvije kartice po redu sa razmakom */
   transition: transform 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
+  margin-bottom: 16px;
 }
 
-.cafe-card:hover {
-  transform: scale(1.04);
+.cafe-card-half:hover {
+  transform: scale(1.03);
 }
 
 .card-img {
@@ -117,5 +133,9 @@ onMounted(async () => {
 .q-page {
   min-height: 100vh;
   background-color: #f5f5f5;
+}
+
+.kartice {
+    justify-content: space-around;
 }
 </style>
