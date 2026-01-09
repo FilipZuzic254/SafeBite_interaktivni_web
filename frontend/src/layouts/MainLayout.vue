@@ -61,7 +61,11 @@
           <q-item-section>Kafići</q-item-section>
         </q-item>
 
-        <!-- Unos komentara – samo korisnik -->
+        <!--
+        <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/unosKomentara">
+          <q-item-section>Unos komentara</q-item-section>
+        </q-item>
+        -->
         <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/unosKomentara">
           <q-item-section>Unos komentara</q-item-section>
         </q-item>
