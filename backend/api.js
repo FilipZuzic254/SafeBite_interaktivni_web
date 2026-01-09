@@ -1087,57 +1087,95 @@ app.get("/admin", (req, res) => {
 
 // ispis objekata
 
-app.get("/objekti", (req, res) => { 
+//app.get("/objekti", (req, res) => { 
 
     // povlaci query ako je unesen ( /objekti?vlasnikID=2&objektID=2 )
-    const {vlasnikID, objektID} = req.query;
+   // const {vlasnikID, objektID} = req.query;
 
-    console.log(vlasnikID, objektID);
+   // console.log(vlasnikID, objektID);
 
     // provjerava ukoliko je unesen req.query
     // ako nije sql query nema WHERE
-    if (isNaN(vlasnikID) && isNaN(objektID)){
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt;';
+    //if (isNaN(vlasnikID) && isNaN(objektID)){
+       // const sqlQuery = 'SELECT * FROM Poslovni_objekt;';
 
-        db.query(sqlQuery, (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, (err, result) => {
+            //if (err) {
+             //   console.error('Greška pri dohvatu podataka:', err);
+               // return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
-    }
+            //res.json(result);
+        //})
+    //}
     // ako je unesen samo vlasnikID sql query ima WHERE ID_vlasnika = ?
-    else if (isNaN(objektID)) {
+    //else if (isNaN(objektID)) {
         // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_vlasnika = ?;';
+      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_vlasnika = ?;';
 
-        db.query(sqlQuery, [Number(vlasnikID)], (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, [Number(vlasnikID)], (err, result) => {
+          //  if (err) {
+            //    console.error('Greška pri dohvatu podataka:', err);
+              //  return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
-    }
+            //res.json(result);
+      //  })
+    //}
     // ako je unesen samo objektID sql query ima WHERE ID_objekta = ?
-    else if (isNaN(vlasnikID)) {
+    //else if (isNaN(vlasnikID)) {
         // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_objekta = ?;';
+      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_objekta = ?;';
 
-        db.query(sqlQuery, [Number(objektID)], (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, [Number(objektID)], (err, result) => {
+          //  if (err) {
+            //    console.error('Greška pri dohvatu podataka:', err);
+              //  return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
+            //res.json(result);
+        //})
+    //}
+
+//})
+
+app.get("/objekti", (req, res) => { 
+    const { vlasnikID, objektID, tip } = req.query;
+
+    let sqlQuery = `
+        SELECT p.*, ROUND(AVG(k.ocjena),1) AS prosjecna_ocjena
+        FROM Poslovni_objekt p
+        LEFT JOIN Komentar k ON p.ID_objekta = k.ID_objekta
+        WHERE 1=1
+    `;
+
+    const params = [];
+
+    if (!isNaN(vlasnikID)) {
+        sqlQuery += ' AND p.ID_vlasnika = ?';
+        params.push(Number(vlasnikID));
     }
 
-})
+    if (!isNaN(objektID)) {
+        sqlQuery += ' AND p.ID_objekta = ?';
+        params.push(Number(objektID));
+    }
+
+    if (tip) {
+        sqlQuery += ' AND p.Tip_objekta = ?';
+        params.push(tip); // tip = "Kafić"
+    }
+
+    sqlQuery += ' GROUP BY p.ID_objekta;';
+
+    db.query(sqlQuery, params, (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu objekata:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+        res.json(result);
+    });
+});
 
 
 // ispis vlasnika objekta
