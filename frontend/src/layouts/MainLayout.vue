@@ -3,7 +3,7 @@
     <!-- HEADER -->
     <q-header elevated>
       <q-toolbar>
-        <q-btn flat dense round icon="menu" @click="leftDrawer = true" />
+        <q-btn flat dense round icon="menu" @click="toggleDrawer" />
         <q-space />
 
         <!-- Ime prijavljenog korisnika / vlasnika / admina -->
@@ -29,6 +29,7 @@
       overlay
       :width="250"
       class="top-drawer"
+      @click.stop
     >
       <q-list>
 
@@ -36,6 +37,7 @@
         <q-item clickable v-ripple to="/">
           <q-item-section>Početna</q-item-section>
         </q-item>
+
         <!-- Profil korisnika – samo korisnik -->
         <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/profilKorisnik">
           <q-item-section>Profil</q-item-section>
@@ -56,16 +58,10 @@
           <q-item-section>Restorani</q-item-section>
         </q-item>
 
-        <!-- Kafići – svi -->
+        <!-- Kafići -->
         <q-item v-if="token && (token.uloga === 'korisnik' || token.uloga === 'admin')" clickable v-ripple to="/kafici">
           <q-item-section>Kafići</q-item-section>
         </q-item>
-
-        <!--
-        <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/unosKomentara">
-          <q-item-section>Unos komentara</q-item-section>
-        </q-item>
-        -->
 
         <!-- Unos jela – vlasnik i admin -->
         <q-item v-if="token && token.uloga === 'vlasnik'" clickable v-ripple to="/unosJela">
@@ -76,15 +72,6 @@
         <q-item v-if="token && token.uloga === 'admin'" clickable v-ripple to="/unosPI">
           <q-item-section>Unos prehrambene intolerancije</q-item-section>
         </q-item>
-
-
-        <!--
-        Brisanje komentara – samo admin
-        <q-item v-if="token && token.uloga === 'admin'" clickable v-ripple to="/brisanjeKomentara">
-          <q-item-section>Brisanje komentara</q-item-section>
-        </q-item>
-        -->
-
 
         <!-- Prijava dropdown – samo ako nije prijavljen -->
         <q-expansion-item v-if="!token" icon="login" label="Prijava" expand-separator>
@@ -104,7 +91,6 @@
           </q-list>
         </q-expansion-item>
 
-        
         <!-- Logout – ako je prijavljen -->
         <q-item v-if="token" clickable v-ripple @click="logout">
           <q-item-section avatar>
@@ -112,21 +98,25 @@
           </q-item-section>
           <q-item-section>Odjava</q-item-section>
         </q-item>
+
       </q-list>
     </q-drawer>
+
+    <!-- ZATAMNJENJE -->
+    <div
+      v-if="leftDrawer"
+      class="overlay"
+      @click="leftDrawer = false"
+    ></div>
 
     <!-- CONTENT -->
     <q-page-container>
       <router-view />
     </q-page-container>
+
   </q-layout>
 
-  <!-- PRAVI FOOTER KOJI SE VIDI TEK KAD SE SKROLLA DO DNA -->
-  <footer class="page-footer text-white">
-    <div class="footer-content text-center">
-      SafeBite
-    </div>
-  </footer>
+
 </template>
 
 <script setup>
@@ -136,25 +126,25 @@ import { useRouter } from 'vue-router'
 const leftDrawer = ref(false)
 const router = useRouter()
 
-// Token koji prati localStorage
 const token = ref(JSON.parse(localStorage.getItem('token')) || null)
 
-// Event koji dolazi nakon login-a
 window.addEventListener('prijava', (event) => {
   token.value = event.detail
 })
 
-// Sinkronizacija s localStorage
 watchEffect(() => {
   const t = JSON.parse(localStorage.getItem('token'))
   token.value = t
 })
 
-// Logout funkcija
 function logout() {
   localStorage.removeItem('token')
   token.value = null
   router.push('/')
+}
+
+function toggleDrawer() {
+  leftDrawer.value = !leftDrawer.value
 }
 </script>
 
@@ -165,11 +155,22 @@ function logout() {
   height: auto;
   max-height: none;
   border-radius: 0 0 12px 0;
+  z-index: 2000;
 }
 
 .page-footer {
-  background-color: $primary; // tvoja zelena #088e35
+  background-color: $primary;
   padding: 16px 0;
   width: 100%;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3); // blago zatamnjena
+  z-index: 1500;
 }
 </style>

@@ -1,96 +1,228 @@
 <template>
-  <q-page class=" flex-center">
-    <img
-      alt="pocetna"
-      src="~assets/pocetna.png"
-      style="width: 100%; height:100vh"
-      class="q-mb-sm"
-    />
-  </q-page>
+  <q-page class="home-page">
 
- <q-page class="q-pa-md bg-grey-1">
+    <!-- SPLIT SCREEN -->
+    <section class="hero row no-wrap">
 
-    <div class="flex-container">
+      <!-- LIJEVO – LOGO -->
+      <div class="col-12 col-md-6 flex flex-center left-side">
+        <q-img
+          src="src/assets/SafeBite.png"
+          fit="contain"
+          class="logo-img"
+        />
+      </div>
 
-      <!-- RESTORAN -->
-      <div class="flex-item" @click="goToSection('restorani')">
-        <img :src="restoranImg" alt="Restoran" />
-        <div class="overlay">
-          <h2>Restorani</h2>
+      <!-- DESNO – TEKST -->
+      <div class="col-12 col-md-6 flex items-center right-side">
+        <div class="text-container">
+          <p class="description">
+           Ne morate više pogađati što smijete jesti. <br> <br>
+
+          SafeBite vam omogućuje da pronađete ugostiteljske objekte prilagođene vašim prehrambenim intolerancijama i osobnim preferencijama.
+
+          <br><br> <b> Jednostavno. Sigurno. Bez stresa. </b>
+          </p>
+
+          <q-btn
+            label="Saznaj više"
+            unelevated
+            size="lg"
+            class="q-mt-lg button"
+            @click="scrollToInfo"
+          />
         </div>
       </div>
 
-      <!-- KAFIĆ -->
-      <div class="flex-item" @click="goToSection('kafici')">
-        <img :src="kaficImg" alt="Kafić" />
-        <div class="overlay">
-          <h2>Kafići</h2>
-        </div>
-      </div>
+    </section>
 
+   <!-- DRUGI DIO STRANICE -->
+<section ref="infoSection" class="info-section">
+  <div class="content">
+    <h2>Vaš sljedeći siguran izbor</h2>
+    <p>
+      Istražite ugostiteljske objekte koji razumiju vaše potrebe. <br> <br>
+      Odaberite restorane ili kafiće i pronađite mjesta u kojima možete uživati bez brige.
+    </p>
+  </div>
+
+  <!-- KARTICE -->
+  <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
+
+    <!-- RESTORANI -->
+    <div class="col-12 col-md-5">
+      <q-card
+        class="choice-card"
+        clickable
+        @click="$router.push('/restorani')"
+      >
+        <q-img
+          src="src/assets/rijekarestoran.jpg"
+          class="choice-img"
+        >
+          <div class="choice-overlay">
+            <div class="choice-title">Restorani</div>
+          </div>
+        </q-img>
+      </q-card>
     </div>
 
+    <!-- KAFIĆI -->
+    <div class="col-12 col-md-5">
+      <q-card
+        class="choice-card"
+        clickable
+        @click="$router.push('/kafici')"
+      >
+        <q-img
+          src="src/assets/kaficrijeka.jpg"
+          class="choice-img"
+        >
+          <div class="choice-overlay">
+            <div class="choice-title">Kafići</div>
+          </div>
+        </q-img>
+      </q-card>
+    </div>
+
+  </div>
+</section>
 
 
   </q-page>
-
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
-// import slika iz assets
-import restoranImg from 'src/assets/rijekarestoran.jpg'
-import kaficImg from 'src/assets/kaficrijeka.jpg'
+const infoSection = ref(null)
 
-const router = useRouter()
-
-function goToSection(section) {
-  router.push(`/${section}`)
+const scrollToInfo = () => {
+  infoSection.value?.scrollIntoView({
+    behavior: 'smooth'
+  })
 }
 </script>
 
-<style scoped>
-.flex-container {
-  display: flex;
-  gap: 16px; /* razmak između kartica */
-  justify-content: center;
-  align-items: stretch;
-  flex-wrap: wrap; /* da bude responsive na manjim ekranima */
+<style lang="scss" scoped>
+/* FULL SCREEN */
+.home-page {
+  min-height: 100vh;
 }
 
-.flex-item {
-  position: relative;
-  width: 45%;  /* svaka kartica zauzima skoro pola ekrana */
-  cursor: pointer;
-  overflow: hidden;
-  border-radius: 8px;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.flex-item:hover {
-  transform: scale(1.03);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-}
-
-.flex-item img {
+/* HERO */
+.hero {
   width: 100%;
-  height: 300px;
-  object-fit: cover;
-  display: block;
+  height: 100vh;
 }
 
-.overlay {
-  position: absolute;
-  bottom: 0;
-  background: rgba(0,0,0,0.4);
-  width: 100%;
-  text-align: center;
-  padding: 10px;
+/* LIJEVA STRANA */
+.left-side {
+  background-color: #ffffff;
 }
 
-.overlay h2 {
+/* LOGO */
+.logo-img {
+  width: 75%;
+  max-width: 800px;
+  min-width: 200px;
+}
+
+/* DESNA STRANA */
+.right-side {
+  background-color: $primary;
+  padding: 80px;
   color: white;
-  margin: 0;
 }
+
+.button {
+  color: $primary;
+  background-color: #ffffff;
+}
+
+/* TEKST */
+.text-container {
+  max-width: 500px;
+  text-align: left;
+}
+
+.description {
+  font-size: 22px;
+  line-height: 1.7;
+}
+
+/* DRUGI DIO */
+.info-section {
+  min-height: 100vh;
+  padding: 80px 20px;
+  background-color: #ffffff;
+}
+
+.content {
+  max-width: 900px;
+  margin: auto;
+  text-align: center;
+}
+
+.content h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .hero {
+    flex-wrap: wrap;
+  }
+
+  .right-side {
+    padding: 40px 20px;
+  }
+
+  .description {
+    font-size: 18px;
+  }
+}
+
+.cards-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* KARTICA */
+.choice-card {
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.choice-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* SLIKA */
+.choice-img {
+  height: 320px;
+}
+
+/* OVERLAY */
+.choice-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* NASLOV */
+.choice-title {
+  color: white;
+  font-size: 36px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
 </style>

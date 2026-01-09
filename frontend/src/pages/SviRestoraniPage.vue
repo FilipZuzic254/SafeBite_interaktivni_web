@@ -220,7 +220,6 @@ const stars = ref(4);
   font-size: 22px;
   font-style: italic;
   color: #333;
-  font-family: "Trebuchet MS", sans-serif;
   max-width: 900px;
   margin: 25px auto;
   line-height: 1.6;
