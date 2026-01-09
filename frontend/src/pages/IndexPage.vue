@@ -1,9 +1,9 @@
 <template>
-  <q-page class="flex flex-center">
+  <q-page class=" flex-center">
     <img
-      alt="Quasar logo"
-      src="~assets/quasar-logo-vertical.svg"
-      style="width: 200px; height: 200px"
+      alt="pocetna"
+      src="~assets/pozadina5.png"
+      style="width: 100%; height:100vh"
     />
   </q-page>
 </template>
