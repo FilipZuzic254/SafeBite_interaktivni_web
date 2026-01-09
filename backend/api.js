@@ -1087,57 +1087,95 @@ app.get("/admin", (req, res) => {
 
 // ispis objekata
 
-app.get("/objekti", (req, res) => { 
+//app.get("/objekti", (req, res) => { 
 
     // povlaci query ako je unesen ( /objekti?vlasnikID=2&objektID=2 )
-    const {vlasnikID, objektID} = req.query;
+   // const {vlasnikID, objektID} = req.query;
 
-    console.log(vlasnikID, objektID);
+   // console.log(vlasnikID, objektID);
 
     // provjerava ukoliko je unesen req.query
     // ako nije sql query nema WHERE
-    if (isNaN(vlasnikID) && isNaN(objektID)){
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt;';
+    //if (isNaN(vlasnikID) && isNaN(objektID)){
+       // const sqlQuery = 'SELECT * FROM Poslovni_objekt;';
 
-        db.query(sqlQuery, (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, (err, result) => {
+            //if (err) {
+             //   console.error('Greška pri dohvatu podataka:', err);
+               // return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
-    }
+            //res.json(result);
+        //})
+    //}
     // ako je unesen samo vlasnikID sql query ima WHERE ID_vlasnika = ?
-    else if (isNaN(objektID)) {
+    //else if (isNaN(objektID)) {
         // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_vlasnika = ?;';
+      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_vlasnika = ?;';
 
-        db.query(sqlQuery, [Number(vlasnikID)], (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, [Number(vlasnikID)], (err, result) => {
+          //  if (err) {
+            //    console.error('Greška pri dohvatu podataka:', err);
+              //  return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
-    }
+            //res.json(result);
+      //  })
+    //}
     // ako je unesen samo objektID sql query ima WHERE ID_objekta = ?
-    else if (isNaN(vlasnikID)) {
+    //else if (isNaN(vlasnikID)) {
         // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_objekta = ?;';
+      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_objekta = ?;';
 
-        db.query(sqlQuery, [Number(objektID)], (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, [Number(objektID)], (err, result) => {
+          //  if (err) {
+            //    console.error('Greška pri dohvatu podataka:', err);
+              //  return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
+            //res.json(result);
+        //})
+    //}
+
+//})
+
+app.get("/objekti", (req, res) => { 
+    const { vlasnikID, objektID, tip } = req.query;
+
+    let sqlQuery = `
+        SELECT p.*, ROUND(AVG(k.ocjena),1) AS prosjecna_ocjena
+        FROM Poslovni_objekt p
+        LEFT JOIN Komentar k ON p.ID_objekta = k.ID_objekta
+        WHERE 1=1
+    `;
+
+    const params = [];
+
+    if (!isNaN(vlasnikID)) {
+        sqlQuery += ' AND p.ID_vlasnika = ?';
+        params.push(Number(vlasnikID));
     }
 
-})
+    if (!isNaN(objektID)) {
+        sqlQuery += ' AND p.ID_objekta = ?';
+        params.push(Number(objektID));
+    }
+
+    if (tip) {
+        sqlQuery += ' AND p.Tip_objekta = ?';
+        params.push(tip); // tip = "Kafić"
+    }
+
+    sqlQuery += ' GROUP BY p.ID_objekta;';
+
+    db.query(sqlQuery, params, (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu objekata:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+        res.json(result);
+    });
+});
 
 
 // ispis vlasnika objekta
@@ -1379,10 +1417,6 @@ app.get("/korisnik/:id", (req, res) => {
 
 })
 
-app.listen(port, () => {
-    console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
-});
-
 
 // login korisnika
 
@@ -1408,3 +1442,108 @@ app.post("/korisnik/prijava", (req, res) => {
         res.json({ message: "Login uspješan", user: result[0] });
     });
 });
+
+// login vlasnika objekta
+app.post("/vlasnik/prijava", (req, res) => {
+    const { Email_vlasnika, Lozinka_vlasnika } = req.body;
+
+    // provjera da su oba polja unesena
+    if (!Email_vlasnika || !Lozinka_vlasnika) {
+        return res.status(400).json({ message: "Unesite email i lozinku." });
+    }
+
+    // SQL query za provjeru vlasnika
+    const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE Email_vlasnika = ? AND Lozinka_vlasnika = ?';
+    db.query(sqlQuery, [Email_vlasnika, Lozinka_vlasnika], (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a vlasnika:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Email ili lozinka nisu ispravni" });
+        }
+
+        // Login uspješan
+        res.json({ message: "Login uspješan", user: result[0] });
+    });
+});
+
+
+
+app.listen(port, () => {
+    console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
+});
+app.get('/korisnik/profil/:id', (req, res) => {
+  const { id } = req.params
+
+  console.log('Zahtjev za profil korisnika ID:', id)
+
+  // 1️⃣ Dohvat osnovnih podataka korisnika
+  const sqlKorisnik = `
+    SELECT 
+      Ime_korisnika,
+      Prezime_korisnika,
+      Email_korisnika,
+      Korisnicko_ime
+    FROM Korisnik
+    WHERE ID_korisnika = ?
+  `
+
+  // 2️⃣ Dohvat prehrambenih intolerancija (samo nazivi)
+  const sqlIntolerancije = `
+    SELECT pi.Naziv_pi
+    FROM PI_korisnika pik
+    JOIN Prehrambena_intolerancija pi 
+      ON pik.ID_pi = pi.ID_pi
+    WHERE pik.ID_korisnika = ?
+  `
+
+  // 3️⃣ Dohvat komentara korisnika + naziv objekta za svaki komentar
+  const sqlKomentari = `
+    SELECT 
+      k.ID_komentara,
+      k.Sadrzaj_komentara,
+      k.Ocjena,
+      po.Ime_objekta
+    FROM Komentar k
+    JOIN Poslovni_objekt po 
+      ON k.ID_objekta = po.ID_objekta
+    WHERE k.ID_korisnika = ?
+  `
+
+  // ---- izvršavanje ----
+  db.query(sqlKorisnik, [id], (err, korisnikResult) => {
+    if (err) {
+      console.error('Greška pri dohvatu korisnika:', err)
+      return res.status(500).json({ message: 'Greška pri dohvatu korisnika', error: err })
+    }
+
+    if (korisnikResult.length === 0) {
+      return res.status(404).json({ message: 'Korisnik ne postoji' })
+    }
+
+    db.query(sqlIntolerancije, [id], (err2, intolerancijeResult) => {
+      if (err2) {
+        console.error('Greška pri dohvatu intolerancija:', err2)
+        return res.status(500).json({ message: 'Greška pri dohvatu intolerancija', error: err2 })
+      }
+
+      db.query(sqlKomentari, [id], (err3, komentariResult) => {
+        if (err3) {
+          console.error('Greška pri dohvatu komentara:', err3)
+          return res.status(500).json({ message: 'Greška pri dohvatu komentara', error: err3 })
+        }
+
+        // vraćamo JSON s korisnikom, njegovim intolerancijama i komentarima
+        res.json({
+          korisnik: korisnikResult[0],
+          intolerancije: intolerancijeResult.map(r => r.Naziv_pi), // samo nazivi
+          komentari: komentariResult // sadrži: ID_komentara, Sadrzaj_komentara, Ocjena, Ime_objekta
+        })
+      })
+    })
+  })
+})
+
+
