@@ -66,9 +66,6 @@
           <q-item-section>Unos komentara</q-item-section>
         </q-item>
         -->
-        <q-item v-if="token && token.uloga === 'korisnik'" clickable v-ripple to="/unosKomentara">
-          <q-item-section>Unos komentara</q-item-section>
-        </q-item>
 
         <!-- Unos jela – vlasnik i admin -->
         <q-item v-if="token && token.uloga === 'vlasnik'" clickable v-ripple to="/unosJela">
@@ -107,6 +104,7 @@
           </q-list>
         </q-expansion-item>
 
+        
         <!-- Logout – ako je prijavljen -->
         <q-item v-if="token" clickable v-ripple @click="logout">
           <q-item-section avatar>
@@ -114,7 +112,6 @@
           </q-item-section>
           <q-item-section>Odjava</q-item-section>
         </q-item>
-
       </q-list>
     </q-drawer>
 
@@ -123,6 +120,13 @@
       <router-view />
     </q-page-container>
   </q-layout>
+
+  <!-- PRAVI FOOTER KOJI SE VIDI TEK KAD SE SKROLLA DO DNA -->
+  <footer class="page-footer text-white">
+    <div class="footer-content text-center">
+      SafeBite
+    </div>
+  </footer>
 </template>
 
 <script setup>
@@ -154,12 +158,18 @@ function logout() {
 }
 </script>
 
-<style>
+<style lang="scss">
 .top-drawer {
   position: absolute;
   top: 0;
   height: auto;
   max-height: none;
   border-radius: 0 0 12px 0;
+}
+
+.page-footer {
+  background-color: $primary; // tvoja zelena #088e35
+  padding: 16px 0;
+  width: 100%;
 }
 </style>

@@ -1,4 +1,3 @@
-<!-- Petra Grgić-->
 <template>
   <q-page class="q-pa-md flex flex-center">
     <q-card style="width: 700px">
@@ -37,7 +36,7 @@
           text-color="white"
           class="q-mr-sm q-mb-sm"
         >
-          {{ pi.Naziv_pi }}
+          {{ pi.Naziv_pi || pi }} <!-- podrška za niz stringova ili objekata -->
         </q-chip>
       </q-card-section>
 
@@ -91,14 +90,16 @@ const error = ref(null)
 
 onMounted(async () => {
   try {
-    // ID korisnika koji je spremljen nakon prijave
-    const userId = 2
-
-    if (!userId) {
+    // Dohvat tokena iz localStorage
+    const token = JSON.parse(localStorage.getItem('token'))
+    if (!token || !token.id) {
       error.value = 'Korisnik nije prijavljen'
       return
     }
 
+    const userId = token.id
+
+    // Dohvat profila korisnika
     const response = await axios.get(
       `http://localhost:3000/korisnik/profil/${userId}`
     )
