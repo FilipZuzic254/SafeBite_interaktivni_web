@@ -16,10 +16,10 @@
     </p>
   </div>
 
-  <!-- Kartice -->
+  <!-- Kartice a-->
   <div class="q-pa-md row justify-center items-start q-gutter-lg">
 
-    <!-- KARTICA 1 -->
+    <!-- KARTICA 1 a -->
     <q-card class="my-card cafe-card" flat bordered>
       <q-img src="src/assets/kafic1.jpg" class="card-img" />
 

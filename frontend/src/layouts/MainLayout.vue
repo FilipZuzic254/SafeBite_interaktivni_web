@@ -81,6 +81,21 @@
 
         <!-- Profil -->
         <q-item v-if="token" clickable v-ripple to="/profil">Profil</q-item>
+        <!-- Profil Korisnika -->
+        <q-item clickable v-ripple to="/profilKorisnik">
+          <q-item-section>Profil Korisnik</q-item-section>
+        </q-item>
+
+        <!-- Profil Vlasnik -->
+        <q-item clickable v-ripple to="/profilVlasnik">
+          <q-item-section>Profil Vlasnik</q-item-section>
+        </q-item>
+
+         <!-- Profil Admin -->
+        <q-item clickable v-ripple to="/profilAdmin">
+          <q-item-section>Profil Admin</q-item-section>
+        </q-item>
+
       </q-list>
     </q-drawer>
 
