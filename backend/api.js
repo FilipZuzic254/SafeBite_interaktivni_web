@@ -1235,6 +1235,29 @@ app.get("/objekti", (req, res) => {
     });
 });
 
+//jelovnik
+// Dohvat jelovnika za određeni objekt/kafić
+app.get("/jelovnik", (req, res) => {
+    const { objektID } = req.query; // ID od kafića
+
+    if (!objektID) {
+        return res.status(400).send("Nedostaje ID objekta");
+    }
+
+    const sqlQuery = `
+        SELECT *
+        FROM Stavka_jelovnika
+        WHERE ID_objekta = ?
+    `;
+
+    db.query(sqlQuery, [Number(objektID)], (err, result) => {
+        if (err) {
+            console.error("Greška pri dohvatu jelovnika:", err);
+            return res.status(500).send("Greška na serveru");
+        }
+        res.json(result);
+    });
+});
 
 // ispis vlasnika objekta
 
