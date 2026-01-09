@@ -39,7 +39,7 @@ app.use("/uploads", express.static("uploads"));
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const folder = `./uploads/restorani/${req.body.id}`;
+        const folder = `./uploads/${req.body.id}`;
 
         if (!fs.existsSync(folder)) {
         fs.mkdirSync(folder, { recursive: true });
@@ -56,49 +56,108 @@ const upload = multer({ storage });
 
 
 
-app.post("/test/create", upload.single("image"), (req, res) => {
+app.post("/img/create/galerija", upload.single("image"), (req, res) => {
     const { id } = req.body;
 
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const imagePath = `/uploads/restorani/${id}/${req.file.filename}`;
+    const imagePath = `/uploads/${id}/galerija/${req.file.filename}`;
 
     console.log("Saved image:", imagePath);
 
-    res.json({
-        message: "Slika uspješno uploadana",
-        image_path: imagePath
-    });
+    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
+
+    db.query(sql, [imagePath, id], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
+    }
+
+    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+  });
 });
 
 
-/*
-app.post("/test/create/", (req, res) => {
-    const {id, image} = req.body;
-
-    const folderPath = "./uploads/restorani/";
 
 
-    try {
-        if (!fs.existsSync(folderPath+id)) {
-            fs.mkdirSync(folderPath+id);
+app.put("/img/create/objekt", upload.single("image"), (req, res) => {
+    const { id } = req.body;
 
-            console.log("Folder uspjesno kreiran");
-        }
-
-    } catch (err) {
-        console.error(err);
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
     }
 
-    console.log(image)
+    /* Brisanje stare slike */
 
-    res.json({message: image});
-})
-*/
+    db.query("SELECT Slika_objekta FROM Poslovni_objekt WHERE ID_objekta=?", [id], (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu podataka:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+        else if (result[0].Slika_objekta != null) {
+            fs.rm(`.${result[0].Slika_objekta}`, { recursive: true, force: true }, err => {
+                if (err) {
+                    throw err;
+                }
 
-app.get("/test/delete/:id", (req, res) => {
+                console.log(`.${result[0].Slika_objekta}`)
+            });
+        }
+        else {
+            console.log(`.${result[0].Slika_objekta}`)
+        }
+
+        
+    })
+    
+
+
+    /* Dodavanje nove slike */
+
+    const imagePath = `/uploads/${id}/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    const sqlUpdate = 'UPDATE Poslovni_objekt SET Slika_objekta=? WHERE ID_objekta=?';
+
+    db.query(sqlUpdate, [imagePath, id], (err, result) => {
+        if (err) {
+        console.error('Greška pri upisu u bazu:', err);
+        return res.status(500).json({ message: 'Greška na serveru.' });
+        }
+
+        res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+    });
+});
+
+app.put("/img/create/stavka", upload.single("image"), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imagePath = `/uploads/${id}/stavke/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
+
+    db.query(sql, [imagePath, id], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
+    }
+
+    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+  });
+});
+
+
+
+app.get("/img/delete/objekt/:id", (req, res) => {
     const {id} = req.params;
 
     const folderPath = "./uploads/restorani/";
@@ -110,7 +169,6 @@ app.get("/test/delete/:id", (req, res) => {
 
         res.json({message: `${folderPath+id} is deleted!`});
     });
-
 })
 
 
@@ -1480,7 +1538,7 @@ app.get('/korisnik/profil/:id', (req, res) => {
 
   console.log('Zahtjev za profil korisnika ID:', id)
 
-  // 1️⃣ Dohvat osnovnih podataka korisnika
+  // Dohvat osnovnih podataka korisnika
   const sqlKorisnik = `
     SELECT 
       Ime_korisnika,
@@ -1491,7 +1549,7 @@ app.get('/korisnik/profil/:id', (req, res) => {
     WHERE ID_korisnika = ?
   `
 
-  // 2️⃣ Dohvat prehrambenih intolerancija (samo nazivi)
+  // Dohvat prehrambenih intolerancija (samo nazivi)
   const sqlIntolerancije = `
     SELECT pi.Naziv_pi
     FROM PI_korisnika pik
@@ -1500,7 +1558,7 @@ app.get('/korisnik/profil/:id', (req, res) => {
     WHERE pik.ID_korisnika = ?
   `
 
-  // 3️⃣ Dohvat komentara korisnika + naziv objekta za svaki komentar
+  // Dohvat komentara korisnika + naziv objekta za svaki komentar
   const sqlKomentari = `
     SELECT 
       k.ID_komentara,
@@ -1546,5 +1604,46 @@ app.get('/korisnik/profil/:id', (req, res) => {
     })
   })
 })
+
+app.get('/vlasnik/profil/:id', (req, res) => {
+  const { id } = req.params;
+
+  const sqlVlasnik = `
+    SELECT Ime_vlasnika, Prezime_vlasnika, Email_vlasnika
+    FROM Vlasnik_objekta
+    WHERE ID_vlasnika = ?
+  `;
+
+  const sqlObjekti = `
+    SELECT 
+      po.ID_objekta,
+      po.Ime_objekta,
+      po.Adresa_objekta,
+      po.Tip_objekta,
+      po.Opis_objekta,
+      po.Slika_objekta,
+      IFNULL(AVG(k.Ocjena), 0) AS prosjecna_ocjena
+    FROM Poslovni_objekt po
+    LEFT JOIN Komentar k ON po.ID_objekta = k.ID_objekta
+    WHERE po.ID_vlasnika = ?
+    GROUP BY po.ID_objekta
+  `;
+
+  db.query(sqlVlasnik, [id], (err, vlasnikResult) => {
+    if (err) return res.status(500).json({ message: 'Greška vlasnik', err })
+    if (vlasnikResult.length === 0) return res.status(404).json({ message: 'Vlasnik ne postoji' })
+
+    db.query(sqlObjekti, [id], (err2, objektiResult) => {
+      if (err2) return res.status(500).json({ message: 'Greška objekti', err2 })
+
+      res.json({
+        vlasnik: vlasnikResult[0],
+        objekti: objektiResult
+      })
+    })
+  })
+})
+
+
 
 
