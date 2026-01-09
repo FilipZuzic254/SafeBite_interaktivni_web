@@ -757,33 +757,36 @@ app.post('/jelovnici', (req, res) => {
 
 // unos poslovnog objekta
 
-app.post("/objekti", (req, res) => { 
+app.post("/objekti", (req, res) => {
+    const unos = req.body;
 
-    // povlaci json koji salje aplikacija
-    const unos=req.body;
-
-    // provjerava ako su uneseni podaci u jsonu
-    if (!unos.Ime_objekta || !unos.Adresa_objekta || !unos.Opis_objekta || !unos.ID_admina || !unos.ID_vlasnika || !unos.Postanski_broj || !unos.Tip_objekta || !unos.Email_objekta || !unos.OIB_objekta) {
-        return res.status(400).send("Missing required fields.");
+    if (!unos.Ime_objekta || !unos.Adresa_objekta || !unos.Opis_objekta ||
+        (!unos.ID_admina && !unos.ID_vlasnika) || !unos.Postanski_broj || !unos.Tip_objekta ||
+        !unos.Email_objekta || !unos.OIB_objekta) {
+        return res.status(400).json({ message: "Missing required fields." });
     }
 
-    console.log(req.body);
-
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = 'INSERT INTO Poslovni_objekt VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-
-    // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlQuery, [unos.Ime_objekta, unos.Adresa_objekta, unos.Opis_objekta, unos.ID_admina, unos.ID_vlasnika, unos.Postanski_broj, unos.Tip_objekta, unos.Email_objekta, unos.OIB_objekta], (err, result) => {
+    const sqlQuery = 'INSERT INTO Poslovni_objekt(ID_objekta, Ime_objekta, Adresa_objekta, Opis_objekta, ID_admina, ID_vlasnika, Postanski_broj, Tip_objekta, Email_objekta, OIB_objekta) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    db.query(sqlQuery, [
+        unos.Ime_objekta,
+        unos.Adresa_objekta,
+        unos.Opis_objekta,
+        unos.ID_admina,
+        unos.ID_vlasnika,
+        unos.Postanski_broj,
+        unos.Tip_objekta,
+        unos.Email_objekta,
+        unos.OIB_objekta
+    ], (err, result) => {
         if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
+            console.error(err);
+            return res.status(500).json({ message: "Greška na serveru" });
         }
 
-        // vraca rezultat ako je uspjesno upisano
-        res.json(result);
-    })
+        res.json({ message: "Objekt uspješno dodan!" });
+    });
+});
 
-})
 
 
 // unos vlasnika poslovnog objekta

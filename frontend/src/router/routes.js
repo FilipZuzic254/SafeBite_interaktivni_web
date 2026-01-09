@@ -17,6 +17,7 @@ const routes = [
       { path: '/profilAdmin', component: () => import('pages/AdminProfilPage.vue') }, 
       { path: '/profilVlasnik', component: () => import('pages/VlasnikProfilPage.vue') },
       { path: '/unosObjekta', component: () => import('pages/UnosObjektaPage.vue') },
+      
 
 
       { path: '/test', component: () => import('pages/TestPage.vue') }
