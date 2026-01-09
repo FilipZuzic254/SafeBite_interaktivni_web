@@ -53,7 +53,7 @@ const submitForm = async () => {
     uloga: 'admin'
     }
     localStorage.setItem('token', JSON.stringify(tokenObj))
-    window.dispatchEvent(new CustomEvent('prijavaAdmin', { detail: tokenObj }))
+    window.dispatchEvent(new CustomEvent('prijava', { detail: tokenObj }))
 
 
     // Navigacija na admin stranicu

@@ -1379,10 +1379,6 @@ app.get("/korisnik/:id", (req, res) => {
 
 })
 
-app.listen(port, () => {
-    console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
-});
-
 
 // login korisnika
 
@@ -1408,3 +1404,37 @@ app.post("/korisnik/prijava", (req, res) => {
         res.json({ message: "Login uspješan", user: result[0] });
     });
 });
+
+// login vlasnika objekta
+app.post("/vlasnik/prijava", (req, res) => {
+    const { Email_vlasnika, Lozinka_vlasnika } = req.body;
+
+    // provjera da su oba polja unesena
+    if (!Email_vlasnika || !Lozinka_vlasnika) {
+        return res.status(400).json({ message: "Unesite email i lozinku." });
+    }
+
+    // SQL query za provjeru vlasnika
+    const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE Email_vlasnika = ? AND Lozinka_vlasnika = ?';
+    db.query(sqlQuery, [Email_vlasnika, Lozinka_vlasnika], (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a vlasnika:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Email ili lozinka nisu ispravni" });
+        }
+
+        // Login uspješan
+        res.json({ message: "Login uspješan", user: result[0] });
+    });
+});
+
+
+
+app.listen(port, () => {
+    console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
+});
+
+

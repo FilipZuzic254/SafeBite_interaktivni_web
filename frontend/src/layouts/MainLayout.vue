@@ -48,7 +48,7 @@
 
         <!-- Unos jela – admin + vlasnik -->
         <q-item
-          v-if="token && (token.uloga === 'admin' || token.uloga === 'vlasnik')"
+          v-if="token && (token.uloga === 'admin' || token.uloga === 'vlasnik' || token.uloga === 'korisnik')"
           clickable
           v-ripple
           to="/unosJela"
@@ -115,7 +115,7 @@ const router = useRouter()
 
 // reactive token koji prati localStorage
 const token = ref(JSON.parse(localStorage.getItem('token')) || null)
-window.addEventListener('prijavaAdmin', (event) => {
+window.addEventListener('prijava', (event) => {
   token.value = event.detail
 })
 
