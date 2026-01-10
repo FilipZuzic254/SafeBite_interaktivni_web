@@ -1,3 +1,4 @@
+<!-- Elena Jašarević-->
 <template>
   <div class="q-pa-md">
     <!-- Parallax slika grada -->

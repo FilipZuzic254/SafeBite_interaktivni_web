@@ -1,3 +1,4 @@
+<!-- Elena Jašarević-->
 <template>
   <div class="q-pa-md">
     <h1 class="naslov">{{ kafic.Ime_objekta }}</h1>
