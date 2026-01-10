@@ -2,15 +2,14 @@
 <template>
   <div class="q-pa-md">
     <!-- Parallax slika grada -->
-    <q-card class="my-card">
-      <q-parallax src="src/assets/rijeka.jpg" :height="550" />
+    <q-card flat class="my-card">
+      <q-img src="src/assets/Kafici.png" :height="400" />
     </q-card>
 
     <!-- Naslov i citat -->
     <div class="q-pa-md text-center naslov-container">
-      <h1 class="naslov">Grad Rijeka</h1>
       <p class="citat">
-        Rijeka je živahan hrvatski grad prepun šarmantnih kafića u kojima se uvijek može uživati u opuštenoj atmosferi i dobrom društvu.
+        “Kava je ritual, a kafić je mjesto gdje počinje dan s osmijehom.”
       </p>
     </div>
 

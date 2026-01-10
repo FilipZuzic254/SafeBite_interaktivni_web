@@ -17,7 +17,11 @@ const routes = [
       { path: '/profilAdmin', component: () => import('pages/AdminProfilPage.vue') }, 
       { path: '/profilVlasnik', component: () => import('pages/VlasnikProfilPage.vue') },
       { path: '/unosObjekta', component: () => import('pages/UnosObjektaPage.vue') },
-      {path: '/jelovnik', name: 'jelovnik', component:() => import('pages/JelovnikPage.vue')},    
+      {path: '/jelovnik', component:() => import('pages/JelovnikPage.vue')}, 
+      {path: '/pregledJelovnika', component:() => import('pages/PregledJelovnikaPage.vue')}, 
+      {path: '/unosJela', component:() => import('pages/UnosJelaPage.vue')},  
+      {path: '/unosKorisnikPI', component:() => import('pages/UnosKorisnikoveIntolerancijePage.vue')}, 
+      {path: '/uredivanjeJela', component:() => import('pages/UredivanjeJelaPage.vue')}, 
       { path: '/test', component: () => import('pages/TestPage.vue') }
     ],
   },

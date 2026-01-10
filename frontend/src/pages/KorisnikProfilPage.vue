@@ -1,7 +1,7 @@
 <!-- Petra Grgić-->
 <template>
   <q-page class="q-pa-md flex flex-center">
-    <q-card style="width: 700px">
+    <q-card style="width: 700px"> <!-- glavni dio stranice --> 
 
       <!-- Naslov -->
       <q-card-section>
@@ -39,6 +39,17 @@
         >
           {{ pi.Naziv_pi || pi }} <!-- podrška za niz stringova ili objekata -->
         </q-chip>
+
+        <!-- Gumb za unos nove intolerancije -->
+        <div class="q-mt-md flex justify-center"> <!-- srednje margine, centar -->
+          <q-btn
+            color="primary"
+            label="Unos svojih prehrambenih intelernacija"
+            icon="add"
+            @click="dodajIntoleranciju"
+            rounded
+          /> <!-- na klik poziva funkciju koja otvara stranicu za dodavanje nove intolerancije-->
+        </div>
       </q-card-section>
 
       <q-separator />
@@ -81,9 +92,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 // reaktivni podaci
+const router = useRouter()
 const korisnik = ref({})
 const intolerancije = ref([])
 const komentari = ref([])
@@ -100,7 +113,7 @@ onMounted(async () => {
 
     const userId = token.id
 
-    // Dohvat profila korisnika
+    // Dohvat api-ja profil korisnika
     const response = await axios.get(
       `http://localhost:3000/korisnik/profil/${userId}`
     )
@@ -114,6 +127,10 @@ onMounted(async () => {
     error.value = 'Greška pri dohvaćanju profila.'
   }
 })
+
+function dodajIntoleranciju() {
+  router.push('/unosKorisnikPI') 
+}
 </script>
 
 <style scoped>

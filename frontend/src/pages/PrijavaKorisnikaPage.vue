@@ -7,7 +7,7 @@
         <div class="text-h6">Prijava korisnika</div>
       </q-card-section>
 
-      <!-- Forma za login -->
+      <!-- Forma za prijavu -->
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="ObrazacPrijava">
           <!-- Polja -->

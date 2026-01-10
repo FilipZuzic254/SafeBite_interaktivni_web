@@ -45,7 +45,7 @@ const lozinka = ref('')
 const intolerancije = ref([])
 
 const loading = ref(false) //animacija gumba loading
-const error = ref(null) //teskz grške
+const error = ref(null) //teskt grške
 const success = ref(null) //tekst o uspješnoj registraciji
 
 // ref na obrazac
