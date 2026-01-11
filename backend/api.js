@@ -800,38 +800,106 @@ app.post('/jelovnici', (req, res) => {
   );
 });
 
+// DOHVAT SVIH JELA (za dropdown)
+app.get('/jelovnici', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT ID_stavke, Naziv_stavke FROM Stavka_jelovnika"
+    )
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
-// unos poslovnog objekta
 
-app.post("/objekti", (req, res) => {
-    const unos = req.body;
+// DOHVAT JEDNOG JELA PO ID
+app.get('/jelovnici/:id', async (req, res) => {
 
-    if (!unos.Ime_objekta || !unos.Adresa_objekta || !unos.Opis_objekta ||
-        (!unos.ID_admina && !unos.ID_vlasnika) || !unos.Postanski_broj || !unos.Tip_objekta ||
-        !unos.Email_objekta || !unos.OIB_objekta) {
-        return res.status(400).json({ message: "Missing required fields." });
+  const id = req.params.id
+
+  try {
+    const [stavka] = await db.query(
+      "SELECT * FROM Stavka_jelovnika WHERE ID_stavke = ?",
+      [id]
+    )
+
+    const [pi] = await db.query(
+      "SELECT ID_pi FROM PI_u_stavci_jelovnika WHERE ID_stavke = ?",
+      [id]
+    )
+
+    res.json({
+      ...stavka[0],
+      Intolerancije: pi.map(p => p.ID_pi)
+    })
+
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
+
+
+// UPDATE JELA
+app.put('/jelovnici/:id', async (req, res) => {
+
+  const id = req.params.id
+  const d = req.body
+
+  try {
+
+    await db.query(`
+      UPDATE Stavka_jelovnika SET
+        Naziv_stavke=?,
+        Cijena_stavke=?,
+        Sastav_stavke=?,
+        ID_objekta=?,
+        ID_admina=?,
+        ID_vlasnika=?
+      WHERE ID_stavke=?
+    `,[
+      d.Naziv_stavke,
+      d.Cijena_stavke,
+      d.Sastav_stavke,
+      d.ID_objekta,
+      d.ID_admina,
+      d.ID_vlasnika,
+      id
+    ])
+
+    // BRIŠI STARE INTOLERANCIJE
+    await db.query(
+      "DELETE FROM PI_u_stavci_jelovnika WHERE ID_stavke=?",
+      [id]
+    )
+
+    // UBACI NOVE
+    for(const pi of d.Intolerancije){
+      await db.query(
+        "INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi) VALUES (?,?)",
+        [id, pi]
+      )
     }
 
-    const sqlQuery = 'INSERT INTO Poslovni_objekt(ID_objekta, Ime_objekta, Adresa_objekta, Opis_objekta, ID_admina, ID_vlasnika, Postanski_broj, Tip_objekta, Email_objekta, OIB_objekta) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    db.query(sqlQuery, [
-        unos.Ime_objekta,
-        unos.Adresa_objekta,
-        unos.Opis_objekta,
-        unos.ID_admina,
-        unos.ID_vlasnika,
-        unos.Postanski_broj,
-        unos.Tip_objekta,
-        unos.Email_objekta,
-        unos.OIB_objekta
-    ], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Greška na serveru" });
-        }
+    res.json({ message: "Jelo uspješno ažurirano" })
 
-        res.json({ message: "Objekt uspješno dodan!" });
-    });
-});
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
+
+
+// DOHVAT INTOLERANCIJA
+app.get('/pi', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija"
+    )
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
 
 
