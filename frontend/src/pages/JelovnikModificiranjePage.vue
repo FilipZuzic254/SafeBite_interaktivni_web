@@ -11,6 +11,7 @@
         text-color="white"
         label="Dodaj novu stavku jelovnika"
         rounded
+        class="q-mb-md"
         @click="dodajNovuStavku"
       />
     </div>
@@ -79,6 +80,17 @@
             <span class="komentar-ocjena">({{ kom.Ocjena }}/5)</span>
           </div>
           <div class="komentar-text">{{ kom.Sadrzaj_komentara }}</div>
+
+          <!-- Gumb za brisanje komentara samo za admina -->
+          <div v-if="isAdmin" class="q-mt-md text-center">
+            <q-btn
+              color="negative"
+              text-color="white"
+              label="Izbriši komentar"
+              rounded
+              @click="confirmDeleteKomentar(kom)"
+            />
+          </div>
         </q-card-section>
       </q-card>
     </div>
@@ -100,18 +112,14 @@ const stavke = ref([]);
 const kafic = ref({});
 const komentari = ref([]);
 
-// ----------------------
-// Dohvat podataka korisnika
-// ----------------------
-const korisnikID = ref(null);
-const korisnikIme = ref("");
+// Provjera admin tokena
+const isAdmin = ref(false);
 
 onMounted(() => {
-  const storedUserID = localStorage.getItem("userID");
-  const storedUserName = localStorage.getItem("userName");
-
-  if (storedUserID) korisnikID.value = Number(storedUserID);
-  if (storedUserName) korisnikIme.value = storedUserName;
+  const token = JSON.parse(localStorage.getItem("token"));
+  if (token && token.role === "admin") {
+    isAdmin.value = true;
+  }
 });
 
 // ----------------------
@@ -149,7 +157,7 @@ const loadKomentari = async () => {
 };
 
 // ----------------------
-// Funkcija za Uredi
+// Funkcija za Uredi stavku
 // ----------------------
 function urediStavku(stavka) {
   router.push({
@@ -159,7 +167,7 @@ function urediStavku(stavka) {
 }
 
 // ----------------------
-// Funkcija za potvrdu brisanja
+// Funkcija za potvrdu brisanja stavke
 // ----------------------
 function confirmDelete(stavka) {
   $q.dialog({
@@ -172,9 +180,7 @@ function confirmDelete(stavka) {
   });
 }
 
-// ----------------------
-// Funkcija za brisanje stavke iz baze
-// ----------------------
+// Brisanje stavke
 const deleteStavku = async (id) => {
   try {
     await axios.delete(`http://localhost:3000/jelovnici/${id}`);
@@ -194,12 +200,45 @@ const deleteStavku = async (id) => {
 };
 
 // ----------------------
+// Funkcija za potvrdu brisanja komentara
+// ----------------------
+function confirmDeleteKomentar(kom) {
+  $q.dialog({
+    title: "Potvrda brisanja",
+    message: `Jeste li sigurni da želite izbrisati komentar od "${kom.Ime_korisnika}"?`,
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    deleteKomentar(kom.ID_komentara);
+  });
+}
+
+// Brisanje komentara
+const deleteKomentar = async (id) => {
+  try {
+    await axios.delete(`http://localhost:3000/komentari/${id}`);
+    komentari.value = komentari.value.filter(k => k.ID_komentara !== id);
+
+    Notify.create({
+      type: "positive",
+      message: "Komentar je uspješno obrisan"
+    });
+  } catch (err) {
+    console.error(err);
+    Notify.create({
+      type: "negative",
+      message: "Greška pri brisanju komentara"
+    });
+  }
+};
+
+// ----------------------
 // Funkcija za dodavanje nove stavke
 // ----------------------
 function dodajNovuStavku() {
   router.push({
     path: "/unosJela",
-    query: { objektID } // šaljemo ID objekta da se zna gdje dodati
+    query: { objektID }
   });
 }
 </script>

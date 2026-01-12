@@ -88,7 +88,7 @@
 
       <!--POPULARNI RESTORANI/KAFIĆI-->
       <div class="content">
-      <h2>Naše preporuke:</h2>
+      <h4>Naše preporuke:</h4>
       <div class="q-pa-md">
         <q-carousel 
           v-model="slide"
@@ -102,17 +102,17 @@
           navigation
           padding
           arrows
-          height="300px"
-          class="bg-primary text-white shadow-1 rounded-borders show-arrows"
+          class="bg-primary text-white rounded-borders show-arrows"
         >
+        
           <q-carousel-slide
             v-for="r in restorani"
             :key="r.ID_objekta"
             :name="r.ID_objekta"
             class="column no-wrap flex-center"
           >
-            <div class="q-mt-md text-center">
-              <h3>{{ r.naziv }}</h3>
+            <div class=" text-center">
+              <h3 class="q-mt-sm">{{ r.naziv }}</h3>
               <p>{{ r.adresa }}</p>
               <p>{{ r.opis }}</p> <!-- tvoji komentari/restoran opisi -->
             </div>
@@ -141,7 +141,7 @@ const scrollToInfo = () => {
 const slide = ref(null)
 
 // ID-evi restorana koje želiš prikazati
-const trazeniID = [1, 3, 5]
+const trazeniID = [1, 3, 5, 6]
 
 onMounted(async () => {
   try {
@@ -158,6 +158,7 @@ onMounted(async () => {
         adresa: r.Adresa_objekta || '',
         opis: r.Opis_objekta || ''
       }))
+
 
     console.log(restorani.value)
     if (restorani.value.length > 0) slide.value = restorani.value[0].ID_objekta
@@ -232,6 +233,11 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
+h4 {
+  text-align: center;
+  
+}
+
 /*RESPONSIVE*/
 @media (max-width: 768px) {
   .hero {
@@ -295,5 +301,6 @@ onMounted(async () => {
 .show-arrows .q-carousel__control {
   opacity: 1 !important;
   visibility: visible !important;
+  pointer-events: all !important;
 }
 </style>

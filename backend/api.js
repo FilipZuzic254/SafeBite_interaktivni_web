@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
 const multer = require('multer')
 
 // Stvaranje veze na mysql
@@ -46,14 +47,6 @@ const storage = multer.diskStorage({
 
     let uploadPath = `./uploads/${id}`;
 
-    // If gallery → put in /gallery
-    if (file.fieldname === "galerija") {
-      uploadPath = uploadPath+'/galerija'
-    }
-    else if (file.filename === "jelovnik") {
-        uploadPath = uploadPath+'/jelovnik'
-    }
-
     // Ensure directory exists
     fs.mkdirSync(uploadPath, { recursive: true });
 
@@ -61,63 +54,13 @@ const storage = multer.diskStorage({
   },
 
   filename: (req, file, cb) => {
-    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const uniqueName = Date.now() + "-" + file.originalname;
 
-    cb(null, `${uniqueName}${file.originalname}`);
+    cb(null, `${uniqueName}`);
   },
 });
 
 const upload = multer({ storage });
-
-
-/* NEDOVRSENO */
-app.post("/img/create/galerija", upload.single("image"), (req, res) => {
-    const { id } = req.body;
-
-    if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const imagePath = `/uploads/${id}/galerija/${req.file.filename}`;
-
-    console.log("Saved image:", imagePath);
-
-    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
-
-    db.query(sql, [imagePath, id], (err, result) => {
-    if (err) {
-      console.error('Greška pri upisu u bazu:', err);
-      return res.status(500).json({ message: 'Greška na serveru.' });
-    }
-
-    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
-  });
-});
-
-
-/* NEDOVRSENO */
-app.put("/img/create/objekt", upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "gallery", maxCount: 10 }]), (req, res) => {
-    const { id } = req.body;
-
-    if (!req.files?.thumbnail) {
-      return res.status(400).json({ message: "Thumbnail is required" });
-    }
-
-    // Thumbnail path
-    const thumbnailPath = `/uploads/${id}/${req.files.thumbnail[0].filename}`;
-
-    // Gallery paths
-    const galleryPaths = (req.files.gallery || []).map(
-      file => `/uploads/${id}/gallery/${file.filename}`
-    );
-
-    res.json({
-      message: "Images uploaded successfully",
-      thumbnail: thumbnailPath,
-      gallery: galleryPaths,
-    });
-  }
-);
 
 
 /* NEDOVRSENO */
@@ -174,47 +117,7 @@ app.put("/img/add/objekt", upload.single("image"), (req, res) => {
     );
 });
 
-/* NEDOVRSENO */
 
-app.put("/img/create/stavka", upload.single("image"), (req, res) => {
-    const { id } = req.body;
-
-    if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const imagePath = `/uploads/${id}/stavke/${req.file.filename}`;
-
-    console.log("Saved image:", imagePath);
-
-    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
-
-    db.query(sql, [imagePath, id], (err, result) => {
-    if (err) {
-      console.error('Greška pri upisu u bazu:', err);
-      return res.status(500).json({ message: 'Greška na serveru.' });
-    }
-
-    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
-  });
-});
-
-
-
-/* NEDOVRSENO */
-app.get("/img/delete/objekt/:id", (req, res) => {
-    const {id} = req.params;
-
-    const folderPath = "./uploads/restorani/";
-
-    fs.rm(folderPath+id, { recursive: true, force: true }, err => {
-        if (err) {
-            throw err;
-        }
-
-        res.json({message: `${folderPath+id} is deleted!`});
-    });
-})
 
 
 /*
@@ -303,9 +206,20 @@ app.delete("/objekti/:id", (req, res) => {
       return res.status(500).json({ message: 'Greška pri brisanju objekta' })
     }
 
-    res.json({ message: 'Objekt uspješno obrisan' })
+        
+    const folderPath = `./uploads/${id}`;
+
+    fs.rm(folderPath, { recursive: true, force: true }, err => {
+        if (err) {
+            throw err;
+        }
+
+    });
+
+    res.json({ message: `Objekt ID ${id} uspješno obrisan.` });
   })
 })
+
 
 
 // brisanje vlasnika
@@ -857,34 +771,84 @@ app.get("/komentari", (req, res) => {
 });
 
 // unos vlasnika poslovnog objekta
+app.post("/vlasnik", async (req, res) => { 
+    const { Ime_vlasnika, Lozinka_vlasnika, Prezime_vlasnika, Email_vlasnika } = req.body;
 
-app.post("/vlasnik", (req, res) => { 
-
-    // povlaci json koji salje aplikacija
-    const unos=req.body;
-
-    // provjerava ako su uneseni podaci u jsonu
-    if (!unos.Ime_vlasnika || !unos.Lozinka_vlasnika || !unos.Prezime_vlasnika || !unos.Email_vlasnika) {
+    // provjera obaveznih polja
+    if (!Ime_vlasnika || !Lozinka_vlasnika || !Prezime_vlasnika || !Email_vlasnika) {
         return res.status(400).send("Missing required fields.");
     }
 
-    console.log(req.body);
+    try {
+        //hashiranje lozinke
+        const hashedPassword = await bcrypt.hash(Lozinka_vlasnika, 10);
 
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = 'INSERT INTO Vlasnik_objekta VALUES (NULL, ?, ?, ?, ?)';
+        // SQL upit, pretpostavljam da je prvi ID auto-increment
+        const sqlQuery = 'INSERT INTO Vlasnik_objekta VALUES (NULL, ?, ?, ?, ?)';
 
-    // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlQuery, [unos.Ime_vlasnika, unos.Lozinka_vlasnika, unos.Prezime_vlasnika, unos.Email_vlasnika], (err, result) => {
+        // šalje hash u bazu
+        db.query(sqlQuery, [Ime_vlasnika, hashedPassword, Prezime_vlasnika, Email_vlasnika], (err, result) => {
+            if (err) {
+                console.error('Greška pri unosu vlasnika:', err);
+                return res.status(500).send("Greška na serveru");
+            }
+
+            res.json({ message: "Vlasnik uspješno registriran", vlasnikId: result.insertId });
+        });
+
+    } catch (err) {
+        console.error("Greška pri hashiranju lozinke:", err);
+        res.status(500).send("Greška na serveru");
+    }
+});
+
+
+
+app.post("/objekti", (req, res) => {
+    const unos = req.body;
+
+
+    // provjerava ako su uneseni podaci u jsonu
+
+    if (!unos.Ime_objekta || !unos.Adresa_objekta || !unos.Opis_objekta ||
+        (!unos.ID_admina && !unos.ID_vlasnika) || !unos.Postanski_broj || !unos.Tip_objekta ||
+        !unos.Email_objekta || !unos.OIB_objekta) {
+        return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    if (unos.ID_admina) {
+        unos.ID_vlasnika=null
+    } else {
+        unos.ID_admina=null        
+    }
+
+
+    const sqlQuery = 'INSERT INTO Poslovni_objekt(ID_objekta, Ime_objekta, Adresa_objekta, Opis_objekta, ID_admina, ID_vlasnika, Postanski_broj, Tip_objekta, Email_objekta, OIB_objekta) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    db.query(sqlQuery, [
+        unos.Ime_objekta,
+        unos.Adresa_objekta,
+        unos.Opis_objekta,
+        unos.ID_admina,
+        unos.ID_vlasnika,
+        unos.Postanski_broj,
+        unos.Tip_objekta,
+        unos.Email_objekta,
+        unos.OIB_objekta
+    ], (err, result) => {
         if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
+            console.error(err);
+            return res.status(500).json({ message: "Greška na serveru" });
         }
 
-        // vraca rezultat ako je uspjesno upisano
-        res.json(result);
-    })
+        const objektID = result.insertId;
 
-})
+        res.json({
+            message: "Objekt uspješno dodan!",
+            id: objektID 
+        });
+    });
+});
+
 
 
 // unos gradova
@@ -950,9 +914,8 @@ app.post("/komentari", (req, res) => {
 
 //Petra Grgić
 // registracija korisnika
-app.post("/korisnik", (req, res) => { 
+app.post("/korisnik", async (req, res) => { 
 
-    // povlaci json koji salje aplikacija i odvaja ga u zasebne varijable
     const {
         Korisnicko_ime,
         Lozinka_korisnika,
@@ -962,77 +925,92 @@ app.post("/korisnik", (req, res) => {
         Intolerancije
     } = req.body;
 
-
-    // provjerava ako su uneseni potrebni podaci u jsonu
-
     if (!Korisnicko_ime || !Lozinka_korisnika || !Ime_korisnika || !Prezime_korisnika || !Email_korisnika) {
-        return res.status(400).json({ message: "Missing required fields." }); //poruka ako fale obavezna polja
+        return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // stvara sql upit, upitnici se zamjenjuju sa podacima iz varijable 
-    const sqlInsertStavka = `
-        INSERT INTO Korisnik 
-        (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
-        VALUES (?, ?, ?, ?, ?)
-    `;
+    try {
+        // HASHIRANJE LOZINKE
+        const hashedPassword = await bcrypt.hash(Lozinka_korisnika, 10);
 
-    // salje upit, zamjenjuje upitnike sa unesenim podacima
-    db.query(sqlInsertStavka, [Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
-        if (err) {
-            console.error("Insert error (menu item):", err);
-            return res.status(500).json({ message: "Error inserting menu item." }); //greska prilikom unosa podataka
-        }
-
-        // povlaci id zadnje unesene stavke
-        const insertKorisnikID = result.insertId;
-
-        // provjerava ako su unesene intolerancije, ako nisu vraca da nema intolerancija
-        if (!Intolerancije || Intolerancije.length === 0) {
-            return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
-        }
-
-        // priprema grupni insert u tablicu PI_korisnika
-        const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
-
-        // stavara sql upit za unos intolerancija
-        const sqlInsertIntolerancije = `
-            INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
-            VALUES ?
+        const sqlInsertStavka = `
+            INSERT INTO Korisnik 
+            (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
+            VALUES (?, ?, ?, ?, ?)
         `;
 
-        // salje upit sa svim intolerancijama (npr. id stavke je 2 pa ce bit VALUES (2, 1), (2, 2)...)
-        db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
-            if (err2) {
-                console.error("Insert error (intolerances):", err2);
-                return res.status(500).json({ message: "Error inserting intolerances." });
+        // sada šaljemo hashedPassword u bazu umjesto plain text lozinke
+        db.query(sqlInsertStavka, [Korisnicko_ime, hashedPassword, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
+            if (err) {
+                console.error("Insert error (menu item):", err);
+                return res.status(500).json({ message: "Error inserting menu item." });
             }
 
-            res.json({ message: "Korisnik i njegove intolerancije uspješno unesene" });
+            const insertKorisnikID = result.insertId;
+
+            if (!Intolerancije || Intolerancije.length === 0) {
+                return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
+            }
+
+            const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
+
+            const sqlInsertIntolerancije = `
+                INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
+                VALUES ?
+            `;
+
+            db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
+                if (err2) {
+                    console.error("Insert error (intolerances):", err2);
+                    return res.status(500).json({ message: "Error inserting intolerances." });
+                }
+
+                res.json({ message: "Korisnik i njegove intolerancije uspješno unesene" });
+            });
         });
-    });
 
-})
+    } catch (err) {
+        console.error("Hashing error:", err);
+        res.status(500).json({ message: "Greška pri hashiranju lozinke." });
+    }
+
+});
 
 
-//unos admina
-app.post("/admin", (req, res) => { 
-    const unos = req.body;
+//registracija admina
+app.post("/admin", async (req, res) => {
+    const { ime, prezime, Ime_admina, Lozinka_admina } = req.body;
 
-    if (!unos.ime || !unos.prezime || !unos.Ime_admina || !unos.Lozinka_admina) {
+    if (!ime || !prezime || !Ime_admina || !Lozinka_admina) {
         return res.status(400).send("Missing required fields.");
     }
 
-    const sqlQuery = 'INSERT INTO Administrator (ime, prezime, Ime_admina, Lozinka_admina) VALUES (?, ?, ?, ?)';
+    try {
+        // ✅ Hashiranje lozinke
+        const hashedPassword = await bcrypt.hash(Lozinka_admina, 10);
 
-    db.query(sqlQuery, [unos.ime, unos.prezime, unos.Ime_admina, unos.Lozinka_admina], (err, result) => {
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
+        const sqlQuery = `
+            INSERT INTO Administrator (ime, prezime, Ime_admina, Lozinka_admina)
+            VALUES (?, ?, ?, ?)
+        `;
 
-        res.json(result);
-    });
+        db.query(sqlQuery, [ime, prezime, Ime_admina, hashedPassword], (err, result) => {
+            if (err) {
+                console.error("Greška pri unosu admina:", err);
+                return res.status(500).send("Greška na serveru");
+            }
+
+            res.json({ message: "Admin uspješno registriran", adminId: result.insertId });
+        });
+
+    } catch (err) {
+        console.error("Greška pri hashiranju lozinke:", err);
+        res.status(500).send("Greška na serveru");
+    }
 });
+
+
+
 
 // login admina
 app.post("/admin/login", (req, res) => {
@@ -1042,9 +1020,9 @@ app.post("/admin/login", (req, res) => {
         return res.status(400).json({ message: "Nedostaju podaci za login." });
     }
 
-    const sqlQuery = 'SELECT * FROM Administrator WHERE Ime_admina = ? AND Lozinka_admina = ?';
-
-    db.query(sqlQuery, [Ime_admina, Lozinka_admina], (err, result) => {
+    // Dohvati admina po korisničkom imenu
+    const sqlQuery = 'SELECT * FROM Administrator WHERE Ime_admina = ?';
+    db.query(sqlQuery, [Ime_admina], async (err, result) => {
         if (err) {
             console.error("Greška pri provjeri admina:", err);
             return res.status(500).json({ message: "Greška na serveru." });
@@ -1054,8 +1032,23 @@ app.post("/admin/login", (req, res) => {
             return res.status(401).json({ message: "Neispravno korisničko ime ili lozinka." });
         }
 
-        // admin je pronađen
-        res.json({ message: "Uspješan login!", admin: result[0] });
+        const admin = result[0];
+
+        try {
+            // Provjera lozinke s bcrypt
+            const isPasswordValid = await bcrypt.compare(Lozinka_admina, admin.Lozinka_admina);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: "Neispravno korisničko ime ili lozinka." });
+            }
+
+            // Login uspješan
+            res.json({ message: "Uspješan login!", admin });
+
+        } catch (bcryptErr) {
+            console.error("Greška pri provjeri lozinke:", bcryptErr);
+            return res.status(500).json({ message: "Greška na serveru." });
+        }
     });
 });
 
@@ -1725,14 +1718,13 @@ app.get('/korisnik/intolerancije/:id', (req, res) => {
 app.post("/vlasnik/prijava", (req, res) => {
     const { Email_vlasnika, Lozinka_vlasnika } = req.body;
 
-    // provjera da su oba polja unesena
     if (!Email_vlasnika || !Lozinka_vlasnika) {
         return res.status(400).json({ message: "Unesite email i lozinku." });
     }
 
-    // SQL query za provjeru vlasnika
-    const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE Email_vlasnika = ? AND Lozinka_vlasnika = ?';
-    db.query(sqlQuery, [Email_vlasnika, Lozinka_vlasnika], (err, result) => {
+    // Dohvat vlasnika po emailu
+    const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE Email_vlasnika = ?';
+    db.query(sqlQuery, [Email_vlasnika], async (err, result) => {
         if (err) {
             console.error('Greška pri provjeri login-a vlasnika:', err);
             return res.status(500).json({ message: "Greška na serveru" });
@@ -1742,35 +1734,64 @@ app.post("/vlasnik/prijava", (req, res) => {
             return res.status(401).json({ message: "Email ili lozinka nisu ispravni" });
         }
 
-        // Login uspješan
-        res.json({ message: "Login uspješan", user: result[0] });
+        const user = result[0];
+
+        try {
+            // Provjera lozinke s bcrypt
+            const isPasswordValid = await bcrypt.compare(Lozinka_vlasnika, user.Lozinka_vlasnika);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: "Email ili lozinka nisu ispravni" });
+            }
+
+            // Login uspješan
+            res.json({ message: "Login uspješan", user });
+
+        } catch (bcryptErr) {
+            console.error("Greška pri provjeri lozinke:", bcryptErr);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
     });
 });
 
 
 //Petra Grgić
-// prijava korisnika
 app.post("/korisnik/prijava", (req, res) => {
-    const { Korisnicko_ime, Lozinka_korisnika } = req.body; //dovhacamo iz body
+    const { Korisnicko_ime, Lozinka_korisnika } = req.body;
 
     if (!Korisnicko_ime || !Lozinka_korisnika) {
-        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." }); //ako neko polje nije uneseno
+        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." });
     }
 
-    //provjera  postoji li korisnik sa tim podatcima
-    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ? AND Lozinka_korisnika = ?';
-    db.query(sqlQuery, [Korisnicko_ime, Lozinka_korisnika], (err, result) => {
+    // Dohvati korisnika po korisničkom imenu
+    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ?';
+    db.query(sqlQuery, [Korisnicko_ime], async (err, result) => {
         if (err) {
-            console.error('Greška pri provjeri login-a:', err);
+            console.error('Greška pri provjeri login-a korisnika:', err);
             return res.status(500).json({ message: "Greška na serveru" });
         }
 
         if (result.length === 0) {
-            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" }); //netocni podatci
+            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
         }
 
-        // prijava uspješna
-        res.json({ message: "Uspoešna prijava", user: result[0] });
+        const user = result[0];
+
+        try {
+            // Provjera lozinke s bcrypt
+            const isPasswordValid = await bcrypt.compare(Lozinka_korisnika, user.Lozinka_korisnika);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
+            }
+
+            // Prijava uspješna
+            res.json({ message: "Uspješna prijava", user });
+
+        } catch (bcryptErr) {
+            console.error("Greška pri provjeri lozinke:", bcryptErr);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
     });
 });
 
@@ -1953,13 +1974,10 @@ app.get('/admin/profil/:id', (req, res) => {
       })
     })
   })
-})
+});
 
 
 app.listen(port, () => {
     console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
 });
-
-
-
 

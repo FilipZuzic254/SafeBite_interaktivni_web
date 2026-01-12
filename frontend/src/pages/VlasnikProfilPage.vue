@@ -91,13 +91,14 @@
   </q-card-section>
 
   <!-- GUMB NA DNU + STOP PROPAGATION -->
+<div class="row justify-center q-mt-md q-mb-md">
   <q-btn
     color="negative"
     label="Izbriši objekt"
-    class="full-width q-mt-md"
     rounded
     @click.stop="confirmDelete(obj)"
   />
+</div>
 </q-card>
 </div>
 </div>
