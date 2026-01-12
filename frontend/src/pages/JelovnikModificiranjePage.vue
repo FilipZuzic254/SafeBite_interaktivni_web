@@ -112,15 +112,26 @@ const stavke = ref([]);
 const kafic = ref({});
 const komentari = ref([]);
 
-// Provjera admin tokena
+// Reaktivna varijabla koja prati je li prijavljen admin
 const isAdmin = ref(false);
 
-onMounted(() => {
-  const token = JSON.parse(localStorage.getItem("token"));
-  if (token && token.role === "admin") {
-    isAdmin.value = true;
+// ----------------------
+// Provjera tokena odmah
+// ----------------------
+const provjeriAdmin = () => {
+  const tokenStr = localStorage.getItem("token");
+  if (!tokenStr) return;
+  try {
+    const token = JSON.parse(tokenStr);
+    if (token.uloga === "admin") {
+      isAdmin.value = true;
+    }
+  } catch (err) {
+    console.error("Neispravan token", err);
   }
-});
+};
+
+provjeriAdmin();
 
 // ----------------------
 // Dohvat objekta, jelovnika i komentara
@@ -143,8 +154,6 @@ const loadPodaci = async () => {
   }
 };
 
-onMounted(loadPodaci);
-
 const loadKomentari = async () => {
   try {
     const res = await axios.get("http://localhost:3000/komentari", {
@@ -156,51 +165,39 @@ const loadKomentari = async () => {
   }
 };
 
-// ----------------------
-// Funkcija za Uredi stavku
-// ----------------------
-function urediStavku(stavka) {
-  router.push({
-    path: "/uredivanjeJela",
-    query: { ID_stavke: stavka.ID_stavke }
-  });
-}
+onMounted(() => {
+  loadPodaci();
+});
 
 // ----------------------
-// Funkcija za potvrdu brisanja stavke
+// Funkcije za stavke jelovnika
 // ----------------------
+function urediStavku(stavka) {
+  router.push({ path: "/uredivanjeJela", query: { ID_stavke: stavka.ID_stavke } });
+}
+
 function confirmDelete(stavka) {
   $q.dialog({
     title: "Potvrda brisanja",
     message: `Jeste li sigurni da želite izbrisati stavku "${stavka.Naziv_stavke}"?`,
     cancel: true,
     persistent: true
-  }).onOk(() => {
-    deleteStavku(stavka.ID_stavke);
-  });
+  }).onOk(() => deleteStavku(stavka.ID_stavke));
 }
 
-// Brisanje stavke
 const deleteStavku = async (id) => {
   try {
     await axios.delete(`http://localhost:3000/jelovnici/${id}`);
     stavke.value = stavke.value.filter(st => st.ID_stavke !== id);
-
-    Notify.create({
-      type: "positive",
-      message: "Stavka jelovnika je uspješno obrisana"
-    });
+    Notify.create({ type: "positive", message: "Stavka jelovnika je uspješno obrisana" });
   } catch (err) {
     console.error(err);
-    Notify.create({
-      type: "negative",
-      message: "Greška pri brisanju stavke"
-    });
+    Notify.create({ type: "negative", message: "Greška pri brisanju stavke" });
   }
 };
 
 // ----------------------
-// Funkcija za potvrdu brisanja komentara
+// Funkcije za komentare (samo admin)
 // ----------------------
 function confirmDeleteKomentar(kom) {
   $q.dialog({
@@ -208,27 +205,17 @@ function confirmDeleteKomentar(kom) {
     message: `Jeste li sigurni da želite izbrisati komentar od "${kom.Ime_korisnika}"?`,
     cancel: true,
     persistent: true
-  }).onOk(() => {
-    deleteKomentar(kom.ID_komentara);
-  });
+  }).onOk(() => deleteKomentar(kom.ID_komentara));
 }
 
-// Brisanje komentara
 const deleteKomentar = async (id) => {
   try {
     await axios.delete(`http://localhost:3000/komentari/${id}`);
     komentari.value = komentari.value.filter(k => k.ID_komentara !== id);
-
-    Notify.create({
-      type: "positive",
-      message: "Komentar je uspješno obrisan"
-    });
+    Notify.create({ type: "positive", message: "Komentar je uspješno obrisan" });
   } catch (err) {
     console.error(err);
-    Notify.create({
-      type: "negative",
-      message: "Greška pri brisanju komentara"
-    });
+    Notify.create({ type: "negative", message: "Greška pri brisanju komentara" });
   }
 };
 
@@ -236,12 +223,10 @@ const deleteKomentar = async (id) => {
 // Funkcija za dodavanje nove stavke
 // ----------------------
 function dodajNovuStavku() {
-  router.push({
-    path: "/unosJela",
-    query: { objektID }
-  });
+  router.push({ path: "/unosJela", query: { objektID } });
 }
 </script>
+
 
 <style scoped>
 .menu-wrapper { max-width: 800px; margin: 0 auto; }

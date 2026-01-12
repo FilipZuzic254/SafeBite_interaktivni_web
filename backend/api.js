@@ -1306,6 +1306,8 @@ app.get("/admin", (req, res) => {
 
 //})
 
+//Elena
+//prikaz objekata na stranicama Kafići i Restorani
 app.get("/objekti", (req, res) => { 
     const { vlasnikID, objektID, tip } = req.query;
 
@@ -1370,6 +1372,8 @@ app.get("/objekti", (req, res) => {
    // });
 //});
 
+//Elena
+//prikaz jelovnika, svih stavki u jelovniku
 app.get("/jelovnik", (req, res) => {
     const { objektID } = req.query; // ID od kafića
 

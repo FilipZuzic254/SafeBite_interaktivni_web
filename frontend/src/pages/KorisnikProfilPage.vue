@@ -44,7 +44,7 @@
         <div class="q-mt-md flex justify-center"> <!-- srednje margine, centar -->
           <q-btn
             color="primary"
-            label="Unos svojih prehrambenih intelernacija"
+            label="Unos svojih prehrambenih intolerancija"
             icon="add"
             @click="dodajIntoleranciju"
             rounded
