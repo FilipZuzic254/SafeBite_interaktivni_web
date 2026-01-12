@@ -1,10 +1,10 @@
 <template>
   <q-page class="home-page">
 
-    <!-- SPLIT SCREEN -->
+    <!--SPLIT SCREEN-->
     <section class="hero row no-wrap">
 
-      <!-- LIJEVO – LOGO -->
+      <!--LIJEVO-LOGO-->
       <div class="col-12 col-md-6 flex flex-center left-side">
         <q-img
           src="src/assets/SafeBite.png"
@@ -13,15 +13,13 @@
         />
       </div>
 
-      <!-- DESNO – TEKST -->
+      <!--DESNO-TEKST-->
       <div class="col-12 col-md-6 flex items-center right-side">
         <div class="text-container">
           <p class="description">
-           Ne morate više pogađati što smijete jesti. <br> <br>
-
-          SafeBite vam omogućuje da pronađete ugostiteljske objekte prilagođene vašim prehrambenim intolerancijama i osobnim preferencijama.
-
-          <br><br> <b> Jednostavno. Sigurno. Bez stresa. </b>
+            Ne morate više pogađati što smijete jesti. <br> <br>
+            SafeBite vam omogućuje da pronađete ugostiteljske objekte prilagođene vašim prehrambenim intolerancijama i osobnim preferencijama.
+            <br><br> <b> Jednostavno. Sigurno. Bez stresa. </b>
           </p>
 
           <q-btn
@@ -33,62 +31,102 @@
           />
         </div>
       </div>
-
     </section>
 
-   <!-- DRUGI DIO STRANICE -->
-<section ref="infoSection" class="info-section">
-  <div class="content">
-    <h2>Vaš sljedeći siguran izbor</h2>
-    <p>
-      Istražite ugostiteljske objekte koji razumiju vaše potrebe. <br> <br>
-      Odaberite restorane ili kafiće i pronađite mjesta u kojima možete uživati bez brige.
-    </p>
-  </div>
+    <!--DRUGI DIO STRANICE-->
+    <section ref="infoSection" class="info-section">
+      <div class="content">
+        <h2>Vaš sljedeći siguran izbor</h2>
+        <p>
+          Istražite ugostiteljske objekte koji razumiju vaše potrebe. <br> <br>
+          Odaberite restorane ili kafiće i pronađite mjesta u kojima možete uživati bez brige.
+        </p>
+      </div>
+        <!--KARTICE-->
+      <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
 
-  <!-- KARTICE -->
-  <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
+        <!--RESTORANI-->
+        <div class="col-12 col-md-5">
+          <q-card
+            class="choice-card"
+            clickable
+            @click="$router.push('/restorani')"
+          >
+            <q-img
+              src="src/assets/rijekarestoran.jpg"
+              class="choice-img"
+            >
+              <div class="choice-overlay">
+                <div class="choice-title">Restorani</div>
+              </div>
+            </q-img>
+          </q-card>
+        </div>
+        <!--KAFICI-->
+        <div class="col-12 col-md-5">
+          <q-card
+            class="choice-card"
+            clickable
+            @click="$router.push('/kafici')"
+          >
+            <q-img
+              src="src/assets/kaficrijeka.jpg"
+              class="choice-img"
+            >
+              <div class="choice-overlay">
+                <div class="choice-title">Kafići</div>
+              </div>
+            </q-img>
+          </q-card>
+        </div>
+      </div>
 
-    <!-- RESTORANI -->
-    <div class="col-12 col-md-5">
-      <q-card
-        class="choice-card"
-        clickable
-        @click="$router.push('/restorani')"
-      >
-        <q-img
-          src="src/assets/rijekarestoran.jpg"
-          class="choice-img"
+      <div class="q-pa-md">
+        <q-carousel
+          v-model="slide"
+          vertical
+          transition-prev="slide-down"
+          transition-next="slide-up"
+          swipeable
+          animated
+          control-color="white"
+          navigation-icon="radio_button_unchecked"
+          navigation
+          padding
+          arrows
+          height="300px"
+          class="bg-purple text-white shadow-1 rounded-borders"
         >
-          <div class="choice-overlay">
-            <div class="choice-title">Restorani</div>
-          </div>
-        </q-img>
-      </q-card>
-    </div>
+          <q-carousel-slide name="style" class="column no-wrap flex-center">
+            <q-icon name="style" size="56px" />
+            <div class="q-mt-md text-center">
+              {{ lorem }}
+            </div>
+          </q-carousel-slide>
 
-    <!-- KAFIĆI -->
-    <div class="col-12 col-md-5">
-      <q-card
-        class="choice-card"
-        clickable
-        @click="$router.push('/kafici')"
-      >
-        <q-img
-          src="src/assets/kaficrijeka.jpg"
-          class="choice-img"
-        >
-          <div class="choice-overlay">
-            <div class="choice-title">Kafići</div>
-          </div>
-        </q-img>
-      </q-card>
-    </div>
+          <q-carousel-slide name="tv" class="column no-wrap flex-center">
+            <q-icon name="live_tv" size="56px" />
+            <div class="q-mt-md text-center">
+              {{ lorem }}
+            </div>
+          </q-carousel-slide>
 
-  </div>
-</section>
+          <q-carousel-slide name="layers" class="column no-wrap flex-center">
+            <q-icon name="layers" size="56px" />
+            <div class="q-mt-md text-center">
+              {{ lorem }}
+            </div>
+          </q-carousel-slide>
 
-
+          <q-carousel-slide name="map" class="column no-wrap flex-center">
+            <q-icon name="terrain" size="56px" />
+            <div class="q-mt-md text-center">
+              {{ lorem }}
+            </div>
+          </q-carousel-slide>
+        </q-carousel>
+      </div>
+    </section>
   </q-page>
 </template>
 
@@ -102,33 +140,33 @@ const scrollToInfo = () => {
     behavior: 'smooth'
   })
 }
+
+const slide = ref('style')
+
+const lorem = 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque voluptatem totam, architecto cupiditate officia rerum, error dignissimos praesentium libero ab nemo.'
 </script>
 
 <style lang="scss" scoped>
-/* FULL SCREEN */
+  /* FULL SCREEN */
 .home-page {
   min-height: 100vh;
 }
-
-/* HERO */
+/*HERO */
 .hero {
   width: 100%;
   height: 100vh;
 }
-
-/* LIJEVA STRANA */
+/*LIJEVA STRANICA*/
 .left-side {
   background-color: #ffffff;
 }
-
-/* LOGO */
+/*LOGO*/
 .logo-img {
   width: 75%;
   max-width: 800px;
   min-width: 200px;
 }
-
-/* DESNA STRANA */
+/*DESNA STRANA*/
 .right-side {
   background-color: $primary;
   padding: 80px;
@@ -139,8 +177,7 @@ const scrollToInfo = () => {
   color: $primary;
   background-color: #ffffff;
 }
-
-/* TEKST */
+/*TEKST*/
 .text-container {
   max-width: 500px;
   text-align: left;
@@ -151,7 +188,7 @@ const scrollToInfo = () => {
   line-height: 1.7;
 }
 
-/* DRUGI DIO */
+/*DRUGI DIO*/
 .info-section {
   min-height: 100vh;
   padding: 80px 20px;
@@ -169,7 +206,7 @@ const scrollToInfo = () => {
   margin-bottom: 20px;
 }
 
-/* RESPONSIVE */
+/*RESPONSIVE*/
 @media (max-width: 768px) {
   .hero {
     flex-wrap: wrap;
@@ -188,8 +225,7 @@ const scrollToInfo = () => {
   max-width: 1200px;
   margin: 0 auto;
 }
-
-/* KARTICA */
+/*KARTICA*/
 .choice-card {
   border-radius: 18px;
   overflow: hidden;
@@ -202,12 +238,11 @@ const scrollToInfo = () => {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* SLIKA */
+/*SLIKA*/
 .choice-img {
   height: 320px;
 }
-
-/* OVERLAY */
+/*OVERLAY*/
 .choice-overlay {
   position: absolute;
   inset: 0;
@@ -217,12 +252,11 @@ const scrollToInfo = () => {
   justify-content: center;
 }
 
-/* NASLOV */
+/*NASLOV*/
 .choice-title {
   color: white;
   font-size: 36px;
   font-weight: bold;
   letter-spacing: 1px;
 }
-
 </style>

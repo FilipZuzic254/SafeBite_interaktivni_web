@@ -68,6 +68,17 @@
             <q-card-section class="q-pt-none">
               <div class="text-caption text-grey">{{ obj.Opis_objekta }}</div> <!-- opis objekta -->
             </q-card-section>
+
+            <!-- GUMB ZA BRISANJE OBJEKTA -->
+            <q-card-actions align="center">
+            <q-btn
+              color="negative"
+              label="Izbriši objekt"
+              class="full-width q-mt-sm"
+              @click="confirmDelete(obj)"
+            />
+            </q-card-actions>
+
           </q-card>
         </div>
 
@@ -91,7 +102,10 @@
 <script setup>
 import { ref, onMounted } from 'vue' //reaktivna varijabla, izvrsavanje funkcije nakon montiranja komponente
 import { useRouter } from 'vue-router'
+import {Notify, useQuasar} from 'quasar'
 import axios from 'axios' //za http zahtjeve prema backendu
+
+const $q = useQuasar()
 
 const router = useRouter()
 const vlasnik = ref({}) //objekt koji sadrzi podatke o vlasniku
@@ -119,6 +133,44 @@ onMounted(async () => {
 //funkcija za otvaranje stranice za unos objekta
 function dodajObjekt() {
   router.push('/unosObjekta') 
+}
+
+// funkcija za poruku o brisanju
+const confirmDelete = (obj) => {
+  $q.dialog({
+    title: 'Potvrda brisanja',
+    message: `Jeste li sigurni da želite izbrisati objekt "${obj.Ime_objekta}"?`,
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    deleteObjekt(obj.ID_objekta)
+  })
+}
+
+
+ //funkcija za brisanje objekta iz baze
+const deleteObjekt = async (id) => {
+  try {
+    await axios.delete(`http://localhost:3000/objekti/${id}`)
+
+    // ukloni objekt iz liste bez reloadanja
+    objekti.value = objekti.value.filter(
+      obj => obj.ID_objekta !== id
+    )
+
+    Notify.create({
+      type: 'positive',
+      message: 'Poslovni objekt je uspješno obrisan'
+    })
+
+  } catch (err) {
+    console.error(err)
+
+    Notify.create({
+      type: 'negative',
+      message: 'Greška pri brisanju poslovnog objekta'
+    })
+  }
 }
 
 </script>
