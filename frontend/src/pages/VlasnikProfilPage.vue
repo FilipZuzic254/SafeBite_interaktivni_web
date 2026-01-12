@@ -16,7 +16,6 @@
         <div><strong>Ime:</strong> {{ vlasnik.Ime_vlasnika }}</div>
         <div><strong>Prezime:</strong> {{ vlasnik.Prezime_vlasnika }}</div>
         <div><strong>Email:</strong> {{ vlasnik.Email_vlasnika }}</div>
-        <div><strong>Korisničko ime:</strong> {{ vlasnik.Korisnicko_ime }}</div>
       </q-card-section>
 
       <q-separator />
