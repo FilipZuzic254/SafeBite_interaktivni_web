@@ -290,34 +290,22 @@ app.delete("/jelovnici/:id", (req, res) => {
 })
 
 
+// Petra Grgić
 // brisanje objekata
-
 app.delete("/objekti/:id", (req, res) => { 
 
-    // povlaci query ako je unesen ( /objekti/2 )
-    const {id} = req.params;
+  const { id } = req.params
 
-    // stvara sql query, upitnik se zamjenje sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = `DELETE FROM Poslovni_objekt WHERE ID_objekta=?;`;
+  const sql = 'DELETE FROM Poslovni_objekt WHERE ID_objekta = ?'
 
+  db.query(sql, [id], (err) => {
+    if (err) {
+      console.error(err)
+      return res.status(500).json({ message: 'Greška pri brisanju objekta' })
+    }
 
-    // salje query, zamjenjuje upitnik sa podacima
-    db.query(sqlQuery, [id], (err, result) => {
-
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
-
-        // provjera je li nesto obrisano (npr. ako ID ne postoji)
-        if (result.affectedRows === 0) {
-            return res.status(404).send("Objekt s tim ID-em nije pronađen");
-        }
-        
-
-        res.json({ message: `Objekt ID ${id} uspješno obrisan.` });
-    })
-
+    res.json({ message: 'Objekt uspješno obrisan' })
+  })
 })
 
 
