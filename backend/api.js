@@ -1329,9 +1329,11 @@ app.get("/objekti", (req, res) => {
     }
 
     if (!isNaN(tip)) {
-        sqlQuery += ' AND p.Tip_objekta = ?';
-        params.push(tip); // tip = "Kafić"
+        console.log(tip)        
     }
+    sqlQuery += ' AND p.Tip_objekta = ?';
+    params.push(tip); // tip = "Kafić"
+    
 
     sqlQuery += ' GROUP BY p.ID_objekta;';
 

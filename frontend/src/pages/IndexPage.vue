@@ -145,9 +145,7 @@ const trazeniID = [1, 3, 5, 6]
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/objekti', {
-      params: { tip: 'Restoran' }
-    })
+    const res = await axios.get('http://localhost:3000/objekti')
 
     // filtriramo samo odabrane i dodajemo opis fallback
     restorani.value = res.data
