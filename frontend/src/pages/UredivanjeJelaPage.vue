@@ -30,7 +30,6 @@
             class="q-mt-sm"
           />
 
-         
           <!-- INTOLERANCIJE -->
           <q-select
             filled
@@ -68,7 +67,7 @@ import axios from "axios"
 
 const route = useRoute()
 const router = useRouter()
-const idStavke = route.query.ID_stavke // ID već dolazi iz liste jela
+const idStavke = route.query.ID_stavke // dobiva se iz URL-a
 
 // POLJA FORME
 const naziv = ref("")
@@ -79,36 +78,34 @@ const idAdmina = ref(null)
 const idVlasnika = ref(null)
 const selectedIntolerances = ref([])
 
+// Opcije za select
 const piOptions = ref([])
-const objektOptions = ref([])
-const adminOptions = ref([])
-const vlasnikOptions = ref([])
 
 const loading = ref(false)
 
 onMounted(async () => {
   try {
-    // 1. učitaj opcije
-    piOptions.value = (await axios.get("http://localhost:3000/pi")).data
-    objektOptions.value = (await axios.get("http://localhost:3000/objekti")).data
-    adminOptions.value = (await axios.get("http://localhost:3000/admin")).data
-    vlasnikOptions.value = (await axios.get("http://localhost:3000/vlasnik")).data
+    // 1. Učitaj sve prehrambene intolerancije
+    const piRes = await axios.get("http://localhost:3000/pi")
+    piOptions.value = piRes.data
 
-    // 2. DOHVATI JELA PO ID
+    // 2. Dohvati podatke jela po ID_stavke
     const res = await axios.get(`http://localhost:3000/jelovnici/${idStavke}`)
-    const j = res.data
+    const jelo = res.data
 
-    // 3. POPUNI FORMU
-    naziv.value = j.Naziv_stavke
-    cijena.value = j.Cijena_stavke
-    sastav.value = j.Sastav_stavke
-    idObjekta.value = j.ID_objekta
-    idAdmina.value = j.ID_admina
-    idVlasnika.value = j.ID_vlasnika
-    selectedIntolerances.value = j.Intolerancije || []
+    // 3. Popuni formu
+    naziv.value = jelo.Naziv_stavke
+    cijena.value = jelo.Cijena_stavke
+    sastav.value = jelo.Sastav_stavke
+    idObjekta.value = jelo.ID_objekta
+    idAdmina.value = jelo.ID_admina
+    idVlasnika.value = jelo.ID_vlasnika
+    selectedIntolerances.value = jelo.Intolerancije || []
 
-  } catch (e) {
-    console.error("Greška:", e)
+    console.log(jelo.ID_objekta)
+
+  } catch (err) {
+    console.error("Greška pri dohvaćanju jela:", err)
   }
 })
 
@@ -124,12 +121,28 @@ const updateForm = async () => {
       ID_vlasnika: idVlasnika.value,
       Intolerancije: selectedIntolerances.value
     })
-    alert("Jelo uspješno ažurirano!")
-    router.push(`/jelovnik?objektID=${idObjekta.value}`)
-  } catch (e) {
-    console.error(e)
+
+    // ✅ Vrati korisnika na jelovnikModificiraj s točnim ID_objekta
+   
+    router.push({
+    path: '/jelovnikModificiraj',
+    query: {
+      objektID: idObjekta.value
+    }
+  })
+
+  } catch (err) {
+    console.error("Greška pri ažuriranju jela:", err)
+    alert("Greška pri ažuriranju jela!")
   } finally {
     loading.value = false
   }
 }
 </script>
+
+<style scoped>
+.q-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+</style>

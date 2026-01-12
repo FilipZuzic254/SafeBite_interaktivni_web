@@ -213,8 +213,8 @@ const posaljiKomentar = async () => {
 .intolerancija-badge { background: #2e7d32; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 
 .komentar-wrapper { margin-top: 60px; }
-.komentar-naslov { text-align: center; font-size: 26px; margin-bottom: 20px; }
-.komentar-card { max-width: 600px; margin: 0 auto; border-radius: 20px; }
+.komentar-naslov { text-align: center; font-size: 26px; margin-bottom: 20px; font-weight: 500; }
+.komentar-card { max-width: 600px; margin: 0 auto; border-radius: 20px; margin-bottom: 80px;}
 
 .komentar-item { margin-bottom: 12px; border-radius: 12px; padding: 10px; }
 .komentar-user { font-weight: 600; margin-bottom: 6px; }
