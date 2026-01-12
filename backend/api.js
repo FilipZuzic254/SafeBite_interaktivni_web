@@ -4,7 +4,7 @@ const cors = require("cors");
 const mysql = require('mysql2');
 const multer = require('multer')
 
-// Stvaranje veze na mysql
+// Stvaranje veze na mysql, test
 const db = mysql.createConnection({
     host: 'ucka.veleri.hr',
     user: 'fzuzic',
