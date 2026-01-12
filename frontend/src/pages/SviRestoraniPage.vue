@@ -1,207 +1,68 @@
-<!-- Matea Lesica -->
+<!-- Matea Lesica-->
 <template>
-  <!-- razmak od vrha stranice -->
   <div class="q-pa-md">
-
-  <!-- slika Rijeke -->
-  <div class="q-pa-md" >
+    <!-- Ikona -->
     <q-card flat class="my-card">
       <q-img src="src/assets/Restorani.png" :height="400" />
     </q-card>
-  </div>
 
-  <!-- naslov i citat -->
-  <div class="q-pa-md text-center naslov-container">
-    <p class="citat">
-     “Mjesta gdje razgovori traju dulje od obroka.”
-    </p>
-  </div>
+    <!-- Naslov i citat -->
+    <div class="q-pa-md text-center naslov-container">
+      <p class="citat">
+        “Restoran je mjesto gdje se stol pretvara u druženje, a okus u priču.”
+      </p>
+    </div>
 
-  <!-- razmak između sekcija -->
-  <div class="custom-space"></div>
-
-  <!-- kartice restorana -->
-  <div class="q-pa-md row justify-center items-start q-gutter-lg">
-
-    <!-- Destino -->
-    <q-card class="cafe-card" flat bordered>
-      <q-img src="src/assets/destino.jpg" height="180px" />
-      <q-card-section>
-        <q-btn fab color="primary" icon="place" class="absolute"
-          style="top: 0; right: 12px; transform: translateY(-50%);" />
-        <div class="row no-wrap items-center">
-          <div class="col text-h6 ellipsis">Destino</div>
-          <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
-            <q-icon name="place" /> 250 ft
+    <!-- Kartice restorana -->
+    <div class="q-pa-md row justify-center items-start q-gutter-lg">
+      <q-card
+        v-for="restoran in restorani"
+        :key="restoran.ID_objekta"
+        class="my-card restorani-card"
+        flat
+        bordered
+        @click="$router.push({ path: '/jelovnik', query: { objektID: restoran.ID_objekta } })"
+        style="cursor: pointer"
+      >
+        <q-img
+          :src="restoran.Slika_objekta ? 'http://localhost:3000' + restoran.Slika_objekta : '/images/default.jpg'"
+          class="card-img"
+        />
+        <q-card-section>
+          <div class="row no-wrap items-center">
+            <div class="col text-h6 ellipsis">{{ restoran.Ime_objekta }}</div>
+            <div class="col-auto text-grey text-caption">{{ restoran.Adresa_objekta }}</div>
           </div>
-        </div>
-        <q-rating v-model="stars" :max="5" size="22px" />
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div class="text-subtitle2">$ ・ Italian, Cafe</div>
-        <div class="text-caption text-grey">
-          Small plates, salads & sandwiches.
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-actions>
-        <q-btn flat round icon="event" />
-        <q-btn flat color="primary">Reserve</q-btn>
-      </q-card-actions>
-    </q-card>
 
-    <!-- Cafe Basilico -->
-    <q-card class="cafe-card" flat bordered>
-      <q-img src="src/assets/san.jpg" height="180px" />
-      <q-card-section>
-        <q-btn fab color="primary" icon="place" class="absolute"
-          style="top: 0; right: 12px; transform: translateY(-50%);" />
-        <div class="row no-wrap items-center">
-          <div class="col text-h6 ellipsis">San Servolo</div>
-          <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
-            <q-icon name="place" /> 300 ft
-          </div>
-        </div>
-        <q-rating v-model="stars" :max="5" size="22px" />
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div class="text-subtitle2">$ ・ Italian, Cafe</div>
-        <div class="text-caption text-grey">
-          Classic Italian dishes in a cozy environment.
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-actions>
-        <q-btn flat round icon="event" />
-        <q-btn flat color="primary">Reserve</q-btn>
-      </q-card-actions>
-    </q-card>
-
-    <!-- El Rio -->
-    <q-card class="cafe-card" flat bordered>
-      <q-img src="src/assets/el_rio.jpeg" height="180px" />
-      <q-card-section>
-        <q-btn fab color="primary" icon="place" class="absolute"
-          style="top: 0; right: 12px; transform: translateY(-50%);" />
-        <div class="row no-wrap items-center">
-          <div class="col text-h6 ellipsis">El Rio</div>
-          <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
-            <q-icon name="place" /> 200 ft
-          </div>
-        </div>
-        <q-rating v-model="stars" :max="5" size="22px" />
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div class="text-subtitle2">$$ ・ Spanish, Cafe</div>
-        <div class="text-caption text-grey">
-          Tapas and drinks with riverside view.
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-actions>
-        <q-btn flat round icon="event" />
-        <q-btn flat color="primary">Reserve</q-btn>
-      </q-card-actions>
-    </q-card>
-
-    <!-- Pampas -->
-    <q-card class="cafe-card" flat bordered>
-      <q-img src="src/assets/pampas.png" height="180px" />
-      <q-card-section>
-        <q-btn fab color="primary" icon="place" class="absolute"
-          style="top: 0; right: 12px; transform: translateY(-50%);" />
-        <div class="row no-wrap items-center">
-          <div class="col text-h6 ellipsis">Pampas</div>
-          <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
-            <q-icon name="place" /> 150 ft
-          </div>
-        </div>
-        <q-rating v-model="stars" :max="5" size="22px" />
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div class="text-subtitle2">$$ ・ Steakhouse</div>
-        <div class="text-caption text-grey">
-          Premium steaks and local wines.
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-actions>
-        <q-btn flat round icon="event" />
-        <q-btn flat color="primary">Reserve</q-btn>
-      </q-card-actions>
-    </q-card>
-
-    <!-- Capote Ole -->
-    <q-card class="cafe-card" flat bordered>
-      <q-img src="src/assets/capote.jpg" height="180px" />
-      <q-card-section>
-        <q-btn fab color="primary" icon="place" class="absolute"
-          style="top: 0; right: 12px; transform: translateY(-50%);" />
-        <div class="row no-wrap items-center">
-          <div class="col text-h6 ellipsis">Capote Ole</div>
-          <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
-            <q-icon name="place" /> 180 ft
-          </div>
-        </div>
-        <q-rating v-model="stars" :max="5" size="22px" />
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div class="text-subtitle2">$ ・ Cafe</div>
-        <div class="text-caption text-grey">
-          Light bites and artisanal coffee.
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-actions>
-        <q-btn flat round icon="event" />
-        <q-btn flat color="primary">Reserve</q-btn>
-      </q-card-actions>
-    </q-card>
-
-    <!-- Bunker -->
-    <q-card class="cafe-card" flat bordered>
-      <q-img src="src/assets/bunker.jpg" height="180px" />
-      <q-card-section>
-        <q-btn fab color="primary" icon="place" class="absolute"
-          style="top: 0; right: 12px; transform: translateY(-50%);" />
-        <div class="row no-wrap items-center">
-          <div class="col text-h6 ellipsis">Pampas</div>
-          <div class="col-auto text-grey text-caption q-pt-md row no-wrap items-center">
-            <q-icon name="place" /> 150 ft
-          </div>
-        </div>
-        <q-rating v-model="stars" :max="5" size="22px" />
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        <div class="text-subtitle2">$$ ・ Steakhouse</div>
-        <div class="text-caption text-grey">
-          Premium steaks and local wines.
-        </div>
-      </q-card-section>
-      <q-separator />
-      <q-card-actions>
-        <q-btn flat round icon="event" />
-        <q-btn flat color="primary">Reserve</q-btn>
-      </q-card-actions>
-    </q-card>
-
-  </div>
+          <q-rating :model-value="restoran.prosjecna_ocjena || 0" :max="5" size="22px" readonly />
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <div class="text-caption text-grey">{{ restoran.Opis_objekta }}</div>
+        </q-card-section>
+      </q-card>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-const stars = ref(4);
+const restorani = ref([])
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('http://localhost:3000/objekti', {
+      params: { tip: 'Restoran' }
+    })
+    restorani.value = res.data
+  } catch (err) {
+    console.error('Greška pri dohvaćanju restorana:', err)
+  }
+})
 </script>
 
 <style scoped>
-/* razmak između sekcija */
-.custom-space {
-  height: 80px;
-}
-
-/* naslov i citat */
 .naslov-container {
   width: 100%;
   text-align: center;
@@ -222,19 +83,23 @@ const stars = ref(4);
   color: #333;
   max-width: 900px;
   margin: 25px auto;
-  line-height: 1.6;
 }
 
-/* kartice restorana */
-.cafe-card {
+.restorani-card {
   width: 300px;
   transition: transform 0.2s ease-in-out;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
 }
 
-.cafe-card:hover {
+.restorani-card:hover {
   transform: scale(1.04);
 }
+
+.card-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
 </style>
-
-
