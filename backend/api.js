@@ -1306,6 +1306,8 @@ app.get("/admin", (req, res) => {
 
 //})
 
+//Elena
+//prikaz objekata na stranicama Kafići i Restorani
 app.get("/objekti", (req, res) => { 
     const { vlasnikID, objektID, tip } = req.query;
 

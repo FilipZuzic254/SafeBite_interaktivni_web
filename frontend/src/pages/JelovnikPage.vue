@@ -250,29 +250,115 @@ const posaljiKomentar = async () => {
 </script>
 
 <style scoped>
-.menu-wrapper { max-width: 800px; margin: 0 auto; }
+.menu-wrapper {
+   max-width: 800px; 
+   margin: 0 auto; 
+  }
 
-.naslov { text-align: center; font-size: 46px; font-weight: 700; margin-bottom: 6px; }
-.citat { text-align: center; color: #777; margin-bottom: 40px; }
+.naslov { 
+  text-align: center; 
+  font-size: 46px; 
+  font-weight: 700; 
+  margin-bottom: 6px; 
+}
 
-.stavka-card { max-width: 600px; margin: 0 auto 20px auto; border-radius: 20px; padding: 18px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-.stavka-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+.citat { 
+  text-align: center; 
+  color: #777; 
+  margin-bottom: 40px; 
+}
 
-.stavka-header { display: flex; justify-content: center; gap: 16px; margin-bottom: 6px; }
-.stavka-naziv { font-size: 22px; font-weight: 600; }
-.stavka-cijena { font-size: 20px; font-weight: 600; color: #2e7d32; }
+.stavka-card { 
+  max-width: 600px; 
+  margin: 0 auto 20px auto; 
+  border-radius: 20px; 
+  padding: 18px; 
+  transition: transform 0.2s ease, box-shadow 0.2s ease; 
+}
 
-.stavka-opis { text-align: center; font-size: 14px; color: #666; margin-bottom: 12px; }
 
-.intolerancije-wrapper { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
-.intolerancija-badge { background: #2e7d32; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.stavka-card:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
+}
 
-.komentar-wrapper { margin-top: 60px; }
-.komentar-naslov { text-align: center; font-size: 26px; margin-bottom: 20px; font-weight: 500; }
-.komentar-card { max-width: 600px; margin: 0 auto; border-radius: 20px; margin-bottom: 80px;}
+.stavka-header { 
+  display: flex; 
+  justify-content: center; 
+  gap: 16px; 
+  margin-bottom: 6px; 
+}
 
-.komentar-item { margin-bottom: 12px; border-radius: 12px; padding: 10px; }
-.komentar-user { font-weight: 600; margin-bottom: 6px; }
-.komentar-ocjena { font-weight: 400; color: #2e7d32; }
-.komentar-text { color: #555; }
+.stavka-naziv { 
+  font-size: 22px; 
+  font-weight: 600; 
+}
+
+.stavka-cijena { 
+  font-size: 20px; 
+  font-weight: 600; 
+  color: #2e7d32; 
+}
+
+.stavka-opis { 
+  text-align: center; 
+  font-size: 14px; 
+  color: #666; 
+  margin-bottom: 12px; 
+}
+
+.intolerancije-wrapper { 
+  display: flex; 
+  justify-content: center; 
+  gap: 8px; 
+  margin-top: 10px; 
+}
+
+.intolerancija-badge { 
+  background: #2e7d32; 
+  color: white; 
+  padding: 6px 14px; 
+  border-radius: 20px; 
+  font-size: 12px; 
+  font-weight: 500; 
+}
+
+.komentar-wrapper { 
+  margin-top: 60px; 
+}
+
+.komentar-naslov { 
+  text-align: center; 
+  font-size: 26px; 
+  margin-bottom: 20px; 
+  font-weight: 500; 
+}
+
+.komentar-card { 
+  max-width: 600px; 
+  margin: 0 auto; 
+  border-radius: 20px; 
+  margin-bottom: 80px;
+}
+
+.komentar-item { 
+  margin-bottom: 12px; 
+  border-radius: 12px; 
+  padding: 10px; 
+}
+
+.komentar-user { 
+  font-weight: 600; 
+  margin-bottom: 6px; 
+}
+
+.komentar-ocjena { 
+  font-weight: 400; 
+  color: #2e7d32; 
+}
+
+.komentar-text { 
+  color: #555; 
+}
+
 </style>
