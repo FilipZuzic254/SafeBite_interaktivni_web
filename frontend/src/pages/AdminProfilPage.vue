@@ -1,7 +1,7 @@
 <!-- Petra Grgić -->
 <template>
   <q-page class="q-pa-md flex flex-center">
-    <q-card style="width: 1100px"> <!-- galvni dio stranice -->
+    <q-card style="width: 1100px"> <!-- glavni dio stranice -->
 
       <!-- NASLOV -->
       <q-card-section>
@@ -23,14 +23,13 @@
 
       <!-- GUMB ZA DODAVANJE OBJEKTA -->
       <q-card-section class="text-center">
-          <q-btn
-            color="primary"
-            label="Unos novog poslovnog objekta"
-            icon="add"
-            @click="dodajObjekt"
-            rounded
-          /> <!-- klikom se poziva metoda koja otvara stranicu za dodavanje objekta-->
-    
+        <q-btn
+          color="primary"
+          label="Unos novog poslovnog objekta"
+          icon="add"
+          @click="dodajObjekt"
+          rounded
+        />
       </q-card-section>
 
       <q-separator />
@@ -43,24 +42,24 @@
           Nema evidentiranih objekata.
         </div>
 
-        <div
-          v-else
-          class="row q-col-gutter-lg"
-        >
+        <div v-else class="row q-col-gutter-lg">
           <div
             v-for="obj in objekti"
             :key="obj.ID_objekta"
             class="col-12 col-md-6"
           >
-            <q-card class="objekt-card" bordered>
-
+            <!-- KLIKABILNA KARTICA -->
+            <q-card
+              class="objekt-card cursor-pointer"
+              bordered
+              @click="otvoriJelovnik(obj)"
+            >
               <q-img
                 :src="obj.Slika_objekta
-                ? 'http://localhost:3000' + obj.Slika_objekta
-                : '/images/default.jpg'"
+                  ? 'http://localhost:3000' + obj.Slika_objekta
+                  : '/images/default.jpg'"
                 class="card-img"
               />
-
 
               <q-card-section>
                 <div class="row items-center justify-between">
@@ -106,7 +105,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-const router = useRouter() //za navigaciju
+const router = useRouter() // navigacija
 const admin = ref({})
 const objekti = ref([])
 const error = ref(null)
@@ -118,25 +117,36 @@ onMounted(async () => {
     const adminId = token?.id
 
     if (!adminId) {
-      error.value = 'Admin nije prijavljen' //ako token ne postoji
+      error.value = 'Admin nije prijavljen'
       return
     }
 
     const response = await axios.get(
-      `http://localhost:3000/admin/profil/${adminId}` //dohvat podataka iz api-ja
+      `http://localhost:3000/admin/profil/${adminId}`
     )
 
-    admin.value = response.data.admin //spreljeni podatci o adminu
-    objekti.value = response.data.objekti //spremljeni podatci o objektima
+    admin.value = response.data.admin
+    objekti.value = response.data.objekti
 
   } catch (err) {
     console.error(err)
     error.value = 'Greška pri dohvaćanju admin profila.'
   }
 })
- // funkcija za otvaranje stranice za unos novog objekta
+
+// otvara stranicu za unos novog objekta
 function dodajObjekt() {
   router.push('/unosObjekta')
+}
+
+// 🔹 OTVARANJE STRANICE ZA MODIFICIRANJE JELOVNIKA
+function otvoriJelovnik(obj) {
+  router.push({
+    path: '/jelovnikModificiraj',
+    query: {
+      objektID: obj.ID_objekta
+    }
+  })
 }
 </script>
 
@@ -159,6 +169,8 @@ function dodajObjekt() {
   height: 300px;
   object-fit: cover;
 }
+
+.cursor-pointer {
+  cursor: pointer;
+}
 </style>
-
-

@@ -289,34 +289,22 @@ app.delete("/jelovnici/:id", (req, res) => {
 })
 
 
+// Petra Grgić
 // brisanje objekata
-
 app.delete("/objekti/:id", (req, res) => { 
 
-    // povlaci query ako je unesen ( /objekti/2 )
-    const {id} = req.params;
+  const { id } = req.params
 
-    // stvara sql query, upitnik se zamjenje sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = `DELETE FROM Poslovni_objekt WHERE ID_objekta=?;`;
+  const sql = 'DELETE FROM Poslovni_objekt WHERE ID_objekta = ?'
 
+  db.query(sql, [id], (err) => {
+    if (err) {
+      console.error(err)
+      return res.status(500).json({ message: 'Greška pri brisanju objekta' })
+    }
 
-    // salje query, zamjenjuje upitnik sa podacima
-    db.query(sqlQuery, [id], (err, result) => {
-
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
-
-        // provjera je li nesto obrisano (npr. ako ID ne postoji)
-        if (result.affectedRows === 0) {
-            return res.status(404).send("Objekt s tim ID-em nije pronađen");
-        }
-        
-
-        res.json({ message: `Objekt ID ${id} uspješno obrisan.` });
-    })
-
+    res.json({ message: 'Objekt uspješno obrisan' })
+  })
 })
 
 
@@ -799,106 +787,6 @@ app.post('/jelovnici', (req, res) => {
   );
 });
 
-// DOHVAT SVIH JELA (za dropdown)
-app.get('/jelovnici', async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      "SELECT ID_stavke, Naziv_stavke FROM Stavka_jelovnika"
-    )
-    res.json(rows)
-  } catch (err) {
-    res.status(500).json(err)
-  }
-})
-
-
-// DOHVAT JEDNOG JELA PO ID
-app.get('/jelovnici/:id', async (req, res) => {
-
-  const id = req.params.id
-
-  try {
-    const [stavka] = await db.query(
-      "SELECT * FROM Stavka_jelovnika WHERE ID_stavke = ?",
-      [id]
-    )
-
-    const [pi] = await db.query(
-      "SELECT ID_pi FROM PI_u_stavci_jelovnika WHERE ID_stavke = ?",
-      [id]
-    )
-
-    res.json({
-      ...stavka[0],
-      Intolerancije: pi.map(p => p.ID_pi)
-    })
-
-  } catch (err) {
-    res.status(500).json(err)
-  }
-})
-
-
-// UPDATE JELA
-app.put('/jelovnici/:id', async (req, res) => {
-
-  const id = req.params.id
-  const d = req.body
-
-  try {
-
-    await db.query(`
-      UPDATE Stavka_jelovnika SET
-        Naziv_stavke=?,
-        Cijena_stavke=?,
-        Sastav_stavke=?,
-        ID_objekta=?,
-        ID_admina=?,
-        ID_vlasnika=?
-      WHERE ID_stavke=?
-    `,[
-      d.Naziv_stavke,
-      d.Cijena_stavke,
-      d.Sastav_stavke,
-      d.ID_objekta,
-      d.ID_admina,
-      d.ID_vlasnika,
-      id
-    ])
-
-    // BRIŠI STARE INTOLERANCIJE
-    await db.query(
-      "DELETE FROM PI_u_stavci_jelovnika WHERE ID_stavke=?",
-      [id]
-    )
-
-    // UBACI NOVE
-    for(const pi of d.Intolerancije){
-      await db.query(
-        "INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi) VALUES (?,?)",
-        [id, pi]
-      )
-    }
-
-    res.json({ message: "Jelo uspješno ažurirano" })
-
-  } catch (err) {
-    res.status(500).json(err)
-  }
-})
-
-
-// DOHVAT INTOLERANCIJA Ana Krišto UnosKorisnikoveIntolerancijePage.vue
-app.get('/pi', async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      "SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija"
-    )
-    res.json(rows)
-  } catch (err) {
-    res.status(500).json(err)
-  }
-})
 
 app.get('/korisnik/intolerancije/:id', (req, res) => {
   const { id } = req.params;

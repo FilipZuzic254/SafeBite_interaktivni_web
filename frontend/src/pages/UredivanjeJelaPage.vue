@@ -1,124 +1,59 @@
-<!-- UrediJeloPage.vue - Matea Matković style -->
 <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 500px">
       <q-card-section>
-        <div class="text-h6">Uredi jelo</div>
+        <div class="text-h6">Uređivanje jela</div>
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit.prevent="submitForm" ref="formJelo">
+        <q-form @submit.prevent="updateForm">
 
-          <!-- ODABIR JELA -->
-          <q-select
+          <!-- NAZIV JELA -->
+          <q-input filled v-model="naziv" label="Naziv jela" required />
+
+          <!-- CIJENA -->
+          <q-input
             filled
-            v-model="selectedJeloId"
-            :options="jelaOptions"
-            option-value="ID_stavke"
-            option-label="Naziv_stavke"
-            label="Odaberi jelo za uređivanje"
-            emit-value
-            map-options
-            @update:model-value="loadJeloData"
-            class="q-mb-sm"
+            v-model.number="cijena"
+            label="Cijena (EUR)"
+            type="number"
+            required
+            class="q-mt-sm"
           />
 
-          <!-- Prikaži formu samo ako je jelo odabrano -->
-          <template v-if="selectedJeloId">
+          <!-- SASTAV -->
+          <q-input
+            filled
+            v-model="sastav"
+            label="Sastav jela"
+            type="textarea"
+            class="q-mt-sm"
+          />
 
-            <q-input filled v-model="naziv" label="Naziv jela" required />
+         
+          <!-- INTOLERANCIJE -->
+          <q-select
+            filled
+            v-model="selectedIntolerances"
+            :options="piOptions"
+            option-value="ID_pi"
+            option-label="Naziv_pi"
+            label="Intolerancije"
+            multiple
+            emit-value
+            map-options
+            use-chips
+            class="q-mt-sm"
+          />
 
-            <q-input
-              filled
-              v-model.number="cijena"
-              label="Cijena (EUR)"
-              type="number"
-              min="0"
-              step="0.01"
-              required
-              class="q-mt-sm"
+          <div class="q-mt-md">
+            <q-btn
+              type="submit"
+              label="Spremi izmjene"
+              color="primary"
+              :loading="loading"
             />
-
-            <q-input
-              filled
-              v-model="sastav"
-              label="Sastav jela"
-              type="textarea"
-              class="q-mt-sm"
-            />
-
-            <!-- OBJEKT -->
-            <q-select
-              filled
-              v-model="idObjekta"
-              :options="objektOptions"
-              option-value="ID_objekta"
-              option-label="Ime_objekta"
-              label="Odaberi objekt"
-              emit-value
-              map-options
-              class="q-mt-sm"
-            />
-
-            <!-- ADMIN -->
-            <q-select
-              filled
-              v-model="idAdmina"
-              :options="adminOptions"
-              option-value="ID_admina"
-              option-label="Ime_admina"
-              label="Odaberi admina"
-              emit-value
-              map-options
-              class="q-mt-sm"
-            />
-
-            <!-- VLASNIK -->
-            <q-select
-              filled
-              v-model="idVlasnika"
-              :options="vlasnikOptions"
-              option-value="ID_vlasnika"
-              option-label="Ime_vlasnika"
-              label="Odaberi vlasnika"
-              emit-value
-              map-options
-              class="q-mt-sm"
-            />
-
-            <!-- INTOLERANCIJE -->
-            <q-select
-              filled
-              v-model="selectedIntolerances"
-              :options="piOptions"
-              option-value="ID_pi"
-              option-label="Naziv_pi"
-              label="Odaberite intolerancije"
-              multiple
-              emit-value
-              map-options
-              use-chips
-              class="q-mt-sm"
-            />
-
-            <div class="q-mt-md">
-              <q-btn
-                type="submit"
-                label="Spremi izmjene"
-                color="primary"
-                :loading="loading"
-              />
-            </div>
-
-            <div v-if="error" class="text-negative q-mt-sm">
-              {{ error }}
-            </div>
-
-            <div v-if="success" class="text-positive q-mt-sm">
-              {{ success }}
-            </div>
-
-          </template>
+          </div>
 
         </q-form>
       </q-card-section>
@@ -127,163 +62,74 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import axios from "axios"
 
-// Odabrano jelo
-const selectedJeloId = ref(null)
-const jelaOptions = ref([])
+const route = useRoute()
+const router = useRouter()
+const idStavke = route.query.ID_stavke // ID već dolazi iz liste jela
 
-// Podaci forme
-const naziv = ref('')
+// POLJA FORME
+const naziv = ref("")
 const cijena = ref(null)
-const sastav = ref('')
-
+const sastav = ref("")
 const idObjekta = ref(null)
 const idAdmina = ref(null)
 const idVlasnika = ref(null)
-
 const selectedIntolerances = ref([])
 
-// Dropdowni
 const piOptions = ref([])
 const objektOptions = ref([])
 const adminOptions = ref([])
 const vlasnikOptions = ref([])
 
 const loading = ref(false)
-const error = ref(null)
-const success = ref(null)
-const formJelo = ref(null)
 
 onMounted(async () => {
   try {
-    // JELA
-    const jelaRes = await axios.get('http://localhost:3000/edit-jela')
-    jelaOptions.value = jelaRes.data
+    // 1. učitaj opcije
+    piOptions.value = (await axios.get("http://localhost:3000/pi")).data
+    objektOptions.value = (await axios.get("http://localhost:3000/objekti")).data
+    adminOptions.value = (await axios.get("http://localhost:3000/admin")).data
+    vlasnikOptions.value = (await axios.get("http://localhost:3000/vlasnik")).data
 
-    // INTOLERANCIJE
-    const piRes = await axios.get('http://localhost:3000/pi')
-    piOptions.value = piRes.data.map(p => ({
-      ID_pi: Number(p.ID_pi),
-      Naziv_pi: p.Naziv_pi
-    }))
+    // 2. DOHVATI JELA PO ID
+    const res = await axios.get(`http://localhost:3000/jelovnici/${idStavke}`)
+    const j = res.data
 
-    // OBJEKTI
-    const objRes = await axios.get('http://localhost:3000/objekti')
-    objektOptions.value = objRes.data
+    // 3. POPUNI FORMU
+    naziv.value = j.Naziv_stavke
+    cijena.value = j.Cijena_stavke
+    sastav.value = j.Sastav_stavke
+    idObjekta.value = j.ID_objekta
+    idAdmina.value = j.ID_admina
+    idVlasnika.value = j.ID_vlasnika
+    selectedIntolerances.value = j.Intolerancije || []
 
-    // ADMIN
-    const admRes = await axios.get('http://localhost:3000/admin')
-    adminOptions.value = admRes.data
-
-    // VLASNICI
-    const vlasRes = await axios.get('http://localhost:3000/vlasnik')
-    vlasnikOptions.value = vlasRes.data
-
-  } catch (err) {
-    console.error(err)
-    error.value = "Backend nije dostupan."
+  } catch (e) {
+    console.error("Greška:", e)
   }
 })
 
-// Učitaj podatke odabranog jela
-const loadJeloData = async (jeloId) => {
-  if (!jeloId) {
-    resetForm()
-    return
-  }
-
-  try {
-    const response = await axios.get(`http://localhost:3000/edit-jela/${jeloId}`)
-    const jelo = response.data
-
-    // Popuni formu
-    naziv.value = jelo.Naziv_stavke || ''
-    cijena.value = jelo.Cijena_stavke || null
-    sastav.value = jelo.Sastav_stavke || ''
-    idObjekta.value = jelo.ID_objekta || null
-    idAdmina.value = jelo.ID_admina || null
-    idVlasnika.value = jelo.ID_vlasnika || null
-    selectedIntolerances.value = Array.isArray(jelo.Intolerancije) 
-      ? jelo.Intolerancije.map(id => Number(id)) 
-      : []
-
-    error.value = null
-    success.value = null
-
-  } catch (err) {
-    console.error('Greška pri dohvaćanju jela:', err)
-    error.value = err.response?.data?.message || 'Greška pri učitavanju jela'
-  }
-}
-
-// Submit - ažuriraj jelo
-const submitForm = async () => {
-  if (!selectedJeloId.value) {
-    error.value = "Odaberi jelo za uređivanje"
-    return
-  }
-
+const updateForm = async () => {
   loading.value = true
-  error.value = null
-  success.value = null
-
-  const selectedIDs = selectedIntolerances.value
-    .filter(n => n != null)
-    .map(n => Number(n))
-
-  const dataToSend = {
-    Naziv_stavke: naziv.value,
-    Cijena_stavke: cijena.value,
-    Sastav_stavke: sastav.value,
-    ID_objekta: idObjekta.value,
-    ID_admina: idAdmina.value,
-    ID_vlasnika: idVlasnika.value,
-    Intolerancije: selectedIDs
-  }
-
   try {
-    const res = await axios.put(
-      `http://localhost:3000/edit-jela/${selectedJeloId.value}`,
-      dataToSend
-    )
-
-    success.value = res.data.message || 'Jelo uspješno ažurirano!'
-
-    // Osvježi listu jela (naziv bi se mogao promijeniti)
-    const jelaRes = await axios.get('http://localhost:3000/edit-jela')
-    jelaOptions.value = jelaRes.data
-
-    // Ponovno učitaj jelo da pokažemo nove podatke
-    await loadJeloData(selectedJeloId.value)
-
-  } catch (err) {
-    if (err.response)
-      error.value = err.response.data.message || 'Greška pri ažuriranju'
-    else
-      error.value = 'Greška – backend nije dostupan'
+    await axios.put(`http://localhost:3000/jelovnici/${idStavke}`, {
+      Naziv_stavke: naziv.value,
+      Cijena_stavke: cijena.value,
+      Sastav_stavke: sastav.value,
+      ID_objekta: idObjekta.value,
+      ID_admina: idAdmina.value,
+      ID_vlasnika: idVlasnika.value,
+      Intolerancije: selectedIntolerances.value
+    })
+    alert("Jelo uspješno ažurirano!")
+    router.push(`/jelovnik?objektID=${idObjekta.value}`)
+  } catch (e) {
+    console.error(e)
   } finally {
     loading.value = false
   }
 }
-
-const resetForm = () => {
-  naziv.value = ''
-  cijena.value = null
-  sastav.value = ''
-  idObjekta.value = null
-  idAdmina.value = null
-  idVlasnika.value = null
-  selectedIntolerances.value = []
-  error.value = null
-  success.value = null
-}
 </script>
-
-<style scoped>
-.q-page {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-</style>
