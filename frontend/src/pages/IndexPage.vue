@@ -27,6 +27,7 @@
             unelevated
             size="lg"
             class="q-mt-lg button"
+            rounded
             @click="scrollToInfo"
           />
         </div>

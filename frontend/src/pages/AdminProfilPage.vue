@@ -91,7 +91,13 @@
                   {{ obj.Opis_objekta }}
                 </div>
               </q-card-section>
-
+              <q-btn
+  color="negative"
+  label="Izbriši objekt"
+  class="full-width q-mt-sm"
+  rounded
+  @click="confirmDelete(obj)"
+/>
             </q-card>
           </div>
         </div>
