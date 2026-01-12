@@ -12,7 +12,7 @@
           <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" />
 
           <div class="q-mt-md">
-            <q-btn type="submit" label="Prijava" color="primary" :loading="loading" />
+            <q-btn type="submit" label="Prijava" color="primary" rounded :loading="loading" />
           </div>
 
           <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>

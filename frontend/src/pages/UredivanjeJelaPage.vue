@@ -1,4 +1,5 @@
-<template>
+<!-- Matea Matković / Uredivanje jela -->
+ <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 500px">
       <q-card-section>
@@ -50,6 +51,7 @@
               type="submit"
               label="Spremi izmjene"
               color="primary"
+              rounded
               :loading="loading"
             />
           </div>

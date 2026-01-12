@@ -95,6 +95,7 @@
     color="negative"
     label="Izbriši objekt"
     class="full-width q-mt-md"
+    rounded
     @click.stop="confirmDelete(obj)"
   />
 </q-card>

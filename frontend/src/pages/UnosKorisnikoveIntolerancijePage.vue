@@ -28,6 +28,7 @@
               type="submit"
               label="Potvrdi"
               color="primary"
+              rounded
               :loading="loading"
             />
           </div>

@@ -1,3 +1,4 @@
+<!-- Elena Jašarević-->
 <template>
   <div class="q-pa-md menu-wrapper">
     <!-- Naziv i adresa objekta -->
@@ -60,6 +61,7 @@
             label="Pošalji komentar"
             color="green"
             class="q-mt-lg full-width"
+            rounded
             @click="posaljiKomentar"
           />
         </q-card-section>
