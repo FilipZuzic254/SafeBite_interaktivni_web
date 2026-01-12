@@ -61,6 +61,9 @@
             @input="validateOIB"
           />
 
+          
+          <q-file filled v-model="thumbnail" label="Naslovna slika objekta" class="q-mt-sm"/>
+
           <div class="q-mt-md">
             <q-btn type="submit" label="Unesi objekt" color="primary" :loading="loading" />
           </div>
@@ -84,6 +87,7 @@ const postanskiBroj = ref(null)
 const tipObjekta = ref(null)
 const emailObjekta = ref('')
 const oibObjekta = ref('')
+const thumbnail = ref(null)
 
 const gradOptions = ref([])
 const loading = ref(false)
@@ -137,11 +141,28 @@ const submitForm = async () => {
       ID_admina: idAdmina
     }
 
+
+    
     const res = await axios.post('http://localhost:3000/objekti', dataToSend)
+    const id_objekta = res.data.id
+
+    const imgData = new FormData()
+    imgData.append('id', id_objekta)
+    imgData.append('image', thumbnail.value)
+
+    await axios.put('http://localhost:3000/img/add/objekt',
+      imgData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }
+    )
+
     success.value = res.data.message
+    
 
 
 
+    /*
     setTimeout(() => {
       formObjekt.value?.reset()
       imeObjekta.value = ''
@@ -152,6 +173,7 @@ const submitForm = async () => {
       emailObjekta.value = ''
       oibObjekta.value = ''
     }, 1500)
+    */
 
   } catch (err) {
     console.error(err)
