@@ -1355,6 +1355,28 @@ app.get("/objekti", (req, res) => {
 
 //jelovnik
 // Dohvat jelovnika za određeni objekt/kafić
+//app.get("/jelovnik", (req, res) => {
+  //  const { objektID } = req.query; // ID od kafića
+//
+  //  if (!objektID) {
+    //    return res.status(400).send("Nedostaje ID objekta");
+    //}
+
+    //const sqlQuery = `
+      //  SELECT *
+        //FROM Stavka_jelovnika
+        //WHERE ID_objekta = ?
+    //`;
+
+    //db.query(sqlQuery, [Number(objektID)], (err, result) => {
+     //   if (err) {
+       //     console.error("Greška pri dohvatu jelovnika:", err);
+         //   return res.status(500).send("Greška na serveru");
+        //}
+        //res.json(result);
+   // });
+//});
+
 app.get("/jelovnik", (req, res) => {
     const { objektID } = req.query; // ID od kafića
 
@@ -1363,9 +1385,19 @@ app.get("/jelovnik", (req, res) => {
     }
 
     const sqlQuery = `
-        SELECT *
-        FROM Stavka_jelovnika
-        WHERE ID_objekta = ?
+        SELECT 
+            s.ID_stavke,
+            s.Naziv_stavke,
+            s.Sastav_stavke,
+            s.Cijena_stavke,
+            GROUP_CONCAT(pi.Naziv_pi SEPARATOR ', ') AS intolerancije
+        FROM Stavka_jelovnika s
+        LEFT JOIN PI_u_stavci_jelovnika psi 
+            ON s.ID_stavke = psi.ID_stavke
+        LEFT JOIN Prehrambena_intolerancija pi 
+            ON psi.ID_pi = pi.ID_pi
+        WHERE s.ID_objekta = ?
+        GROUP BY s.ID_stavke
     `;
 
     db.query(sqlQuery, [Number(objektID)], (err, result) => {
@@ -1376,6 +1408,7 @@ app.get("/jelovnik", (req, res) => {
         res.json(result);
     });
 });
+
 
 // ispis vlasnika objekta
 

@@ -1,4 +1,4 @@
-<!-- Elena Jašarević-->
+<!-- Elena Jašarević -->
 <template>
   <div class="q-pa-md">
     <h1 class="naslov">{{ kafic.Ime_objekta }}</h1>
@@ -15,9 +15,30 @@
         <q-card-section>
           <div class="row justify-between items-center">
             <div class="text-h6">{{ stavka.Naziv_stavke }}</div>
-            <div class="text-subtitle1">{{ stavka.Cijena_stavke }} €</div>
+            <div class="text-subtitle1">
+              {{ stavka.Cijena_stavke }} €
+            </div>
           </div>
-          <div class="text-caption text-grey">{{ stavka.Sastav_stavke }}</div>
+
+          <!-- Opis -->
+          <div class="text-caption text-grey">
+            {{ stavka.Sastav_stavke }}
+          </div>
+
+          <!-- Prehrambene intolerancije -->
+          <div v-if="stavka.intolerancije" class="q-mt-sm">
+            <q-chip
+              v-for="pi in stavka.intolerancije.split(', ')"
+              :key="pi"
+              color="red-2"
+              text-color="red-9"
+              dense
+              icon="warning"
+            >
+              {{ pi }}
+            </q-chip>
+          </div>
+
         </q-card-section>
       </q-card>
     </div>
@@ -30,26 +51,27 @@ import { useRoute } from "vue-router";
 import axios from "axios";
 
 const route = useRoute();
-const objektID = route.query.objektID; // <-- koristimo query parametar
+const objektID = route.query.objektID;
 
 const stavke = ref([]);
 const kafic = ref({});
 
 onMounted(async () => {
   try {
-    // Dohvat podataka o kafiću
+    // Podaci o objektu
     const kaficRes = await axios.get("http://localhost:3000/objekti", {
       params: { objektID }
     });
     kafic.value = kaficRes.data[0];
 
-    // Dohvat jelovnika
+    // Jelovnik + intolerancije
     const res = await axios.get("http://localhost:3000/jelovnik", {
       params: { objektID }
     });
     stavke.value = res.data;
+
   } catch (err) {
-    console.error("Greška pri dohvaćanju jelovnika:", err);
+    console.error("Greška pri dohvaćanju:", err);
   }
 });
 </script>
