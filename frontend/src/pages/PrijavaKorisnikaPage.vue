@@ -16,7 +16,7 @@
 
           <!-- Gumb za prijavu -->
           <div class="q-mt-md">
-            <q-btn type="submit" label="Prijava" color="primary" :loading="loading" />
+            <q-btn type="submit" label="Prijava" color="primary" rounded :loading="loading" />
           </div>
 
           <!-- Poruke o grešci / uspjehu -->
@@ -94,7 +94,7 @@ const submitForm = async () => {
       korIme.value = ''
       lozinka.value = ''
 
-      router.push('/') // ili neki dashboard
+      router.push('/') 
     }, 1500)
 
   } catch (err) {

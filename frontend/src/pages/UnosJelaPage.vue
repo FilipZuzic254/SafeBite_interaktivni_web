@@ -1,4 +1,4 @@
-<!-- Matea Matković -->
+<!-- Matea Matković / Unos jela -->
 <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 500px">
@@ -9,8 +9,10 @@
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="formJelo">
 
+          <!-- NAZIV JELA -->
           <q-input filled v-model="naziv" label="Naziv jela" required />
 
+          <!-- CIJENA -->
           <q-input
             filled
             v-model.number="cijena"
@@ -22,6 +24,7 @@
             class="q-mt-sm"
           />
 
+          <!-- SASTAV -->
           <q-input
             filled
             v-model="sastav"
@@ -89,6 +92,7 @@
               type="submit"
               label="Unesi jelo"
               color="primary"
+              rounded
               :loading="loading"
             />
           </div>
@@ -109,18 +113,25 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
+// Router & route
+const route = useRoute()
+const router = useRouter()
+
+// Ako je došlo s jelovnikaModificiraj ili iz objekta
+const idObjekta = ref(route.query.objektID || null)
+
+// Polja forme
 const naziv = ref('')
 const cijena = ref(null)
 const sastav = ref('')
-
-const idObjekta = ref(null)
 const idAdmina = ref(null)
 const idVlasnika = ref(null)
-
 const selectedIntolerances = ref([])
 
+// Opcije za select
 const piOptions = ref([])
 const objektOptions = ref([])
 const adminOptions = ref([])
@@ -133,7 +144,6 @@ const formJelo = ref(null)
 
 onMounted(async () => {
   try {
-
     // INTOLERANCIJE
     const piRes = await axios.get('http://localhost:3000/pi')
     piOptions.value = piRes.data.map(p => ({
@@ -188,17 +198,20 @@ const submitForm = async () => {
 
     setTimeout(() => {
       formJelo.value?.reset()
-
       naziv.value = ''
       cijena.value = null
       sastav.value = ''
-
       idObjekta.value = null
       idAdmina.value = null
       idVlasnika.value = null
-
       selectedIntolerances.value = []
     }, 1500)
+
+    // ✅ Ispravljena navigacija: vraća na jelovnikModificiraj s istim objektID
+    router.push({
+      path: '/jelovnikModificiraj',
+      query: { objektID: idObjekta.value }
+    })
 
   } catch (err) {
     if (err.response)

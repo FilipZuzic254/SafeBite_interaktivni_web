@@ -65,7 +65,7 @@
           <q-file filled v-model="thumbnail" label="Naslovna slika objekta" class="q-mt-sm"/>
 
           <div class="q-mt-md">
-            <q-btn type="submit" label="Unesi objekt" color="primary" :loading="loading" />
+            <q-btn type="submit" label="Unesi objekt" color="primary" rounded :loading="loading" />
           </div>
 
           <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>

@@ -1,10 +1,10 @@
 <template>
   <q-page class="home-page">
 
-    <!-- SPLIT SCREEN -->
+    <!--SPLIT SCREEN-->
     <section class="hero row no-wrap">
 
-      <!-- LIJEVO – LOGO -->
+      <!--LIJEVO-LOGO-->
       <div class="col-12 col-md-6 flex flex-center left-side">
         <q-img
           src="src/assets/SafeBite.png"
@@ -13,15 +13,13 @@
         />
       </div>
 
-      <!-- DESNO – TEKST -->
+      <!--DESNO-TEKST-->
       <div class="col-12 col-md-6 flex items-center right-side">
         <div class="text-container">
           <p class="description">
-           Ne morate više pogađati što smijete jesti. <br> <br>
-
-          SafeBite vam omogućuje da pronađete ugostiteljske objekte prilagođene vašim prehrambenim intolerancijama i osobnim preferencijama.
-
-          <br><br> <b> Jednostavno. Sigurno. Bez stresa. </b>
+            Ne morate više pogađati što smijete jesti. <br><br>
+            SafeBite vam omogućuje da pronađete ugostiteljske objekte prilagođene vašim prehrambenim intolerancijama i osobnim preferencijama.
+            <br><br><b>Jednostavno. Sigurno. Bez stresa.</b>
           </p>
 
           <q-btn
@@ -29,72 +27,109 @@
             unelevated
             size="lg"
             class="q-mt-lg button"
+            rounded
             @click="scrollToInfo"
           />
         </div>
       </div>
-
     </section>
 
-   <!-- DRUGI DIO STRANICE -->
-<section ref="infoSection" class="info-section">
-  <div class="content">
-    <h2>Vaš sljedeći siguran izbor</h2>
-    <p>
-      Istražite ugostiteljske objekte koji razumiju vaše potrebe. <br> <br>
-      Odaberite restorane ili kafiće i pronađite mjesta u kojima možete uživati bez brige.
-    </p>
-  </div>
+    <!--DRUGI DIO STRANICE-->
+    <section ref="infoSection" class="info-section">
+      <div class="content">
+        <h2>Vaš sljedeći siguran izbor</h2>
+        <p>
+          Istražite ugostiteljske objekte koji razumiju vaše potrebe. <br><br>
+          Odaberite restorane ili kafiće i pronađite mjesta u kojima možete uživati bez brige.
+        </p>
+      </div>
 
-  <!-- KARTICE -->
-  <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
+      <!--KARTICE-->
+      <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
 
-    <!-- RESTORANI -->
-    <div class="col-12 col-md-5">
-      <q-card
-        class="choice-card"
-        clickable
-        @click="$router.push('/restorani')"
-      >
-        <q-img
-          src="src/assets/rijekarestoran.jpg"
-          class="choice-img"
+        <!--RESTORANI-->
+        <div class="col-12 col-md-5">
+          <q-card
+            class="choice-card"
+            clickable
+            @click="$router.push('/restorani')"
+          >
+            <q-img
+              src="src/assets/rijekarestoran.jpg"
+              class="choice-img"
+            >
+              <div class="choice-overlay">
+                <div class="choice-title">Restorani</div>
+              </div>
+            </q-img>
+          </q-card>
+        </div>
+
+        <!--KAFICI-->
+        <div class="col-12 col-md-5">
+          <q-card
+            class="choice-card"
+            clickable
+            @click="$router.push('/kafici')"
+          >
+            <q-img
+              src="src/assets/kaficrijeka.jpg"
+              class="choice-img"
+            >
+              <div class="choice-overlay">
+                <div class="choice-title">Kafići</div>
+              </div>
+            </q-img>
+          </q-card>
+        </div>
+      </div>
+      
+      <div class="spacing"></div>
+
+      <!--POPULARNI RESTORANI/KAFIĆI-->
+      <div class="content">
+      <h2>Naše preporuke:</h2>
+      <div class="q-pa-md">
+        <q-carousel 
+          v-model="slide"
+          vertical
+          transition-prev="slide-down"
+          transition-next="slide-up"
+          swipeable
+          animated
+          control-color="white"
+          navigation-icon="radio_button_unchecked"
+          navigation
+          padding
+          arrows
+          height="300px"
+          class="bg-primary text-white shadow-1 rounded-borders show-arrows"
         >
-          <div class="choice-overlay">
-            <div class="choice-title">Restorani</div>
-          </div>
-        </q-img>
-      </q-card>
-    </div>
+          <q-carousel-slide
+            v-for="r in restorani"
+            :key="r.ID_objekta"
+            :name="r.ID_objekta"
+            class="column no-wrap flex-center"
+          >
+            <div class="q-mt-md text-center">
+              <h3>{{ r.naziv }}</h3>
+              <p>{{ r.adresa }}</p>
+              <p>{{ r.opis }}</p> <!-- tvoji komentari/restoran opisi -->
+            </div>
+          </q-carousel-slide>
+        </q-carousel>
+      </div>
+      </div>
 
-    <!-- KAFIĆI -->
-    <div class="col-12 col-md-5">
-      <q-card
-        class="choice-card"
-        clickable
-        @click="$router.push('/kafici')"
-      >
-        <q-img
-          src="src/assets/kaficrijeka.jpg"
-          class="choice-img"
-        >
-          <div class="choice-overlay">
-            <div class="choice-title">Kafići</div>
-          </div>
-        </q-img>
-      </q-card>
-    </div>
-
-  </div>
-</section>
-
-
+    </section>
   </q-page>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
+const restorani = ref([])
 const infoSection = ref(null)
 
 const scrollToInfo = () => {
@@ -102,6 +137,34 @@ const scrollToInfo = () => {
     behavior: 'smooth'
   })
 }
+
+const slide = ref(null)
+
+// ID-evi restorana koje želiš prikazati
+const trazeniID = [1, 3, 5]
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('http://localhost:3000/objekti', {
+      params: { tip: 'Restoran' }
+    })
+
+    // filtriramo samo odabrane i dodajemo opis fallback
+    restorani.value = res.data
+      .filter(r => trazeniID.includes(r.ID_objekta))
+      .map(r => ({
+        ...r,
+        naziv: r.Ime_objekta || '',
+        adresa: r.Adresa_objekta || '',
+        opis: r.Opis_objekta || ''
+      }))
+
+    console.log(restorani.value)
+    if (restorani.value.length > 0) slide.value = restorani.value[0].ID_objekta
+  } catch (err) {
+    console.error('Greška pri dohvaćanju restorana:', err)
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -110,25 +173,25 @@ const scrollToInfo = () => {
   min-height: 100vh;
 }
 
-/* HERO */
+/*HERO */
 .hero {
   width: 100%;
   height: 100vh;
 }
 
-/* LIJEVA STRANA */
+/*LIJEVA STRANICA*/
 .left-side {
   background-color: #ffffff;
 }
 
-/* LOGO */
+/*LOGO*/
 .logo-img {
   width: 75%;
   max-width: 800px;
   min-width: 200px;
 }
 
-/* DESNA STRANA */
+/*DESNA STRANA*/
 .right-side {
   background-color: $primary;
   padding: 80px;
@@ -140,7 +203,7 @@ const scrollToInfo = () => {
   background-color: #ffffff;
 }
 
-/* TEKST */
+/*TEKST*/
 .text-container {
   max-width: 500px;
   text-align: left;
@@ -151,7 +214,7 @@ const scrollToInfo = () => {
   line-height: 1.7;
 }
 
-/* DRUGI DIO */
+/*DRUGI DIO*/
 .info-section {
   min-height: 100vh;
   padding: 80px 20px;
@@ -169,7 +232,7 @@ const scrollToInfo = () => {
   margin-bottom: 20px;
 }
 
-/* RESPONSIVE */
+/*RESPONSIVE*/
 @media (max-width: 768px) {
   .hero {
     flex-wrap: wrap;
@@ -189,7 +252,7 @@ const scrollToInfo = () => {
   margin: 0 auto;
 }
 
-/* KARTICA */
+/*KARTICA*/
 .choice-card {
   border-radius: 18px;
   overflow: hidden;
@@ -202,12 +265,12 @@ const scrollToInfo = () => {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* SLIKA */
+/*SLIKA*/
 .choice-img {
   height: 320px;
 }
 
-/* OVERLAY */
+/*OVERLAY*/
 .choice-overlay {
   position: absolute;
   inset: 0;
@@ -217,7 +280,7 @@ const scrollToInfo = () => {
   justify-content: center;
 }
 
-/* NASLOV */
+/*NASLOV*/
 .choice-title {
   color: white;
   font-size: 36px;
@@ -225,4 +288,12 @@ const scrollToInfo = () => {
   letter-spacing: 1px;
 }
 
+.spacing {
+  margin-bottom: 150px;
+}
+
+.show-arrows .q-carousel__control {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
 </style>

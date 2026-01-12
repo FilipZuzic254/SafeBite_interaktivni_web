@@ -16,82 +16,105 @@
         <div><strong>Ime:</strong> {{ vlasnik.Ime_vlasnika }}</div>
         <div><strong>Prezime:</strong> {{ vlasnik.Prezime_vlasnika }}</div>
         <div><strong>Email:</strong> {{ vlasnik.Email_vlasnika }}</div>
-        <div><strong>Korisničko ime:</strong> {{ vlasnik.Korisnicko_ime }}</div>
       </q-card-section>
 
       <q-separator />
 
-      <!-- Kartice poslovnih objekata -->
-      <q-card-section>
-        <div class="text-subtitle1 q-mb-sm">Moji objekti</div>
-
-        <!-- ako nema objekte -->
-        <div v-if="objekti.length === 0">
-          Nemate evidentiranih objekata.
-        </div>
-
-        <div class="row q-gutter-lg kartice">
-          <q-card
-            v-for="obj in objekti" 
-            :key="obj.ID_objekta"
-            class="my-card cafe-card-half"
-            flat
-            bordered
-          > <!-- v-for je petlja koja prolazi kroz sve objekte vlasnika a key zahtjeva da je id isti kao id vlasnika-->
-            
-            <!-- prikazuje sliku objekta koja se povlaci iz baze podataka -->
-            <q-img
-              :src="obj.Slika_objekta
-              ? 'http://localhost:3000' + obj.Slika_objekta
-              : '/images/default.jpg'"
-              class="card-img"
-            />
-
-            <q-card-section>
-              <div class="row no-wrap items-center">
-                <div class="col text-h6">{{ obj.Ime_objekta }}</div> <!-- naziv objekta-->
-                <div class="col-auto text-grey text-caption">{{ obj.Adresa_objekta }}</div> <!-- adresa objekta -->
-              </div>
-
-              <div class="text-caption text-grey">{{ obj.Tip_objekta }}</div> <!-- tip objekta -->
-              
-              <!-- prosjecna ocjena objekta -->
-              <q-rating
-                :model-value="obj.prosjecna_ocjena || 0"
-                max="5"
-                size="22px"
-                readonly
-                class="q-mt-xs"
-              />
-            </q-card-section>
-
-            <q-card-section class="q-pt-none">
-              <div class="text-caption text-grey">{{ obj.Opis_objekta }}</div> <!-- opis objekta -->
-            </q-card-section>
-          </q-card>
-        </div>
-
-        <!-- Gumb za unos novog objekta -->
-        <div class="q-mt-md flex justify-center"> <!-- srednje margine, centar -->
-          <q-btn
-            color="primary"
-            label="Unos novog poslovnog objekta"
-            icon="add"
-            @click="dodajObjekt"
-            rounded
-          /> <!-- na klik poziva funkciju koja otvara stranicu za dodavanje novog objekta-->
-        </div>
-
+      <q-card-section class="text-center">
+        <q-btn
+          color="primary"
+          label="Unos novog poslovnog objekta"
+          icon="add"
+          @click="dodajObjekt"
+          rounded
+        />
       </q-card-section>
 
-    </q-card>
+      <q-separator />
+
+      <!-- SVI OBJEKTI -->
+      <q-card-section>
+        <div class="text-subtitle1 q-mb-md">Svi restorani i kafići</div>
+
+        <div v-if="objekti.length === 0">
+          Nema evidentiranih objekata.
+        </div>
+
+        <div v-else class="row q-col-gutter-lg">
+          <div
+            v-for="obj in objekti"
+            :key="obj.ID_objekta"
+            class="col-12 col-md-6"
+          >
+          
+            <!-- KLIKABILNA KARTICA -->
+           <q-card
+  class="objekt-card cursor-pointer"
+  bordered
+  @click="otvoriJelovnik(obj)"
+>
+  <q-img
+    :src="obj.Slika_objekta
+      ? 'http://localhost:3000' + obj.Slika_objekta
+      : '/images/default.jpg'"
+    class="card-img"
+  />
+
+  <q-card-section>
+    <div class="row items-center justify-between">
+      <div class="text-h6">
+        {{ obj.Ime_objekta }}
+      </div>
+      <div class="text-caption text-grey">
+        {{ obj.Tip_objekta }}
+      </div>
+    </div>
+
+    <div class="text-caption text-grey q-mt-xs">
+      {{ obj.Adresa_objekta }}
+    </div>
+
+    <q-rating
+      :model-value="obj.prosjecna_ocjena"
+      max="5"
+      readonly
+      size="20px"
+      color="amber"
+      class="q-mt-sm"
+    />
+  </q-card-section>
+
+  <q-card-section class="q-pt-none opis">
+    <div class="text-caption">
+      {{ obj.Opis_objekta }}
+    </div>
+  </q-card-section>
+
+  <!-- GUMB NA DNU + STOP PROPAGATION -->
+  <q-btn
+    color="negative"
+    label="Izbriši objekt"
+    class="full-width q-mt-md"
+    rounded
+    @click.stop="confirmDelete(obj)"
+  />
+</q-card>
+</div>
+</div>
+</q-card-section>
+</q-card>
+
   </q-page>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue' //reaktivna varijabla, izvrsavanje funkcije nakon montiranja komponente
 import { useRouter } from 'vue-router'
+import {Notify, useQuasar} from 'quasar'
 import axios from 'axios' //za http zahtjeve prema backendu
+
+const $q = useQuasar()
 
 const router = useRouter()
 const vlasnik = ref({}) //objekt koji sadrzi podatke o vlasniku
@@ -121,33 +144,77 @@ function dodajObjekt() {
   router.push('/unosObjekta') 
 }
 
+// 🔹 OTVARANJE STRANICE ZA MODIFICIRANJE JELOVNIKA
+function otvoriJelovnik(obj) {
+  router.push({
+    path: '/jelovnikModificiraj',
+    query: {
+      objektID: obj.ID_objekta
+    }
+  })
+}
+
+// funkcija za poruku o brisanju
+const confirmDelete = (obj) => {
+  $q.dialog({
+    title: 'Potvrda brisanja',
+    message: `Jeste li sigurni da želite izbrisati objekt "${obj.Ime_objekta}"?`,
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    deleteObjekt(obj.ID_objekta)
+  })
+}
+
+
+ //funkcija za brisanje objekta iz baze
+const deleteObjekt = async (id) => {
+  try {
+    await axios.delete(`http://localhost:3000/objekti/${id}`)
+
+    // ukloni objekt iz liste bez reloadanja
+    objekti.value = objekti.value.filter(
+      obj => obj.ID_objekta !== id
+    )
+
+    Notify.create({
+      type: 'positive',
+      message: 'Poslovni objekt je uspješno obrisan'
+    })
+
+  } catch (err) {
+    console.error(err)
+
+    Notify.create({
+      type: 'negative',
+      message: 'Greška pri brisanju poslovnog objekta'
+    })
+  }
+}
+
 </script>
 
 <style scoped>
-.cafe-card-half {
-  width: calc(45%); /* dvije kartice jedna pored druge*/
-  transition: transform 0.2s ease-in-out; /* tranzicija kada se prelazi preko kartice*/
+.objekt-card {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  transition: transform 0.2s ease-in-out;
 }
 
-.cafe-card-half:hover {
-  transform: scale(1.03); /* povecanje kartice kada se prede preko nje*/
+.objekt-card:hover {
+  transform: scale(1.03);
 }
 
 .card-img {
   width: 100%;
   height: 300px;
-  object-fit: cover; /* slika se prilagodava velicini kartice*/
+  object-fit: cover;
 }
 
-.q-page {
-  min-height: 100vh;
-  background-color: #f5f5f5;
+/* opis može rasti, gumb ide na dno */
+.opis {
+  flex-grow: 1;
 }
 
-.kartice {
-    justify-content: space-around; /* jednaki raznaci izmedu kartica */
-}
 </style>
