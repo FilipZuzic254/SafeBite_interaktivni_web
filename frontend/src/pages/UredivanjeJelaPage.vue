@@ -50,6 +50,7 @@
               type="submit"
               label="Spremi izmjene"
               color="primary"
+              rounded
               :loading="loading"
             />
           </div>

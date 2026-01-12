@@ -16,7 +16,7 @@
           <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" />
 
           <div class="q-mt-md">
-            <q-btn type="submit" label="Registracija" color="primary" :loading="loading" /> <!-- loading animacija dok se čeka potvrda ili grška -->
+            <q-btn type="submit" label="Registracija" color="primary" rounded :loading="loading" /> <!-- loading animacija dok se čeka potvrda ili grška -->
           </div>
 
           <!-- Poruke o grešci ili uspjehu -->

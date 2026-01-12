@@ -60,6 +60,7 @@
             label="Pošalji komentar"
             color="green"
             class="q-mt-lg full-width"
+            rounded
             @click="posaljiKomentar"
           />
         </q-card-section>

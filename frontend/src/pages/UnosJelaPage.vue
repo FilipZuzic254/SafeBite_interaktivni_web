@@ -89,6 +89,7 @@
               type="submit"
               label="Unesi jelo"
               color="primary"
+              rounded
               :loading="loading"
             />
           </div>
