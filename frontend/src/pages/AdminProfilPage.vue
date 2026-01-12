@@ -1,7 +1,7 @@
 <!-- Petra Grgić -->
 <template>
   <q-page class="q-pa-md flex flex-center">
-    <q-card style="width: 1100px"> <!-- glavni dio stranice -->
+    <q-card style="width: 1100px"> <!-- galvni dio stranice -->
 
       <!-- NASLOV -->
       <q-card-section>
@@ -23,13 +23,14 @@
 
       <!-- GUMB ZA DODAVANJE OBJEKTA -->
       <q-card-section class="text-center">
-        <q-btn
-          color="primary"
-          label="Unos novog poslovnog objekta"
-          icon="add"
-          @click="dodajObjekt"
-          rounded
-        />
+          <q-btn
+            color="primary"
+            label="Unos novog poslovnog objekta"
+            icon="add"
+            @click="dodajObjekt"
+            rounded
+          /> <!-- klikom se poziva metoda koja otvara stranicu za dodavanje objekta-->
+    
       </q-card-section>
 
       <q-separator />
@@ -42,24 +43,24 @@
           Nema evidentiranih objekata.
         </div>
 
-        <div v-else class="row q-col-gutter-lg">
+        <div
+          v-else
+          class="row q-col-gutter-lg"
+        >
           <div
             v-for="obj in objekti"
             :key="obj.ID_objekta"
             class="col-12 col-md-6"
           >
-            <!-- KLIKABILNA KARTICA -->
-            <q-card
-              class="objekt-card cursor-pointer"
-              bordered
-              @click="otvoriJelovnik(obj)"
-            >
+            <q-card class="objekt-card" bordered>
+
               <q-img
                 :src="obj.Slika_objekta
-                  ? 'http://localhost:3000' + obj.Slika_objekta
-                  : '/images/default.jpg'"
+                ? 'http://localhost:3000' + obj.Slika_objekta
+                : '/images/default.jpg'"
                 class="card-img"
               />
+
 
               <q-card-section>
                 <div class="row items-center justify-between">
@@ -90,7 +91,12 @@
                   {{ obj.Opis_objekta }}
                 </div>
               </q-card-section>
-
+              <q-btn
+  color="negative"
+  label="Izbriši objekt"
+  class="full-width q-mt-sm"
+  @click="confirmDelete(obj)"
+/>
             </q-card>
           </div>
         </div>
@@ -105,7 +111,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-const router = useRouter() // navigacija
+const router = useRouter() //za navigaciju
 const admin = ref({})
 const objekti = ref([])
 const error = ref(null)
@@ -117,36 +123,25 @@ onMounted(async () => {
     const adminId = token?.id
 
     if (!adminId) {
-      error.value = 'Admin nije prijavljen'
+      error.value = 'Admin nije prijavljen' //ako token ne postoji
       return
     }
 
     const response = await axios.get(
-      `http://localhost:3000/admin/profil/${adminId}`
+      `http://localhost:3000/admin/profil/${adminId}` //dohvat podataka iz api-ja
     )
 
-    admin.value = response.data.admin
-    objekti.value = response.data.objekti
+    admin.value = response.data.admin //spreljeni podatci o adminu
+    objekti.value = response.data.objekti //spremljeni podatci o objektima
 
   } catch (err) {
     console.error(err)
     error.value = 'Greška pri dohvaćanju admin profila.'
   }
 })
-
-// otvara stranicu za unos novog objekta
+ // funkcija za otvaranje stranice za unos novog objekta
 function dodajObjekt() {
   router.push('/unosObjekta')
-}
-
-// 🔹 OTVARANJE STRANICE ZA MODIFICIRANJE JELOVNIKA
-function otvoriJelovnik(obj) {
-  router.push({
-    path: '/jelovnikModificiraj',
-    query: {
-      objektID: obj.ID_objekta
-    }
-  })
 }
 </script>
 
@@ -169,8 +164,6 @@ function otvoriJelovnik(obj) {
   height: 300px;
   object-fit: cover;
 }
-
-.cursor-pointer {
-  cursor: pointer;
-}
 </style>
+
+
