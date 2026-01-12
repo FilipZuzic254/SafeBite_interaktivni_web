@@ -1053,49 +1053,72 @@ app.post("/admin/login", (req, res) => {
     });
 });
 
-// spremanje prehrambenih intolerancija korisnika
+// spremanje prehrambenih intolerancija korisnika i vraćanje korisnika ANA KRIŠTO
 app.post('/korisnik/intolerancije', (req, res) => {
-  const { ID_korisnika, intolerancije } = req.body
+  const { ID_korisnika, intolerancije } = req.body;
 
   if (!ID_korisnika) {
-    return res.status(400).json({ message: 'Nedostaje ID korisnika' })
+    return res.status(400).json({ message: 'Nedostaje ID korisnika' });
   }
 
-  // ako korisnik nije odabrao ništa → OK
+  // Funkcija za dohvat korisnika s intolerancijama
+  function fetchUserWithPI() {
+    const sqlQuery = `
+      SELECT Korisnik.Ime_korisnika, Korisnik.Prezime_korisnika, Korisnik.Email_korisnika, PI_korisnika.ID_pi
+      FROM Korisnik
+      LEFT JOIN PI_korisnika ON Korisnik.ID_korisnika = PI_korisnika.ID_korisnika
+      WHERE Korisnik.ID_korisnika = ?;
+    `;
+    db.query(sqlQuery, [ID_korisnika], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Greška pri dohvaćanju korisnika' });
+      }
+
+      if (result.length === 0) {
+        return res.status(404).json({ message: 'Korisnik ne postoji' });
+      }
+
+      const korisnik = {
+        Ime_korisnika: result[0].Ime_korisnika,
+        Prezime_korisnika: result[0].Prezime_korisnika,
+        Email_korisnika: result[0].Email_korisnika,
+        Intolerancije: result.map(row => row.ID_pi).filter(id => id !== null)
+      };
+
+      res.json(korisnik);
+    });
+  }
+
+  // ako korisnik nije odabrao ništa → samo vrati korisnika
   if (!Array.isArray(intolerancije) || intolerancije.length === 0) {
-    return res.json({ message: 'Nema intolerancija za spremiti' })
+    return fetchUserWithPI();
   }
 
   // prvo brišemo stare intolerancije korisnika
-  const deleteQuery = 'DELETE FROM PI_korisnika WHERE ID_korisnika = ?'
-
+  const deleteQuery = 'DELETE FROM PI_korisnika WHERE ID_korisnika = ?';
   db.query(deleteQuery, [ID_korisnika], (err) => {
     if (err) {
-      console.error(err)
-      return res.status(500).json({ message: 'Greška pri brisanju starih podataka' })
+      console.error(err);
+      return res.status(500).json({ message: 'Greška pri brisanju starih podataka' });
     }
 
     // priprema vrijednosti za INSERT
-    const values = intolerancije.map(idPi => [
-      ID_korisnika,
-      idPi
-    ])
-
-    const insertQuery = `
-      INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
-      VALUES ?
-    `
+    const values = intolerancije.map(idPi => [ID_korisnika, idPi]);
+    const insertQuery = `INSERT INTO PI_korisnika (ID_korisnika, ID_pi) VALUES ?`;
 
     db.query(insertQuery, [values], (err2) => {
       if (err2) {
-        console.error(err2)
-        return res.status(500).json({ message: 'Greška pri spremanju intolerancija' })
+        console.error(err2);
+        return res.status(500).json({ message: 'Greška pri spremanju intolerancija' });
       }
 
-      res.json({ message: 'Intolerancije uspješno spremljene' })
-    })
-  })
-})
+      // vrati korisnika s novim intolerancijama
+      fetchUserWithPI();
+    });
+  });
+});
+
 
 
 
@@ -1177,7 +1200,7 @@ app.get("/pi", (req, res) => {
     // povlaci query ako je unesen ( /pi?id=2 )
     const {id} = req.query;
 
-    console.log(id);
+    console.log("test");
 
     // provjerava ukoliko je unesen req.query
     // ako nije sql query nema WHERE
@@ -1571,47 +1594,47 @@ app.get("/komentari", (req, res) => {
 
 
 // ispis svih komentara određenog objekta
-
-app.get("/komentari/:id", (req, res) => { 
+//app.get("/komentari/:id", (req, res) => { 
 
     // povlaci query ako je unesen ( /korisnik/2 )
-    const {id} = req.params;
+//    const {id} = req.params;
 
-    console.log(id);
+//   console.log(id);
 
-    let komentari = [];
+//   let komentari = [];
 
     // stvara sql query, upitnik se zamjenje sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = `SELECT Sadrzaj_komentara, Ocjena, Korisnik.Korisnicko_ime
-                    FROM Komentar
-                    JOIN Korisnik ON Komentar.ID_korisnika = Korisnik.ID_korisnika
-                    WHERE Komentar.ID_objekta = ?
-                    ORDER BY Komentar.Ocjena DESC;`;
+//    const sqlQuery = `SELECT Sadrzaj_komentara, Ocjena, Korisnik.Korisnicko_ime
+//                    FROM Komentar
+//                  JOIN Korisnik ON Komentar.ID_korisnika = Korisnik.ID_korisnika
+//                  WHERE Komentar.ID_objekta = ?
+//                  ORDER BY Komentar.Ocjena DESC;`;
 
 
     // salje query, zamjenjuje upitnik sa podacima
-    db.query(sqlQuery, [id], (err, result) => {
+//    db.query(sqlQuery, [id], (err, result) => {
 
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
+//        if (err) {
+//            console.error('Greška pri dohvatu podataka:', err);
+//            return res.status(500).send("Greška na serveru");
+//        }
 
-        result.forEach(korisnik => {
-            const zasebniKomentar = {
-                Sadrzaj_komentara: korisnik.Sadrzaj_komentara,
-                Ocjena: korisnik.Ocjena,
-                Korisnicko_ime: korisnik.Korisnicko_ime,
-            };
+//        result.forEach(korisnik => {
+//            const zasebniKomentar = {
+//                Sadrzaj_komentara: korisnik.Sadrzaj_komentara,
+//                Ocjena: korisnik.Ocjena,
+//                Korisnicko_ime: korisnik.Korisnicko_ime,
+//            };
 
-            komentari.push(zasebniKomentar);
-        })
+//            komentari.push(zasebniKomentar);
+//        })
         
 
-        res.json(komentari);
-    })
+//        res.json(komentari);
+//    })
 
-})
+//})//
+
 
 
 // ispis korisnika

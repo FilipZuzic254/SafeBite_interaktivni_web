@@ -43,7 +43,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
+
+const router = useRouter()
 
 const piOptions = ref([])
 const odabranePI = ref([])
@@ -83,21 +86,28 @@ const submitForm = async () => {
   try {
     const token = JSON.parse(localStorage.getItem('token'))
 
-    await axios.post('http://localhost:3000/korisnik/intolerancije', {
+    // SPREMI odgovor u varijablu res
+    const res = await axios.post('http://localhost:3000/korisnik/intolerancije', {
       ID_korisnika: token.id,
       intolerancije: odabranePI.value
     })
 
-    success.value = 'Intolerancije spremljene'
-    odabranePI.value = []
+    // Backend vraća korisnika s ažuriranim intolerancijama
+    const korisnik = res.data;
+
+    success.value = 'Intolerancije spremljene';
+
+    // postavi odabrane intolerancije u select da ostanu prikazane
+    odabranePI.value = korisnik.Intolerancije
 
   } catch (err) {
     console.error(err)
     error.value = 'Greška na serveru'
   } finally {
-    loading.value = false
+    router.push('/profilKorisnik')
   }
 }
+
 </script>
 
 <style scoped>
