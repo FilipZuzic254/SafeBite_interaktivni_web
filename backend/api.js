@@ -1330,11 +1330,10 @@ app.get("/objekti", (req, res) => {
         params.push(Number(objektID));
     }
 
-    if (!isNaN(tip)) {
-        console.log(tip)        
+    if (tip) {
+        sqlQuery += ' AND p.Tip_objekta = ?';
+        params.push(tip); // tip = "Kafić"
     }
-    sqlQuery += ' AND p.Tip_objekta = ?';
-    params.push(tip); // tip = "Kafić"
     
 
     sqlQuery += ' GROUP BY p.ID_objekta;';
