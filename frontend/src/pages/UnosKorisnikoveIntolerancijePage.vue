@@ -55,13 +55,24 @@ const success = ref(null)
 // DOHVAT INTOLERANCIJA
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/pi')
-    piOptions.value = res.data
+    const token = JSON.parse(localStorage.getItem('token'))
+
+    // dohvat svih opcija
+    const resOptions = await axios.get('http://localhost:3000/pi')
+    piOptions.value = resOptions.data
+
+    // dohvat korisnikovih odabranih intolerancija
+    const resUser = await axios.get(`http://localhost:3000/korisnik/${token.id}`)
+    
+    // Postavi samo ID-eve u odabranePI
+    odabranePI.value = resUser.data.Intolerancije || []
+    
   } catch (err) {
     console.error(err)
-    error.value = 'Greška pri dohvaćanju intolerancija'
+    error.value = 'Greška pri dohvaćanju prehrambenih intolerancija'
   }
 })
+
 
 // SPREMANJE
 const submitForm = async () => {
@@ -72,7 +83,7 @@ const submitForm = async () => {
   try {
     const token = JSON.parse(localStorage.getItem('token'))
 
-    await axios.post('http://localhost:3000/korisnik/:id', {
+    await axios.post('http://localhost:3000/korisnik/intolerancije', {
       ID_korisnika: token.id,
       intolerancije: odabranePI.value
     })
