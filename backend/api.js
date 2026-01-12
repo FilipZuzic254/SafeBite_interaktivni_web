@@ -221,32 +221,20 @@ app.delete("/objekti/:id", (req, res) => {
       return res.status(500).json({ message: 'Greška pri brisanju objekta' })
     }
 
-    // salje query, zamjenjuje upitnik sa podacima
-    db.query(sqlQuery, [id], (err, result) => {
-
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
-
-        // provjera je li nesto obrisano (npr. ako ID ne postoji)
-        if (result.affectedRows === 0) {
-            return res.status(404).send("Objekt s tim ID-em nije pronađen");
-        }
         
-        const folderPath = `./uploads/restorani/${id}`;
+    const folderPath = `./uploads/restorani/${id}`;
 
-        fs.rm(folderPath, { recursive: true, force: true }, err => {
-            if (err) {
-                throw err;
-            }
+    fs.rm(folderPath, { recursive: true, force: true }, err => {
+        if (err) {
+            throw err;
+        }
 
-        });
+    });
 
-        res.json({ message: `Objekt ID ${id} uspješno obrisan.` });
-    })
-
+    res.json({ message: `Objekt ID ${id} uspješno obrisan.` });
+  })
 })
+
 
 
 // brisanje vlasnika
@@ -1999,13 +1987,10 @@ app.get('/admin/profil/:id', (req, res) => {
       })
     })
   })
-})
+});
 
 
 app.listen(port, () => {
     console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
 });
-
-
-
 
