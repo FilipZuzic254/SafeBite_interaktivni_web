@@ -1375,6 +1375,8 @@ app.get("/objekti", (req, res) => {
    // });
 //});
 
+//Elena
+//prikaz jelovnika, svih stavki u jelovniku
 app.get("/jelovnik", (req, res) => {
     const { objektID } = req.query; // ID od kafića
 
