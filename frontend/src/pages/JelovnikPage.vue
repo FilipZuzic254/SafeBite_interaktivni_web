@@ -19,9 +19,7 @@
             <div class="stavka-cijena">{{ stavka.Cijena_stavke }} €</div>
           </div>
 
-          <div class="stavka-opis">
-            {{ stavka.Sastav_stavke }}
-          </div>
+          <div class="stavka-opis">{{ stavka.Sastav_stavke }}</div>
 
           <div v-if="stavka.intolerancije" class="intolerancije-wrapper">
             <span
@@ -100,8 +98,6 @@ const objektID = Number(route.query.objektID);
 
 const stavke = ref([]);
 const kafic = ref({});
-
-// Komentari
 const komentari = ref([]);
 
 const noviKomentar = ref({
@@ -113,37 +109,38 @@ const noviKomentar = ref({
 // Čitanje korisnika iz localStorage
 // ----------------------
 const korisnikID = ref(null);
+const korisnikIme = ref("");
+
 onMounted(() => {
-  const storedUser = localStorage.getItem("userID"); // mora odgovarati ključu iz login-a
-  if (storedUser) {
-    korisnikID.value = Number(storedUser);
-  }
+  const storedUserID = localStorage.getItem("userID");
+  const storedUserName = localStorage.getItem("userName");
+
+  if (storedUserID) korisnikID.value = Number(storedUserID);
+  if (storedUserName) korisnikIme.value = storedUserName;
 });
 
 // ----------------------
 // Dohvat jelovnika i objekta
 // ----------------------
-onMounted(async () => {
+const loadPodaci = async () => {
   try {
-    // Podaci o objektu
     const kaficRes = await axios.get("http://localhost:3000/objekti", {
       params: { objektID }
     });
     kafic.value = kaficRes.data[0];
 
-    // Jelovnik + intolerancije
     const res = await axios.get("http://localhost:3000/jelovnik", {
       params: { objektID }
     });
     stavke.value = res.data;
 
-    // Dohvat komentara
     await loadKomentari();
-
   } catch (err) {
     console.error(err);
   }
-});
+};
+
+onMounted(loadPodaci);
 
 // ----------------------
 // Funkcija za dohvat komentara
@@ -163,7 +160,11 @@ const loadKomentari = async () => {
 // Slanje komentara
 // ----------------------
 const posaljiKomentar = async () => {
-  if (!korisnikID.value) {
+  
+  const token = JSON.parse(localStorage.getItem('token'))
+  
+  const userId = token.id
+  if (!userId) {
     alert("Morate biti prijavljeni da biste ostavili komentar.");
     return;
   }
@@ -177,17 +178,14 @@ const posaljiKomentar = async () => {
     await axios.post("http://localhost:3000/komentari", {
       Sadrzaj_komentara: noviKomentar.value.sadrzaj,
       Ocjena: noviKomentar.value.ocjena,
-      ID_korisnika: korisnikID.value,
+      ID_korisnika: userId,
       ID_objekta: objektID
     });
 
-    // Očisti formu
     noviKomentar.value.sadrzaj = "";
     noviKomentar.value.ocjena = null;
 
     alert("Komentar uspješno spremljen!");
-
-    // Ponovno učitaj komentare
     await loadKomentari();
   } catch (err) {
     console.error("Greška backend:", err.response?.data || err.message);
