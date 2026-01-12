@@ -11,6 +11,7 @@
         text-color="white"
         label="Dodaj novu stavku jelovnika"
         rounded
+        class="q-mb-md"
         @click="dodajNovuStavku"
       />
     </div>
