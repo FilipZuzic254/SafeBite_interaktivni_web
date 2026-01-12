@@ -1395,7 +1395,7 @@ app.get("/objekti", (req, res) => {
         params.push(Number(objektID));
     }
 
-    if (tip) {
+    if (!isNaN(tip)) {
         sqlQuery += ' AND p.Tip_objekta = ?';
         params.push(tip); // tip = "Kafić"
     }
@@ -1961,7 +1961,6 @@ app.get('/admin/profil/:id', (req, res) => {
     })
   })
 })
-
 
 
 app.listen(port, () => {

@@ -52,9 +52,7 @@ const restorani = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/objekti', {
-      params: { tip: 'Restoran' }
-    })
+    const res = await axios.get('http://localhost:3000/objekti')
     restorani.value = res.data
   } catch (err) {
     console.error('Greška pri dohvaćanju restorana:', err)

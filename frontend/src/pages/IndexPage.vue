@@ -17,9 +17,9 @@
       <div class="col-12 col-md-6 flex items-center right-side">
         <div class="text-container">
           <p class="description">
-            Ne morate više pogađati što smijete jesti. <br> <br>
+            Ne morate više pogađati što smijete jesti. <br><br>
             SafeBite vam omogućuje da pronađete ugostiteljske objekte prilagođene vašim prehrambenim intolerancijama i osobnim preferencijama.
-            <br><br> <b> Jednostavno. Sigurno. Bez stresa. </b>
+            <br><br><b>Jednostavno. Sigurno. Bez stresa.</b>
           </p>
 
           <q-btn
@@ -38,11 +38,12 @@
       <div class="content">
         <h2>Vaš sljedeći siguran izbor</h2>
         <p>
-          Istražite ugostiteljske objekte koji razumiju vaše potrebe. <br> <br>
+          Istražite ugostiteljske objekte koji razumiju vaše potrebe. <br><br>
           Odaberite restorane ili kafiće i pronađite mjesta u kojima možete uživati bez brige.
         </p>
       </div>
-        <!--KARTICE-->
+
+      <!--KARTICE-->
       <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
 
         <!--RESTORANI-->
@@ -62,6 +63,7 @@
             </q-img>
           </q-card>
         </div>
+
         <!--KAFICI-->
         <div class="col-12 col-md-5">
           <q-card
@@ -80,9 +82,14 @@
           </q-card>
         </div>
       </div>
+      
+      <div class="spacing"></div>
 
+      <!--POPULARNI RESTORANI/KAFIĆI-->
+      <div class="content">
+      <h2>Naše preporuke:</h2>
       <div class="q-pa-md">
-        <q-carousel
+        <q-carousel 
           v-model="slide"
           vertical
           transition-prev="slide-down"
@@ -95,44 +102,33 @@
           padding
           arrows
           height="300px"
-          class="bg-purple text-white shadow-1 rounded-borders"
+          class="bg-primary text-white shadow-1 rounded-borders show-arrows"
         >
-          <q-carousel-slide name="style" class="column no-wrap flex-center">
-            <q-icon name="style" size="56px" />
+          <q-carousel-slide
+            v-for="r in restorani"
+            :key="r.ID_objekta"
+            :name="r.ID_objekta"
+            class="column no-wrap flex-center"
+          >
             <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-
-          <q-carousel-slide name="tv" class="column no-wrap flex-center">
-            <q-icon name="live_tv" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-
-          <q-carousel-slide name="layers" class="column no-wrap flex-center">
-            <q-icon name="layers" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
-            </div>
-          </q-carousel-slide>
-
-          <q-carousel-slide name="map" class="column no-wrap flex-center">
-            <q-icon name="terrain" size="56px" />
-            <div class="q-mt-md text-center">
-              {{ lorem }}
+              <h3>{{ r.naziv }}</h3>
+              <p>{{ r.adresa }}</p>
+              <p>{{ r.opis }}</p> <!-- tvoji komentari/restoran opisi -->
             </div>
           </q-carousel-slide>
         </q-carousel>
       </div>
+      </div>
+
     </section>
   </q-page>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
+const restorani = ref([])
 const infoSection = ref(null)
 
 const scrollToInfo = () => {
@@ -141,31 +137,59 @@ const scrollToInfo = () => {
   })
 }
 
-const slide = ref('style')
+const slide = ref(null)
 
-const lorem = 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque voluptatem totam, architecto cupiditate officia rerum, error dignissimos praesentium libero ab nemo.'
+// ID-evi restorana koje želiš prikazati
+const trazeniID = [1, 3, 5]
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('http://localhost:3000/objekti', {
+      params: { tip: 'Restoran' }
+    })
+
+    // filtriramo samo odabrane i dodajemo opis fallback
+    restorani.value = res.data
+      .filter(r => trazeniID.includes(r.ID_objekta))
+      .map(r => ({
+        ...r,
+        naziv: r.Ime_objekta || '',
+        adresa: r.Adresa_objekta || '',
+        opis: r.Opis_objekta || ''
+      }))
+
+    console.log(restorani.value)
+    if (restorani.value.length > 0) slide.value = restorani.value[0].ID_objekta
+  } catch (err) {
+    console.error('Greška pri dohvaćanju restorana:', err)
+  }
+})
 </script>
 
 <style lang="scss" scoped>
-  /* FULL SCREEN */
+/* FULL SCREEN */
 .home-page {
   min-height: 100vh;
 }
+
 /*HERO */
 .hero {
   width: 100%;
   height: 100vh;
 }
+
 /*LIJEVA STRANICA*/
 .left-side {
   background-color: #ffffff;
 }
+
 /*LOGO*/
 .logo-img {
   width: 75%;
   max-width: 800px;
   min-width: 200px;
 }
+
 /*DESNA STRANA*/
 .right-side {
   background-color: $primary;
@@ -177,6 +201,7 @@ const lorem = 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque 
   color: $primary;
   background-color: #ffffff;
 }
+
 /*TEKST*/
 .text-container {
   max-width: 500px;
@@ -225,6 +250,7 @@ const lorem = 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque 
   max-width: 1200px;
   margin: 0 auto;
 }
+
 /*KARTICA*/
 .choice-card {
   border-radius: 18px;
@@ -242,6 +268,7 @@ const lorem = 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque 
 .choice-img {
   height: 320px;
 }
+
 /*OVERLAY*/
 .choice-overlay {
   position: absolute;
@@ -258,5 +285,14 @@ const lorem = 'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Itaque 
   font-size: 36px;
   font-weight: bold;
   letter-spacing: 1px;
+}
+
+.spacing {
+  margin-bottom: 150px;
+}
+
+.show-arrows .q-carousel__control {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 </style>
