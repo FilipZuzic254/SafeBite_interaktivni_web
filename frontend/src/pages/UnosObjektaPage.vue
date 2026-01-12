@@ -7,21 +7,24 @@
       </q-card-section>
 
       <q-card-section>
+        <!-- q-form hvata submit događaj, prevent spriječava refresh stranice-->
         <q-form @submit.prevent="submitForm" ref="formObjekt">
 
-          <!-- Ime objekta -->
+          <!-- input za ime objekta -->
           <q-input filled v-model="imeObjekta" label="Ime objekta" required />
 
-          <!-- Adresa -->
+          <!-- input za adresu -->
           <q-input filled v-model="adresaObjekta" label="Adresa objekta" required class="q-mt-sm" />
 
-          <!-- Opis -->
+          <!-- textarea za opis objekta -->
           <q-input filled v-model="opisObjekta" label="Opis objekta" type="textarea" class="q-mt-sm" />
 
-          <!-- Grad dropdown -->
+          <!-- dropdown za odabir grada -->
+           <!-- 26 linija - veze odabrani postanski broj, 28 dohacene opcije iz baze
+            29 sto se sprema u model, 30 sto se prikazuje u dropdoqnu-->
           <q-select
             filled
-            v-model="postanskiBroj"
+            v-model="postanskiBroj" 
             :options="gradOptions"
             option-value="Postanski_broj"
             option-label="Naziv_grada"
@@ -32,7 +35,7 @@
             class="q-mt-sm"
           />
 
-          <!-- Tip objekta -->
+          <!-- dropdown za odabir tipa objekta -->
           <q-select
             filled
             v-model="tipObjekta"
@@ -45,10 +48,10 @@
             class="q-mt-sm"
           />
 
-          <!-- Email -->
+          <!-- input za email objekta -->
           <q-input filled v-model="emailObjekta" label="Email objekta" type="email" required class="q-mt-sm" />
 
-          <!-- OIB -->
+          <!-- input za OIB -->
           <q-input
             filled
             v-model="oibObjekta"
@@ -63,6 +66,8 @@
 
           
           <q-file filled v-model="thumbnail" label="Naslovna slika objekta" class="q-mt-sm"/>
+
+          <!--sumbit gumb-->
 
           <div class="q-mt-md">
             <q-btn type="submit" label="Unesi objekt" color="primary" rounded :loading="loading" />
@@ -80,37 +85,37 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const imeObjekta = ref('')
-const adresaObjekta = ref('')
-const opisObjekta = ref('')
-const postanskiBroj = ref(null)
-const tipObjekta = ref(null)
-const emailObjekta = ref('')
-const oibObjekta = ref('')
+const imeObjekta = ref('') //ime objekta
+const adresaObjekta = ref('') //adresa objekta
+const opisObjekta = ref('') //opis objekta
+const postanskiBroj = ref(null) //odabrani grad (postanski broj)
+const tipObjekta = ref(null) //tip objekta
+const emailObjekta = ref('') //email objekta
+const oibObjekta = ref('') //OIB objekta
 const thumbnail = ref(null)
 
-const gradOptions = ref([])
-const loading = ref(false)
-const error = ref(null)
-const success = ref(null)
-const formObjekt = ref(null)
+const gradOptions = ref([]) //opcije gradova dohvacene iz baze
+const loading = ref(false) //status loading spinnra
+const error = ref(null) //poruka o gresci
+const success = ref(null) //poruka o uspjehu
+const formObjekt = ref(null) //ref na formu da se moze resetirati
 
 
 // Dobivanje gradova iz baze
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/gradovi')
+    const res = await axios.get('http://localhost:3000/gradovi') //get request za gradove
     gradOptions.value = res.data // očekuje se niz objekata { Postanski_broj, Naziv_grada }
   } catch (err) {
     console.error(err)
-    error.value = 'Greška pri dohvaćanju gradova'
+    error.value = 'Greška pri dohvaćanju gradova' //poruka ako request ne uspije
   }
 })
 
 // Validacija OIB
 function validateOIB() {
-  oibObjekta.value = oibObjekta.value.replace(/\D/g, '') // samo brojevi
-  if (oibObjekta.value.length > 11) oibObjekta.value = oibObjekta.value.slice(0, 11)
+  oibObjekta.value = oibObjekta.value.replace(/\D/g, '') // ukloni sve sto nije broj
+  if (oibObjekta.value.length > 11) oibObjekta.value = oibObjekta.value.slice(0, 11) //ogranici na 11 znamenki
 }
 
 const submitForm = async () => {
@@ -124,7 +129,7 @@ const submitForm = async () => {
   success.value = null
 
   try {
-    // Dobivanje ID vlasnika ili admina iz tokena
+    // Dobivanje ID vlasnika ili admina iz tokena spremljenog u localStorage
     const token = JSON.parse(localStorage.getItem('token'))
     const idVlasnika = token?.uloga === 'vlasnik' ? token.id : null
     const idAdmina = token?.uloga === 'admin' ? token.id : null
@@ -134,15 +139,14 @@ const submitForm = async () => {
       Adresa_objekta: adresaObjekta.value,
       Opis_objekta: opisObjekta.value,
       Postanski_broj: postanskiBroj.value,
-      Tip_objekta: tipObjekta.value.value,
+      Tip_objekta: tipObjekta.value.value, //value odabrane opcije
       Email_objekta: emailObjekta.value,
       OIB_objekta: oibObjekta.value,
       ID_vlasnika: idVlasnika,
       ID_admina: idAdmina
     }
 
-
-    
+    //post request za unos objekta u bazu
     const res = await axios.post('http://localhost:3000/objekti', dataToSend)
     const id_objekta = res.data.id
 
@@ -160,9 +164,10 @@ const submitForm = async () => {
     success.value = res.data.message
     
 
+    //reset forme i svih varijabli nakon uspjesnog unosa (s delay-om 1.5s)
 
 
-    /*
+    
     setTimeout(() => {
       formObjekt.value?.reset()
       imeObjekta.value = ''
@@ -172,8 +177,9 @@ const submitForm = async () => {
       tipObjekta.value = null
       emailObjekta.value = ''
       oibObjekta.value = ''
+      thumbnail.value = null
     }, 1500)
-    */
+    
 
   } catch (err) {
     console.error(err)

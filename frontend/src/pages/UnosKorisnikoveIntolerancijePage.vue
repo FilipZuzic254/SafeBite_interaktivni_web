@@ -8,10 +8,12 @@
       </q-card-section>
 
       <q-card-section>
+        <!--q-form hvata submit događaj, prevent spriječava refresh stranice-->
         <q-form @submit.prevent="submitForm">
 
+          
           <q-select
-            filled
+            filled 
             v-model="odabranePI"
             :options="piOptions"
             option-value="ID_pi"
