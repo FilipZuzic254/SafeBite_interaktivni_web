@@ -1098,7 +1098,7 @@ app.get("/jelovnici/:id", (req, res) => {
     console.log(id);
 
     // stvara sql query, upitnik se zamjenje sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = `SELECT Naziv_stavke, Cijena_stavke, Sastav_stavke, ID_pi
+    const sqlQuery = `SELECT Naziv_stavke, Cijena_stavke, Sastav_stavke, ID_objekta, ID_admina, ID_vlasnika, ID_pi
                     FROM Stavka_jelovnika
                     JOIN PI_u_stavci_jelovnika ON Stavka_jelovnika.ID_stavke = PI_u_stavci_jelovnika.ID_stavke
                     WHERE Stavka_jelovnika.ID_stavke = ?;`;
@@ -1115,6 +1115,9 @@ app.get("/jelovnici/:id", (req, res) => {
             Naziv_stavke: result[0].Naziv_stavke,
             Cijena_stavke: result[0].Cijena_stavke,
             Sastav_stavke: result[0].Sastav_stavke,
+            ID_objekta: result[0].ID_objekta,
+            ID_admina: result[0].ID_admina,
+            ID_vlasnika: result[0].ID_vlasnika,
             Intolerancije: result.map(row => row.ID_pi)
         };
 
