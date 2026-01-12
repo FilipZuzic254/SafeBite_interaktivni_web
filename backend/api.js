@@ -889,7 +889,7 @@ app.put('/jelovnici/:id', async (req, res) => {
 })
 
 
-// DOHVAT INTOLERANCIJA
+// DOHVAT INTOLERANCIJA Ana Krišto UnosKorisnikoveIntolerancijePage.vue
 app.get('/pi', async (req, res) => {
   try {
     const [rows] = await db.query(
