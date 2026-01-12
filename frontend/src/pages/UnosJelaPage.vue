@@ -1,4 +1,4 @@
-<!-- Ana Krišto / Unos jela -->
+<!-- Matea Matković / Unos jela -->
 <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 500px">
