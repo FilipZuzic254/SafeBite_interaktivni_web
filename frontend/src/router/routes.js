@@ -18,7 +18,6 @@ const routes = [
       { path: '/profilVlasnik', component: () => import('pages/VlasnikProfilPage.vue') },
       { path: '/unosObjekta', component: () => import('pages/UnosObjektaPage.vue') },
       {path: '/jelovnik', component:() => import('pages/JelovnikPage.vue')}, 
-      {path: '/pregledJelovnika', component:() => import('pages/PregledJelovnikaPage.vue')}, 
       {path: '/unosJela', component:() => import('pages/UnosJelaPage.vue')},  
       {path: '/unosKorisnikPI', component:() => import('pages/UnosKorisnikoveIntolerancijePage.vue')}, 
       {path: '/uredivanjeJela', component:() => import('pages/UredivanjeJelaPage.vue')}, 
