@@ -61,10 +61,9 @@ const storage = multer.diskStorage({
   },
 
   filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
 
-    cb(null, `${uniqueName}${path.extname(file.originalname)}`);
+    cb(null, `${uniqueName}${file.originalname}`);
   },
 });
 
@@ -123,7 +122,7 @@ app.put("/img/create/objekt", upload.fields([{ name: "thumbnail", maxCount: 1 },
 
 /* NEDOVRSENO */
 
-app.put("/img/create/objekt", upload.single("image"), (req, res) => {
+app.put("/img/add/objekt", upload.single("image"), (req, res) => {
     const { id } = req.body;
 
     if (!req.file) {
@@ -889,7 +888,7 @@ app.put('/jelovnici/:id', async (req, res) => {
 })
 
 
-// DOHVAT INTOLERANCIJA
+// DOHVAT INTOLERANCIJA Ana Krišto UnosKorisnikoveIntolerancijePage.vue
 app.get('/pi', async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -900,6 +899,20 @@ app.get('/pi', async (req, res) => {
     res.status(500).json(err)
   }
 })
+
+app.get('/korisnik/intolerancije/:id', (req, res) => {
+  const { id } = req.params;
+
+  const sql = `SELECT ID_pi FROM PI_korisnika WHERE ID_korisnika = ?`;
+  db.query(sql, [id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Greška pri dohvatu intolerancija.' });
+    }
+    // vrati niz ID_pi
+    res.json(rows.map(r => r.ID_pi));
+  });
+});
 
 
 
@@ -1105,6 +1118,51 @@ app.post("/admin/login", (req, res) => {
         res.json({ message: "Uspješan login!", admin: result[0] });
     });
 });
+
+// spremanje prehrambenih intolerancija korisnika
+app.post('/korisnik/intolerancije', (req, res) => {
+  const { ID_korisnika, intolerancije } = req.body
+
+  if (!ID_korisnika) {
+    return res.status(400).json({ message: 'Nedostaje ID korisnika' })
+  }
+
+  // ako korisnik nije odabrao ništa → OK
+  if (!Array.isArray(intolerancije) || intolerancije.length === 0) {
+    return res.json({ message: 'Nema intolerancija za spremiti' })
+  }
+
+  // prvo brišemo stare intolerancije korisnika
+  const deleteQuery = 'DELETE FROM PI_korisnika WHERE ID_korisnika = ?'
+
+  db.query(deleteQuery, [ID_korisnika], (err) => {
+    if (err) {
+      console.error(err)
+      return res.status(500).json({ message: 'Greška pri brisanju starih podataka' })
+    }
+
+    // priprema vrijednosti za INSERT
+    const values = intolerancije.map(idPi => [
+      ID_korisnika,
+      idPi
+    ])
+
+    const insertQuery = `
+      INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
+      VALUES ?
+    `
+
+    db.query(insertQuery, [values], (err2) => {
+      if (err2) {
+        console.error(err2)
+        return res.status(500).json({ message: 'Greška pri spremanju intolerancija' })
+      }
+
+      res.json({ message: 'Intolerancije uspješno spremljene' })
+    })
+  })
+})
+
 
 
 /*
@@ -1622,7 +1680,7 @@ app.get("/korisnik/:id", (req, res) => {
     // stvara sql query, upitnik se zamjenje sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
     const sqlQuery = `SELECT Ime_korisnika, Prezime_korisnika, Email_korisnika, ID_pi
                     FROM Korisnik
-                    JOIN PI_korisnika ON Korisnik.ID_korisnika = PI_korisnika.ID_korisnika
+                    LEFT JOIN PI_korisnika ON Korisnik.ID_korisnika = PI_korisnika.ID_korisnika
                     WHERE Korisnik.ID_korisnika = ?;`;
 
 
@@ -1647,6 +1705,27 @@ app.get("/korisnik/:id", (req, res) => {
         res.json(korisnik);
     })
 
+})
+
+// intolerancije korisnika (samo ID-evi)
+app.get('/korisnik/intolerancije/:id', (req, res) => {
+  const { id } = req.params
+
+  const sql = `
+    SELECT ID_pi
+    FROM PI_korisnika
+    WHERE ID_korisnika = ?
+  `
+
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error(err)
+      return res.status(500).send('Greška na serveru')
+    }
+
+    // vrati samo niz ID-eva
+    res.json(result.map(r => r.ID_pi))
+  })
 })
 
 // login vlasnika objekta
