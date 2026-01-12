@@ -1,22 +1,24 @@
 <!-- Elena Jašarević-->
 <template>
-  <div class="q-pa-md">
-    <!-- Parallax slika grada -->
-    <q-card flat class="my-card">
-      <q-img src="src/assets/Kafici.png" :height="400" />
+  <div class="q-pa-md">     <!--quasar klasa za "padding medium"-->
+    <!--slika na vrhu stranice -->
+    <q-card flat class="my-card">     <!--kartica nema sjenu -->
+      <q-img src="src/assets/Kafici.png" :height="400" /> 
     </q-card>
 
     <!-- Naslov i citat -->
     <div class="q-pa-md text-center naslov-container">
       <p class="citat">
-        “Kava je ritual, a kafić je mjesto gdje počinje dan s osmijehom.”
+        “Kava je ritual, a kafić je mjesto gdje počinje dan s osmijehom.”     <!--citat na vrhu stranice -->
       </p>
     </div>
 
     <!-- Kartice kafića -->
     <div class="q-pa-md row justify-center items-start q-gutter-lg">
+      <!-- koristi jedinstveni id objekta
+       click preusmjerava korisnika na /jelovnik--> 
       <q-card
-        v-for="kafic in kafici"
+        v-for="kafic in kafici"   
         :key="kafic.ID_objekta"
         class="my-card cafe-card"
         flat
@@ -24,18 +26,26 @@
         @click="$router.push({ path: '/jelovnik', query: { objektID: kafic.ID_objekta } })"
         style="cursor: pointer"
       >
+      <!--ako kafic nema sliku koristi se '/images/default.jpg'--> 
         <q-img
           :src="kafic.Slika_objekta ? 'http://localhost:3000' + kafic.Slika_objekta : '/images/default.jpg'"
           class="card-img"
         />
-        <q-card-section>
+
+      
+        <q-card-section> <!--imena kafića i adresa kafića u jednom redu, neće se prelomiti-->
           <div class="row no-wrap items-center">
-            <div class="col text-h6 ellipsis">{{ kafic.Ime_objekta }}</div>
+            <div class="col text-h6 ellipsis">{{ kafic.Ime_objekta }}</div>        <!--ellipsis sprječava preljevanje teksta--> 
             <div class="col-auto text-grey text-caption">{{ kafic.Adresa_objekta }}</div>
           </div>
-
+                  
+          <!--q-rating prikazuje prosječnu ocjenu--> 
+          <!--|| 0 sprječava prikaz undefined--> 
           <q-rating :model-value="kafic.prosjecna_ocjena || 0" :max="5" size="22px" readonly />
         </q-card-section>
+
+          <!--prikazuje opis kafića--> 
+          <!--q-pt-none uklanja padding na vrhu sekcije -->
         <q-card-section class="q-pt-none">
           <div class="text-caption text-grey">{{ kafic.Opis_objekta }}</div>
         </q-card-section>
@@ -48,8 +58,11 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+//ref inicijalizira prazan niz kafica
 const kafici = ref([])
 
+
+//onMounted dohvaća podatke kada se komponenta učita
 onMounted(async () => {
   try {
     const res = await axios.get('http://localhost:3000/objekti', {
@@ -62,7 +75,9 @@ onMounted(async () => {
 })
 </script>
 
+
 <style scoped>
+/**scoped znači da se stilovi odnose samao na ovu komponentu */
 .naslov-container {
   width: 100%;
   text-align: center;
@@ -93,6 +108,7 @@ onMounted(async () => {
   cursor: pointer;
 }
 
+/**povećava sliku kada se prijeđe preko nje*/
 .cafe-card:hover {
   transform: scale(1.04);
 }
@@ -100,6 +116,6 @@ onMounted(async () => {
 .card-img {
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  object-fit: cover; /**da se slika pravilno uklapa u karticu*/
 }
 </style>
