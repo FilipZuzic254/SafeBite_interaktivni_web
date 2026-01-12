@@ -1,18 +1,17 @@
-<!--Matea Lesica-->
+<!-- Matea Lesica -->
 <template>
   <!-- razmak od vrha stranice -->
-  <div class="q-pa-xl" style="padding-top: 30px;"></div>
+  <div class="q-pa-md">
 
   <!-- slika Rijeke -->
-  <div class="q-pa-md">
-    <q-card class="my-card">
-      <q-parallax src="src/assets/rijeka.jpg" :height="450" />
+  <div class="q-pa-md" >
+    <q-card flat class="my-card">
+      <q-img src="src/assets/Restorani.png" :height="400" />
     </q-card>
   </div>
 
   <!-- naslov i citat -->
   <div class="q-pa-md text-center naslov-container">
-    <h1 class="naslov">Grad Rijeka</h1>
     <p class="citat">
      “Mjesta gdje razgovori traju dulje od obroka.”
     </p>
@@ -187,6 +186,7 @@
     </q-card>
 
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -220,7 +220,6 @@ const stars = ref(4);
   font-size: 22px;
   font-style: italic;
   color: #333;
-  font-family: "Trebuchet MS", sans-serif;
   max-width: 900px;
   margin: 25px auto;
   line-height: 1.6;

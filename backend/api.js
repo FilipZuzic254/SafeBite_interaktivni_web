@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const mysql = require('mysql2');
+const multer = require('multer')
 
 // Stvaranje veze na mysql
 const db = mysql.createConnection({
@@ -27,6 +28,195 @@ const port = 3000;
 
 app.use(express.json());
 app.use(cors()); //cors je način da server dozvoli pristup svojim resursima iz različitih domena
+
+
+/**
+ * THIS IS THE IMPORTANT PART
+ * It exposes the "uploads" folder as a public URL
+ */
+app.use("/uploads", express.static("uploads"));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const { id } = req.body;
+
+    if (!id) {
+      return cb(new Error("Missing restoran ID"));
+    }
+
+    let uploadPath = `./uploads/${id}`;
+
+    // If gallery → put in /gallery
+    if (file.fieldname === "galerija") {
+      uploadPath = uploadPath+'/galerija'
+    }
+    else if (file.filename === "jelovnik") {
+        uploadPath = uploadPath+'/jelovnik'
+    }
+
+    // Ensure directory exists
+    fs.mkdirSync(uploadPath, { recursive: true });
+
+    cb(null, uploadPath);
+  },
+
+  filename: (req, file, cb) => {
+    const uniqueName =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+    cb(null, `${uniqueName}${path.extname(file.originalname)}`);
+  },
+});
+
+const upload = multer({ storage });
+
+
+/* NEDOVRSENO */
+app.post("/img/create/galerija", upload.single("image"), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imagePath = `/uploads/${id}/galerija/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
+
+    db.query(sql, [imagePath, id], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
+    }
+
+    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+  });
+});
+
+
+/* NEDOVRSENO */
+app.put("/img/create/objekt", upload.fields([{ name: "thumbnail", maxCount: 1 }, { name: "gallery", maxCount: 10 }]), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.files?.thumbnail) {
+      return res.status(400).json({ message: "Thumbnail is required" });
+    }
+
+    // Thumbnail path
+    const thumbnailPath = `/uploads/${id}/${req.files.thumbnail[0].filename}`;
+
+    // Gallery paths
+    const galleryPaths = (req.files.gallery || []).map(
+      file => `/uploads/${id}/gallery/${file.filename}`
+    );
+
+    res.json({
+      message: "Images uploaded successfully",
+      thumbnail: thumbnailPath,
+      gallery: galleryPaths,
+    });
+  }
+);
+
+
+/* NEDOVRSENO */
+
+app.put("/img/create/objekt", upload.single("image"), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const newImagePath = `/uploads/${id}/${req.file.filename}`;
+
+    // 1️⃣ Get old image path
+    db.query(
+        "SELECT Slika_objekta FROM Poslovni_objekt WHERE ID_objekta = ?", [id], (err, result) => {
+            if (err) {
+                console.error("Greška pri dohvatu podataka:", err);
+                return res.status(500).json({ message: "Greška na serveru" });
+            }
+
+            const oldImage = result?.[0]?.Slika_objekta;
+
+            // 2️⃣ Delete old image ONLY if it exists
+            if (oldImage) {
+                const filePath = `.${oldImage}`;
+
+                fs.access(filePath, fs.constants.F_OK, (accessErr) => {
+                    if (!accessErr) {
+                        fs.rm(filePath, { force: true }, (rmErr) => {
+                            if (rmErr) {
+                                console.error("Greška pri brisanju slike:", rmErr);
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 3️⃣ Update DB with new image
+            db.query(
+                "UPDATE Poslovni_objekt SET Slika_objekta = ? WHERE ID_objekta = ?", [newImagePath, id], (updateErr) => {
+                    if (updateErr) {
+                        console.error("Greška pri upisu u bazu:", updateErr);
+                        return res.status(500).json({ message: "Greška na serveru" });
+                    }
+
+                    res.json({
+                        message: "Slika uspješno unesena!",
+                        image: newImagePath
+                    });
+                }
+            );
+        }
+    );
+});
+
+/* NEDOVRSENO */
+
+app.put("/img/create/stavka", upload.single("image"), (req, res) => {
+    const { id } = req.body;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imagePath = `/uploads/${id}/stavke/${req.file.filename}`;
+
+    console.log("Saved image:", imagePath);
+
+    const sql = 'INSERT INTO Galerija_objekta (Putanja_slike, ID_objekta) VALUES (?, ?)';
+
+    db.query(sql, [imagePath, id], (err, result) => {
+    if (err) {
+      console.error('Greška pri upisu u bazu:', err);
+      return res.status(500).json({ message: 'Greška na serveru.' });
+    }
+
+    res.json({ message: 'Slika uspješno unesena!', id: result.insertId });
+  });
+});
+
+
+
+/* NEDOVRSENO */
+app.get("/img/delete/objekt/:id", (req, res) => {
+    const {id} = req.params;
+
+    const folderPath = "./uploads/restorani/";
+
+    fs.rm(folderPath+id, { recursive: true, force: true }, err => {
+        if (err) {
+            throw err;
+        }
+
+        res.json({message: `${folderPath+id} is deleted!`});
+    });
+})
+
 
 /*
 ▀███▀▀▀██▄   ███▀▀▀███ ▀████▀     ███▀▀▀████ ██▀▀██▀▀███ ███▀▀▀███ 
@@ -610,36 +800,107 @@ app.post('/jelovnici', (req, res) => {
   );
 });
 
+// DOHVAT SVIH JELA (za dropdown)
+app.get('/jelovnici', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT ID_stavke, Naziv_stavke FROM Stavka_jelovnika"
+    )
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
-// unos poslovnog objekta
 
-app.post("/objekti", (req, res) => { 
+// DOHVAT JEDNOG JELA PO ID
+app.get('/jelovnici/:id', async (req, res) => {
 
-    // povlaci json koji salje aplikacija
-    const unos=req.body;
+  const id = req.params.id
 
-    // provjerava ako su uneseni podaci u jsonu
-    if (!unos.Ime_objekta || !unos.Adresa_objekta || !unos.Opis_objekta || !unos.ID_admina || !unos.ID_vlasnika || !unos.Postanski_broj || !unos.Tip_objekta || !unos.Email_objekta || !unos.OIB_objekta) {
-        return res.status(400).send("Missing required fields.");
-    }
+  try {
+    const [stavka] = await db.query(
+      "SELECT * FROM Stavka_jelovnika WHERE ID_stavke = ?",
+      [id]
+    )
 
-    console.log(req.body);
+    const [pi] = await db.query(
+      "SELECT ID_pi FROM PI_u_stavci_jelovnika WHERE ID_stavke = ?",
+      [id]
+    )
 
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-    const sqlQuery = 'INSERT INTO Poslovni_objekt VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-
-    // salje query, zamjenjuje upitnike sa podacima
-    db.query(sqlQuery, [unos.Ime_objekta, unos.Adresa_objekta, unos.Opis_objekta, unos.ID_admina, unos.ID_vlasnika, unos.Postanski_broj, unos.Tip_objekta, unos.Email_objekta, unos.OIB_objekta], (err, result) => {
-        if (err) {
-            console.error('Greška pri dohvatu podataka:', err);
-            return res.status(500).send("Greška na serveru");
-        }
-
-        // vraca rezultat ako je uspjesno upisano
-        res.json(result);
+    res.json({
+      ...stavka[0],
+      Intolerancije: pi.map(p => p.ID_pi)
     })
 
+  } catch (err) {
+    res.status(500).json(err)
+  }
 })
+
+
+// UPDATE JELA
+app.put('/jelovnici/:id', async (req, res) => {
+
+  const id = req.params.id
+  const d = req.body
+
+  try {
+
+    await db.query(`
+      UPDATE Stavka_jelovnika SET
+        Naziv_stavke=?,
+        Cijena_stavke=?,
+        Sastav_stavke=?,
+        ID_objekta=?,
+        ID_admina=?,
+        ID_vlasnika=?
+      WHERE ID_stavke=?
+    `,[
+      d.Naziv_stavke,
+      d.Cijena_stavke,
+      d.Sastav_stavke,
+      d.ID_objekta,
+      d.ID_admina,
+      d.ID_vlasnika,
+      id
+    ])
+
+    // BRIŠI STARE INTOLERANCIJE
+    await db.query(
+      "DELETE FROM PI_u_stavci_jelovnika WHERE ID_stavke=?",
+      [id]
+    )
+
+    // UBACI NOVE
+    for(const pi of d.Intolerancije){
+      await db.query(
+        "INSERT INTO PI_u_stavci_jelovnika (ID_stavke, ID_pi) VALUES (?,?)",
+        [id, pi]
+      )
+    }
+
+    res.json({ message: "Jelo uspješno ažurirano" })
+
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
+
+
+// DOHVAT INTOLERANCIJA
+app.get('/pi', async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija"
+    )
+    res.json(rows)
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
+
 
 
 // unos vlasnika poslovnog objekta
@@ -734,9 +995,8 @@ app.post("/komentari", (req, res) => {
 
 })
 
-
-// unos korisnika
-
+//Petra Grgić
+// registracija korisnika
 app.post("/korisnik", (req, res) => { 
 
     // povlaci json koji salje aplikacija i odvaja ga u zasebne varijable
@@ -753,21 +1013,21 @@ app.post("/korisnik", (req, res) => {
     // provjerava ako su uneseni potrebni podaci u jsonu
 
     if (!Korisnicko_ime || !Lozinka_korisnika || !Ime_korisnika || !Prezime_korisnika || !Email_korisnika) {
-        return res.status(400).json({ message: "Missing required fields." });
+        return res.status(400).json({ message: "Missing required fields." }); //poruka ako fale obavezna polja
     }
 
-    // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
+    // stvara sql upit, upitnici se zamjenjuju sa podacima iz varijable 
     const sqlInsertStavka = `
         INSERT INTO Korisnik 
         (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
         VALUES (?, ?, ?, ?, ?)
     `;
 
-    // salje query, zamjenjuje upitnike sa podacima
+    // salje upit, zamjenjuje upitnike sa unesenim podacima
     db.query(sqlInsertStavka, [Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
         if (err) {
             console.error("Insert error (menu item):", err);
-            return res.status(500).json({ message: "Error inserting menu item." });
+            return res.status(500).json({ message: "Error inserting menu item." }); //greska prilikom unosa podataka
         }
 
         // povlaci id zadnje unesene stavke
@@ -778,16 +1038,16 @@ app.post("/korisnik", (req, res) => {
             return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
         }
 
-        // priprema grupni insert
+        // priprema grupni insert u tablicu PI_korisnika
         const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
 
-        // stavara sql query
+        // stavara sql upit za unos intolerancija
         const sqlInsertIntolerancije = `
             INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
             VALUES ?
         `;
 
-        // salje query sa svim intolerancijama (npr. id stavke je 2 pa ce bit VALUES (2, 1), (2, 2)...)
+        // salje upit sa svim intolerancijama (npr. id stavke je 2 pa ce bit VALUES (2, 1), (2, 2)...)
         db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
             if (err2) {
                 console.error("Insert error (intolerances):", err2);
@@ -799,6 +1059,53 @@ app.post("/korisnik", (req, res) => {
     });
 
 })
+
+
+//unos admina
+app.post("/admin", (req, res) => { 
+    const unos = req.body;
+
+    if (!unos.ime || !unos.prezime || !unos.Ime_admina || !unos.Lozinka_admina) {
+        return res.status(400).send("Missing required fields.");
+    }
+
+    const sqlQuery = 'INSERT INTO Administrator (ime, prezime, Ime_admina, Lozinka_admina) VALUES (?, ?, ?, ?)';
+
+    db.query(sqlQuery, [unos.ime, unos.prezime, unos.Ime_admina, unos.Lozinka_admina], (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu podataka:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+
+        res.json(result);
+    });
+});
+
+// login admina
+app.post("/admin/login", (req, res) => {
+    const { Ime_admina, Lozinka_admina } = req.body;
+
+    if (!Ime_admina || !Lozinka_admina) {
+        return res.status(400).json({ message: "Nedostaju podaci za login." });
+    }
+
+    const sqlQuery = 'SELECT * FROM Administrator WHERE Ime_admina = ? AND Lozinka_admina = ?';
+
+    db.query(sqlQuery, [Ime_admina, Lozinka_admina], (err, result) => {
+        if (err) {
+            console.error("Greška pri provjeri admina:", err);
+            return res.status(500).json({ message: "Greška na serveru." });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Neispravno korisničko ime ili lozinka." });
+        }
+
+        // admin je pronađen
+        res.json({ message: "Uspješan login!", admin: result[0] });
+    });
+});
+
 
 /*
  ▄█▀▀▀█▄█ ███▀▀▀███ ▀████▀     ███▀▀▀███    ▄▄█▀▀▀█▄  ███▀▀██▀▀███
@@ -912,6 +1219,7 @@ app.get("/pi", (req, res) => {
 })
 
 
+
 // ispis admina
 
 app.get("/admin", (req, res) => { 
@@ -955,58 +1263,119 @@ app.get("/admin", (req, res) => {
 
 // ispis objekata
 
-app.get("/objekti", (req, res) => { 
+//app.get("/objekti", (req, res) => { 
 
     // povlaci query ako je unesen ( /objekti?vlasnikID=2&objektID=2 )
-    const {vlasnikID, objektID} = req.query;
+   // const {vlasnikID, objektID} = req.query;
 
-    console.log(vlasnikID, objektID);
+   // console.log(vlasnikID, objektID);
 
     // provjerava ukoliko je unesen req.query
     // ako nije sql query nema WHERE
-    if (isNaN(vlasnikID) && isNaN(objektID)){
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt;';
+    //if (isNaN(vlasnikID) && isNaN(objektID)){
+       // const sqlQuery = 'SELECT * FROM Poslovni_objekt;';
 
-        db.query(sqlQuery, (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, (err, result) => {
+            //if (err) {
+             //   console.error('Greška pri dohvatu podataka:', err);
+               // return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
-    }
+            //res.json(result);
+        //})
+    //}
     // ako je unesen samo vlasnikID sql query ima WHERE ID_vlasnika = ?
-    else if (isNaN(objektID)) {
+    //else if (isNaN(objektID)) {
         // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_vlasnika = ?;';
+      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_vlasnika = ?;';
 
-        db.query(sqlQuery, [Number(vlasnikID)], (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, [Number(vlasnikID)], (err, result) => {
+          //  if (err) {
+            //    console.error('Greška pri dohvatu podataka:', err);
+              //  return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
-    }
+            //res.json(result);
+      //  })
+    //}
     // ako je unesen samo objektID sql query ima WHERE ID_objekta = ?
-    else if (isNaN(vlasnikID)) {
+    //else if (isNaN(vlasnikID)) {
         // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-        const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_objekta = ?;';
+      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_objekta = ?;';
 
-        db.query(sqlQuery, [Number(objektID)], (err, result) => {
-            if (err) {
-                console.error('Greška pri dohvatu podataka:', err);
-                return res.status(500).send("Greška na serveru");
-            }
+        //db.query(sqlQuery, [Number(objektID)], (err, result) => {
+          //  if (err) {
+            //    console.error('Greška pri dohvatu podataka:', err);
+              //  return res.status(500).send("Greška na serveru");
+            //}
     
-            res.json(result);
-        })
+            //res.json(result);
+        //})
+    //}
+
+//})
+
+app.get("/objekti", (req, res) => { 
+    const { vlasnikID, objektID, tip } = req.query;
+
+    let sqlQuery = `
+        SELECT p.*, ROUND(AVG(k.ocjena),1) AS prosjecna_ocjena
+        FROM Poslovni_objekt p
+        LEFT JOIN Komentar k ON p.ID_objekta = k.ID_objekta
+        WHERE 1=1
+    `;
+
+    const params = [];
+
+    if (!isNaN(vlasnikID)) {
+        sqlQuery += ' AND p.ID_vlasnika = ?';
+        params.push(Number(vlasnikID));
     }
 
-})
+    if (!isNaN(objektID)) {
+        sqlQuery += ' AND p.ID_objekta = ?';
+        params.push(Number(objektID));
+    }
 
+    if (tip) {
+        sqlQuery += ' AND p.Tip_objekta = ?';
+        params.push(tip); // tip = "Kafić"
+    }
+
+    sqlQuery += ' GROUP BY p.ID_objekta;';
+
+    db.query(sqlQuery, params, (err, result) => {
+        if (err) {
+            console.error('Greška pri dohvatu objekata:', err);
+            return res.status(500).send("Greška na serveru");
+        }
+        res.json(result);
+    });
+});
+
+//jelovnik
+// Dohvat jelovnika za određeni objekt/kafić
+app.get("/jelovnik", (req, res) => {
+    const { objektID } = req.query; // ID od kafića
+
+    if (!objektID) {
+        return res.status(400).send("Nedostaje ID objekta");
+    }
+
+    const sqlQuery = `
+        SELECT *
+        FROM Stavka_jelovnika
+        WHERE ID_objekta = ?
+    `;
+
+    db.query(sqlQuery, [Number(objektID)], (err, result) => {
+        if (err) {
+            console.error("Greška pri dohvatu jelovnika:", err);
+            return res.status(500).send("Greška na serveru");
+        }
+        res.json(result);
+    });
+});
 
 // ispis vlasnika objekta
 
@@ -1247,6 +1616,246 @@ app.get("/korisnik/:id", (req, res) => {
 
 })
 
+// login vlasnika objekta
+app.post("/vlasnik/prijava", (req, res) => {
+    const { Email_vlasnika, Lozinka_vlasnika } = req.body;
+
+    // provjera da su oba polja unesena
+    if (!Email_vlasnika || !Lozinka_vlasnika) {
+        return res.status(400).json({ message: "Unesite email i lozinku." });
+    }
+
+    // SQL query za provjeru vlasnika
+    const sqlQuery = 'SELECT * FROM Vlasnik_objekta WHERE Email_vlasnika = ? AND Lozinka_vlasnika = ?';
+    db.query(sqlQuery, [Email_vlasnika, Lozinka_vlasnika], (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a vlasnika:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Email ili lozinka nisu ispravni" });
+        }
+
+        // Login uspješan
+        res.json({ message: "Login uspješan", user: result[0] });
+    });
+});
+
+
+//Petra Grgić
+// prijava korisnika
+app.post("/korisnik/prijava", (req, res) => {
+    const { Korisnicko_ime, Lozinka_korisnika } = req.body; //dovhacamo iz body
+
+    if (!Korisnicko_ime || !Lozinka_korisnika) {
+        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." }); //ako neko polje nije uneseno
+    }
+
+    //provjera  postoji li korisnik sa tim podatcima
+    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ? AND Lozinka_korisnika = ?';
+    db.query(sqlQuery, [Korisnicko_ime, Lozinka_korisnika], (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" }); //netocni podatci
+        }
+
+        // prijava uspješna
+        res.json({ message: "Uspoešna prijava", user: result[0] });
+    });
+});
+
+
+//Petra Grgić
+// api za profil korisnika, njegove intolerancije i komentare
+app.get('/korisnik/profil/:id', (req, res) => {
+  const korisnikID = req.params.id //dohvacanje id iz url
+
+  // sql upit za podatke o korisniku sa id iz url
+  const sqlKorisnik = `
+    SELECT 
+      Ime_korisnika,
+      Prezime_korisnika,
+      Email_korisnika,
+      Korisnicko_ime
+    FROM Korisnik
+    WHERE ID_korisnika = ?
+  `
+
+  // sql upit za dohvat naziva korisnikovih intolerancija 
+  const sqlIntolerancije = `
+    SELECT pi.Naziv_pi
+    FROM PI_korisnika pik
+    JOIN Prehrambena_intolerancija pi 
+      ON pik.ID_pi = pi.ID_pi
+    WHERE pik.ID_korisnika = ?
+  `
+
+  // sql upit za dohvat komentara koje je ostavio korisnik sa id iz url
+  const sqlKomentari = `
+    SELECT 
+      k.ID_komentara,
+      k.Sadrzaj_komentara,
+      k.Ocjena,
+      po.Ime_objekta
+    FROM Komentar k
+    JOIN Poslovni_objekt po 
+      ON k.ID_objekta = po.ID_objekta
+    WHERE k.ID_korisnika = ?
+  `
+
+  // izvrsavanje upita za podatke o korisniku
+  db.query(sqlKorisnik, [korisnikID], (err, korisnikResult) => {
+    if (err) {
+      console.error('Greška pri dohvatu korisnika:', err) //greska pri dohvacanju podataka
+      return res.status(500).json({ message: 'Greška pri dohvatu korisnika', error: err })
+    }
+
+    if (korisnikResult.length === 0) {
+      return res.status(404).json({ message: 'Korisnik ne postoji' }) //ako korisnik ne postoji
+    }
+
+    // izvrsavanje upita za podatke o intolerancijama
+    db.query(sqlIntolerancije, [korisnikID], (err2, intolerancijeResult) => {
+      if (err2) {
+        console.error('Greška pri dohvatu intolerancija:', err2) //greska pri dohvacanju podataka
+        return res.status(500).json({ message: 'Greška pri dohvatu intolerancija', error: err2 })
+      }
+
+      // izvrsavanje upita za komentare korisnika
+      db.query(sqlKomentari, [korisnikID], (err3, komentariResult) => {
+        if (err3) {
+          console.error('Greška pri dohvatu komentara:', err3) //greska pri dohvacanju komentara
+          return res.status(500).json({ message: 'Greška pri dohvatu komentara', error: err3 })
+        }
+
+        // json sa podatcia o korisniku, intolerancijama i komentarima
+        res.json({
+          korisnik: korisnikResult[0],
+          intolerancije: intolerancijeResult.map(r => r.Naziv_pi), // samo nazivi
+          komentari: komentariResult 
+        })
+      })
+    })
+  })
+})
+
+
+//Petra Grgić
+// api za profil vlasnika i njegovih objekata
+app.get('/vlasnik/profil/:id', (req, res) => {
+    const vlasnikID = req.params.id //dohvacanje id iz url
+
+  // sql upit za dohvacanje podataka o vlasniku gdje je id vlasnika iz url
+  const sqlVlasnik = `
+    SELECT Ime_vlasnika, Prezime_vlasnika, Email_vlasnika
+    FROM Vlasnik_objekta
+    WHERE ID_vlasnika = ?
+  `;
+
+  // sql upit ua dohvacanje objekata i prosjecne ocjene gdje je id vlasnika iz url
+  const sqlObjekti = `
+    SELECT 
+      po.ID_objekta,
+      po.Ime_objekta,
+      po.Adresa_objekta,
+      po.Tip_objekta,
+      po.Opis_objekta,
+      po.Slika_objekta,
+      IFNULL(AVG(k.Ocjena), 0) AS prosjecna_ocjena
+    FROM Poslovni_objekt po
+    LEFT JOIN Komentar k ON po.ID_objekta = k.ID_objekta
+    WHERE po.ID_vlasnika = ?
+    GROUP BY po.ID_objekta
+  `;
+
+  // upit za vlasnika
+  db.query(sqlVlasnik, [vlasnikID], (err, vlasnikResult) => {
+    if (err) return res.status(500).json({ message: 'Greška vlasnik', err }) // greska pri dohvacanju
+    if (vlasnikResult.length === 0) return res.status(404).json({ message: 'Vlasnik ne postoji' }) // ako nema vlasnika sa tim id
+
+    // nakon sta smo nasli vlasnika trazimo nejgove objekte
+    db.query(sqlObjekti, [vlasnikID], (err2, objektiResult) => {
+      if (err2) return res.status(500).json({ message: 'Greška objekti', err2 }) //greska pri dohvacanju objekata
+    
+      // json odgovor sa podatcima o vlasniku i njegovim obhjektima
+      res.json({
+        vlasnik: vlasnikResult[0],
+        objekti: objektiResult
+      })
+    })
+  })
+})
+
+// Petra Grgić
+// api za profil admina i sve objekte
+app.get('/admin/profil/:id', (req, res) => {
+  const adminID = req.params.id //duhvacamo id admina iz url
+
+  // sql upit za dohvacanje podataka o adminu gdje je id kao u url
+  const adminQuery = `
+    SELECT 
+      ID_admina,
+      ime,
+      prezime,
+      Ime_admina
+    FROM Administrator
+    WHERE ID_admina = ?
+  `
+// upit za admina
+  db.query(adminQuery, [adminID], (err, adminResult) => {
+    if (err) {
+      console.error('Greška pri dohvatu admina:', err) //greska u dohvacanju admina
+      return res.status(500).json({ error: 'Greška pri dohvatu admina' })
+    }
+
+    if (adminResult.length === 0) {
+      return res.status(404).json({ error: 'Admin ne postoji' }) //ako admin sa tim id ne postoji
+    }
+
+    const admin = adminResult[0] //spremamo rezultate o pronademon adminu
+
+    // sql upit za dohvatcanje svih objekata i njihovih ocjena
+    const objektiQuery = `
+      SELECT 
+        po.ID_objekta,
+        po.Ime_objekta,
+        po.Adresa_objekta,
+        po.Tip_objekta,
+        po.Opis_objekta,
+        po.Slika_objekta,
+        ROUND(AVG(k.Ocjena), 1) AS prosjecna_ocjena
+      FROM Poslovni_objekt po
+      LEFT JOIN Komentar k ON po.ID_objekta = k.ID_objekta
+      GROUP BY po.ID_objekta
+      ORDER BY po.Ime_objekta
+    `
+//izvrsavanje upita za objekte
+    db.query(objektiQuery, (err, objektiResult) => {
+      if (err) {
+        console.error('Greška pri dohvatu objekata:', err) //greska u dohvacanju objekata
+        return res.status(500).json({ error: 'Greška pri dohvatu objekata' })
+      }
+
+      // json sa podatcima o adminu i podatcima o svim objetima
+      res.json({
+        admin,
+        objekti: objektiResult
+      })
+    })
+  })
+})
+
+
+
 app.listen(port, () => {
     console.log(`Server radi na portu ${port}`); //poruka da se server pokrece
 });
+
+
+
+

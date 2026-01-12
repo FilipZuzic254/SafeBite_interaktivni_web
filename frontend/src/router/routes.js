@@ -12,7 +12,17 @@ const routes = [
       { path: '/registracija/administrator', component: () => import('pages/RegistracijaAdminaPage.vue') },
       { path: '/registracija/vlasnik', component: () => import('src/pages/RegistracijaVlasnikaObjektaPage.vue') },
       { path: '/unosJela', component: () => import('pages/UnosJelaPage.vue') },
-      { path: '/unosPI', component: () => import('pages/UnosIntolerancijePage.vue') }
+      { path: '/unosPI', component: () => import('pages/UnosIntolerancijePage.vue') },
+      { path: '/profilKorisnik', component: () => import('pages/KorisnikProfilPage.vue') },
+      { path: '/profilAdmin', component: () => import('pages/AdminProfilPage.vue') }, 
+      { path: '/profilVlasnik', component: () => import('pages/VlasnikProfilPage.vue') },
+      { path: '/unosObjekta', component: () => import('pages/UnosObjektaPage.vue') },
+      {path: '/jelovnik', component:() => import('pages/JelovnikPage.vue')}, 
+      {path: '/pregledJelovnika', component:() => import('pages/PregledJelovnikaPage.vue')}, 
+      {path: '/unosJela', component:() => import('pages/UnosJelaPage.vue')},  
+      {path: '/unosKorisnikPI', component:() => import('pages/UnosKorisnikoveIntolerancijePage.vue')}, 
+      {path: '/uredivanjeJela', component:() => import('pages/UredivanjeJelaPage.vue')}, 
+      { path: '/test', component: () => import('pages/TestPage.vue') }
     ],
   },
 

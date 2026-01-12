@@ -3,29 +3,32 @@
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 400px">
       <q-card-section>
-        <div class="text-h6">Unos prehrambene intolerancije</div>
+        <div class="text-h6">Unos slika</div>
       </q-card-section>
 
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="ObrazacIntolerancija">
-          <q-input filled v-model="naziv_pi" label="Naziv intolerancije" required />
 
-          <q-input
-            filled
-            v-model.number="id_admina"
-            label="ID admina"
-            type="number"
-            min="1"
-            required
-            class="q-mt-sm"
-          />
+            <q-input
+                filled
+                v-model.number="id_restorana"
+                label="ID restorana"
+                type="number"
+                min="1"
+                required
+                class="q-mt-sm"
+            />
 
-          <div class="q-mt-md">
-            <q-btn type="submit" label="Unesi" color="primary" :loading="loading" />
-          </div>
+        
+            <q-file filled v-model="image" label="Img upload" class="q-mt-sm"/>
+        
 
-          <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
-          <div v-if="success" class="text-positive q-mt-sm">{{ success }}</div>
+            <div class="q-mt-md">
+                <q-btn type="submit" label="Unesi" color="primary" :loading="loading" />
+            </div>
+
+            <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
+            <div v-if="success" class="text-positive q-mt-sm">{{ success }}</div>
         </q-form>
       </q-card-section>
     </q-card>
@@ -36,12 +39,14 @@
 import { ref } from 'vue'
 import axios from 'axios'
 
-const naziv_pi = ref('')
-const id_admina = ref(null)
+const id_restorana = ref(null)
 const loading = ref(false)
 const error = ref(null)
 const success = ref(null)
 const ObrazacIntolerancija = ref(null)
+
+const image = ref(null)
+
 
 const submitForm = async () => {
   loading.value = true
@@ -49,18 +54,28 @@ const submitForm = async () => {
   success.value = null
 
   try {
-    const res = await axios.post('http://localhost:3000/pi', {
-      Naziv_pi: naziv_pi.value,
-      ID_admina: id_admina.value
-    })
+    const formData = new FormData()
+    formData.append('id', id_restorana.value)
+    formData.append('image', image.value) // THIS is the file
+
+    const res = await axios.put(
+      'http://localhost:3000/img/create/objekt',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
 
     success.value = res.data.message || 'Intolerancija uspješno unesena!'
 
     setTimeout(() => {
       ObrazacIntolerancija.value?.reset()
-      naziv_pi.value = ''
-      id_admina.value = null
+      id_restorana.value = null
+      image.value = null
     }, 2000)
+
   } catch (err) {
     if (err.response) {
       error.value = err.response.data.message || 'Greška prilikom unosa.'

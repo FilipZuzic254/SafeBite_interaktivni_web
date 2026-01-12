@@ -1,3 +1,4 @@
+<!-- Petra Grgić -->
 <template>
   <q-page class="flex flex-center"> <!-- centriran sadržaj -->
     <q-card class="q-pa-md" style="width: 400px"> <!-- kartica gdje je obrazac -->
@@ -44,7 +45,7 @@ const lozinka = ref('')
 const intolerancije = ref([])
 
 const loading = ref(false) //animacija gumba loading
-const error = ref(null) //teskz grške
+const error = ref(null) //teskt grške
 const success = ref(null) //tekst o uspješnoj registraciji
 
 // ref na obrazac
