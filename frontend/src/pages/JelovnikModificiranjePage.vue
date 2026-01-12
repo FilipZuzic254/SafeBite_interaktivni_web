@@ -4,6 +4,17 @@
     <h1 class="naslov">{{ kafic.Ime_objekta }}</h1>
     <p class="citat">{{ kafic.Adresa_objekta }}</p>
 
+    <!-- Gumb za dodavanje nove stavke jelovnika -->
+    <div class="q-mb-md text-center">
+      <q-btn
+        color="primary"
+        text-color="white"
+        label="Dodaj novu stavku jelovnika"
+        rounded
+        @click="dodajNovuStavku"
+      />
+    </div>
+
     <!-- Jelovnik -->
     <div class="q-gutter-md">
       <q-card
@@ -30,83 +41,67 @@
               {{ pi }}
             </span>
           </div>
+
+          <!-- Gumbi Uredi i Izbriši -->
+          <div class="q-mt-md q-gutter-sm button-wrapper">
+            <q-btn
+              color="primary"
+              text-color="white"
+              label="Uredi"
+              rounded
+              @click="urediStavku(stavka)"
+            />
+            <q-btn
+              color="negative"
+              text-color="white"
+              label="Izbriši"
+              rounded
+              @click="confirmDelete(stavka)"
+            />
+          </div>
         </q-card-section>
       </q-card>
     </div>
 
-    <!-- KOMENTARI -->
-    <div class="komentar-wrapper">
-      <h2 class="komentar-naslov">Ostavite komentar</h2>
-
-      <q-card class="komentar-card" flat bordered>
+    <!-- Prikaz svih komentara -->
+    <div class="svi-komentari q-mt-lg">
+      <h3 class="komentar-naslov">Komentari korisnika</h3>
+      <q-card
+        v-for="kom in komentari"
+        :key="kom.ID_komentara"
+        class="komentar-item"
+        flat
+        bordered
+      >
         <q-card-section>
-          <q-input
-            v-model="noviKomentar.sadrzaj"
-            type="textarea"
-            label="Vaš komentar"
-            outlined
-            autogrow
-          />
-
-          <q-select
-            v-model="noviKomentar.ocjena"
-            :options="[1,2,3,4,5]"
-            label="Ocjena"
-            outlined
-            class="q-mt-md"
-          />
-
-          <q-btn
-            label="Pošalji komentar"
-            color="green"
-            class="q-mt-lg full-width"
-            @click="posaljiKomentar"
-          />
+          <div class="komentar-user">
+            {{ kom.Ime_korisnika }} {{ kom.Prezime_korisnika }}
+            <span class="komentar-ocjena">({{ kom.Ocjena }}/5)</span>
+          </div>
+          <div class="komentar-text">{{ kom.Sadrzaj_komentara }}</div>
         </q-card-section>
       </q-card>
-
-      <!-- Prikaz svih komentara -->
-      <div class="svi-komentari q-mt-lg">
-        <h3 class="komentar-naslov">Komentari korisnika</h3>
-        <q-card
-          v-for="kom in komentari"
-          :key="kom.ID_komentara"
-          class="komentar-item"
-          flat
-          bordered
-        >
-          <q-card-section>
-            <div class="komentar-user">
-              {{ kom.Ime_korisnika }} {{ kom.Prezime_korisnika }}
-              <span class="komentar-ocjena">({{ kom.Ocjena }}/5)</span>
-            </div>
-            <div class="komentar-text">{{ kom.Sadrzaj_komentara }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { Notify, useQuasar } from "quasar";
 import axios from "axios";
 
 const route = useRoute();
-const objektID = Number(route.query.objektID);
+const router = useRouter();
+const $q = useQuasar();
 
+const objektID = Number(route.query.objektID);
 const stavke = ref([]);
 const kafic = ref({});
 const komentari = ref([]);
 
-const noviKomentar = ref({
-  sadrzaj: "",
-  ocjena: null
-});
-
 // ----------------------
-// Čitanje korisnika iz localStorage
+// Dohvat podataka korisnika
 // ----------------------
 const korisnikID = ref(null);
 const korisnikIme = ref("");
@@ -120,7 +115,7 @@ onMounted(() => {
 });
 
 // ----------------------
-// Dohvat jelovnika i objekta
+// Dohvat objekta, jelovnika i komentara
 // ----------------------
 const loadPodaci = async () => {
   try {
@@ -142,9 +137,6 @@ const loadPodaci = async () => {
 
 onMounted(loadPodaci);
 
-// ----------------------
-// Funkcija za dohvat komentara
-// ----------------------
 const loadKomentari = async () => {
   try {
     const res = await axios.get("http://localhost:3000/komentari", {
@@ -157,41 +149,59 @@ const loadKomentari = async () => {
 };
 
 // ----------------------
-// Slanje komentara
+// Funkcija za Uredi
 // ----------------------
-const posaljiKomentar = async () => {
-  
-  const token = JSON.parse(localStorage.getItem('token'))
-  
-  const userId = token.id
-  if (!userId) {
-    alert("Morate biti prijavljeni da biste ostavili komentar.");
-    return;
-  }
+function urediStavku(stavka) {
+  router.push({
+    path: "/uredivanjeJela",
+    query: { ID_stavke: stavka.ID_stavke }
+  });
+}
 
-  if (!noviKomentar.value.sadrzaj || !noviKomentar.value.ocjena) {
-    alert("Molimo unesite komentar i ocjenu.");
-    return;
-  }
+// ----------------------
+// Funkcija za potvrdu brisanja
+// ----------------------
+function confirmDelete(stavka) {
+  $q.dialog({
+    title: "Potvrda brisanja",
+    message: `Jeste li sigurni da želite izbrisati stavku "${stavka.Naziv_stavke}"?`,
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    deleteStavku(stavka.ID_stavke);
+  });
+}
 
+// ----------------------
+// Funkcija za brisanje stavke iz baze
+// ----------------------
+const deleteStavku = async (id) => {
   try {
-    await axios.post("http://localhost:3000/komentari", {
-      Sadrzaj_komentara: noviKomentar.value.sadrzaj,
-      Ocjena: noviKomentar.value.ocjena,
-      ID_korisnika: userId,
-      ID_objekta: objektID
+    await axios.delete(`http://localhost:3000/jelovnici/${id}`);
+    stavke.value = stavke.value.filter(st => st.ID_stavke !== id);
+
+    Notify.create({
+      type: "positive",
+      message: "Stavka jelovnika je uspješno obrisana"
     });
-
-    noviKomentar.value.sadrzaj = "";
-    noviKomentar.value.ocjena = null;
-
-    alert("Komentar uspješno spremljen!");
-    await loadKomentari();
   } catch (err) {
-    console.error("Greška backend:", err.response?.data || err.message);
-    alert("Greška pri slanju komentara.");
+    console.error(err);
+    Notify.create({
+      type: "negative",
+      message: "Greška pri brisanju stavke"
+    });
   }
 };
+
+// ----------------------
+// Funkcija za dodavanje nove stavke
+// ----------------------
+function dodajNovuStavku() {
+  router.push({
+    path: "/unosJela",
+    query: { objektID } // šaljemo ID objekta da se zna gdje dodati
+  });
+}
 </script>
 
 <style scoped>
@@ -212,10 +222,10 @@ const posaljiKomentar = async () => {
 .intolerancije-wrapper { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
 .intolerancija-badge { background: #2e7d32; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; }
 
-.komentar-wrapper { margin-top: 60px; }
-.komentar-naslov { text-align: center; font-size: 26px; margin-bottom: 20px; }
-.komentar-card { max-width: 600px; margin: 0 auto; border-radius: 20px; }
+.button-wrapper { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
 
+.svi-komentari { margin-top: 60px; }
+.komentar-naslov { text-align: center; font-size: 26px; margin-bottom: 20px; font-weight: 500; }
 .komentar-item { margin-bottom: 12px; border-radius: 12px; padding: 10px; }
 .komentar-user { font-weight: 600; margin-bottom: 6px; }
 .komentar-ocjena { font-weight: 400; color: #2e7d32; }

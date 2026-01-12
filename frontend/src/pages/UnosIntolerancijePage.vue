@@ -11,7 +11,7 @@
           <q-input filled v-model="naziv_pi" label="Naziv intolerancije" required />
 
           <div class="q-mt-md">
-            <q-btn type="submit" label="Unesi" color="primary" :loading="loading" />
+            <q-btn type="submit" label="Unesi" color="primary" rounded :loading="loading" />
           </div>
 
           <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
