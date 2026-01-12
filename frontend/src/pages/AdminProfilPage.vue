@@ -54,6 +54,13 @@
           >
             <q-card class="objekt-card" bordered>
 
+                 <!-- KLIKABILNA KARTICA -->
+           <q-card
+  class="objekt-card cursor-pointer"
+  bordered
+  @click="otvoriJelovnik(obj)"
+>
+              
               <q-img
                 :src="obj.Slika_objekta
                 ? 'http://localhost:3000' + obj.Slika_objekta
@@ -91,14 +98,16 @@
                   {{ obj.Opis_objekta }}
                 </div>
               </q-card-section>
-              <q-btn
-  color="negative"
-  label="Izbriši objekt"
-  class="full-width q-mt-sm"
-  rounded
-  @click="confirmDelete(obj)"
-/>
+             <div class="row justify-center q-mt-md q-mb-md">
+  <q-btn
+    color="negative"
+    label="Izbriši objekt"
+    rounded
+    @click.stop="confirmDelete(obj)"
+  />
+</div>
             </q-card>
+          </q-card>
           </div>
         </div>
       </q-card-section>
@@ -111,6 +120,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import {Notify, useQuasar} from 'quasar'
+
+const $q = useQuasar()
 
 const router = useRouter() //za navigaciju
 const admin = ref({})
@@ -140,11 +152,61 @@ onMounted(async () => {
     error.value = 'Greška pri dohvaćanju admin profila.'
   }
 })
+
+// 🔹 OTVARANJE STRANICE ZA MODIFICIRANJE JELOVNIKA
+function otvoriJelovnik(obj) {
+  router.push({
+    path: '/jelovnikModificiraj',
+    query: {
+      objektID: obj.ID_objekta
+    }
+  })
+}
+
  // funkcija za otvaranje stranice za unos novog objekta
 function dodajObjekt() {
   router.push('/unosObjekta')
 }
+
+// funkcija za poruku o brisanju
+const confirmDelete = (obj) => {
+  $q.dialog({
+    title: 'Potvrda brisanja',
+    message: `Jeste li sigurni da želite izbrisati objekt "${obj.Ime_objekta}"?`,
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    deleteObjekt(obj.ID_objekta)
+  })
+}
+
+
+ //funkcija za brisanje objekta iz baze
+const deleteObjekt = async (id) => {
+  try {
+    await axios.delete(`http://localhost:3000/objekti/${id}`)
+
+    // ukloni objekt iz liste bez reloadanja
+    objekti.value = objekti.value.filter(
+      obj => obj.ID_objekta !== id
+    )
+
+    Notify.create({
+      type: 'positive',
+      message: 'Poslovni objekt je uspješno obrisan'
+    })
+
+  } catch (err) {
+    console.error(err)
+
+    Notify.create({
+      type: 'negative',
+      message: 'Greška pri brisanju poslovnog objekta'
+    })
+  }
+}
 </script>
+
 
 <style scoped>
 .q-page {

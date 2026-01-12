@@ -64,7 +64,11 @@
             @input="validateOIB"
           />
 
+          
+          <q-file filled v-model="thumbnail" label="Naslovna slika objekta" class="q-mt-sm"/>
+
           <!--sumbit gumb-->
+
           <div class="q-mt-md">
             <q-btn type="submit" label="Unesi objekt" color="primary" rounded :loading="loading" />
           </div>
@@ -88,6 +92,7 @@ const postanskiBroj = ref(null) //odabrani grad (postanski broj)
 const tipObjekta = ref(null) //tip objekta
 const emailObjekta = ref('') //email objekta
 const oibObjekta = ref('') //OIB objekta
+const thumbnail = ref(null)
 
 const gradOptions = ref([]) //opcije gradova dohvacene iz baze
 const loading = ref(false) //status loading spinnra
@@ -143,9 +148,26 @@ const submitForm = async () => {
 
     //post request za unos objekta u bazu
     const res = await axios.post('http://localhost:3000/objekti', dataToSend)
+    const id_objekta = res.data.id
+
+    const imgData = new FormData()
+    imgData.append('id', id_objekta)
+    imgData.append('image', thumbnail.value)
+
+    await axios.put('http://localhost:3000/img/add/objekt',
+      imgData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }
+    )
+
     success.value = res.data.message
+    
 
     //reset forme i svih varijabli nakon uspjesnog unosa (s delay-om 1.5s)
+
+
+    
     setTimeout(() => {
       formObjekt.value?.reset()
       imeObjekta.value = ''
@@ -155,7 +177,9 @@ const submitForm = async () => {
       tipObjekta.value = null
       emailObjekta.value = ''
       oibObjekta.value = ''
+      thumbnail.value = null
     }, 1500)
+    
 
   } catch (err) {
     console.error(err)

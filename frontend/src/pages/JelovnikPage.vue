@@ -1,11 +1,17 @@
 <!-- Elena Jašarević-->
 <template>
-  <div class="q-pa-md menu-wrapper">
+  <div class="q-pa-md menu-wrapper"> <!--quasar klasa za medium padding, menu wrapper je klasa za centralizaciju sadržaja-->
     <!-- Naziv i adresa objekta -->
-    <h1 class="naslov">{{ kafic.Ime_objekta }}</h1>
-    <p class="citat">{{ kafic.Adresa_objekta }}</p>
+    <h1 class="naslov">{{ kafic.Ime_objekta }}</h1> <!--dohvaća naziv iz kafica objekta-->
+    <p class="citat">{{ kafic.Adresa_objekta }}</p> <!--prikazuje adresu objekta-->
 
     <!-- Jelovnik -->
+    <!--q-gutter-md dodaje srednji razmak između karica
+    v-for="stavka in stavke", iteracija kroz niz stavke (jelovnik kafića)
+    :key="stavka.ID_stavke", jedinstveni ključ za svaku stavku 
+    klasa za css uredivanje
+    flat kartica bez sjene
+    bordered znači da kartica ima rub-->
     <div class="q-gutter-md">
       <q-card
         v-for="stavka in stavke"
@@ -14,15 +20,22 @@
         flat
         bordered
       >
-        <q-card-section>
-          <div class="stavka-header">
-            <div class="stavka-naziv">{{ stavka.Naziv_stavke }}</div>
-            <div class="stavka-cijena">{{ stavka.Cijena_stavke }} €</div>
+        <q-card-section> <!--sadržaj kartice-->
+          <div class="stavka-header"> <!--naziv i cijena u jednom retku-->
+            <div class="stavka-naziv">{{ stavka.Naziv_stavke }}</div> <!--naziv jela-->
+            <div class="stavka-cijena">{{ stavka.Cijena_stavke }} €</div><!--cijena jela-->
           </div>
 
+          <!--prikazuje opis stavke-->
           <div class="stavka-opis">{{ stavka.Sastav_stavke }}</div>
 
+          <!--v-if prikazuje samo ako postoje intolerancije za tu stavku
+          stavka.intolerancije.split(', ') pretvara string s listom intolerancija u niz
+          intolerancija-badge je oznaka sa zelenom pozadinom i bijelim tekstom gdje je tekst intolerancije-->
           <div v-if="stavka.intolerancije" class="intolerancije-wrapper">
+            
+            <!--span je za inline sadržaj, unutar koda neka riječ npr.
+            span prikazuje jednu intoleranciju-->
             <span
               v-for="pi in stavka.intolerancije.split(', ')"
               :key="pi"
@@ -36,9 +49,19 @@
     </div>
 
     <!-- KOMENTARI -->
-    <div class="komentar-wrapper">
-      <h2 class="komentar-naslov">Ostavite komentar</h2>
+    <div class="komentar-wrapper"> <!--wrapper je za sekciju komentara-->
+      <h2 class="komentar-naslov">Ostavite komentar</h2> <!--naslov-->
 
+
+      <!--UNOS NOVOG KOMENTARA
+      kartica za unos novog komentara
+      q-card-section, unutrašnjost kartice, gdje stavljamo sadržaj
+      q-input je textarea za unos teksta
+      v-model="noviKomentar.sadrzaj" veže tekst koji korisnik napiše u našu varijablu noviKOmentar.sadrzaj
+      kada korisnik upiše tekst automatski se sprema u tu varijablu
+      type="textarea" veliko polje za tekst ne samo jedna linija
+      outlined, polje ima obrub
+      autogrow je da polje "raste" dok korisnik piše tekst-->
       <q-card class="komentar-card" flat bordered>
         <q-card-section>
           <q-input
@@ -49,6 +72,12 @@
             autogrow
           />
 
+          <!--ODABIR OCJENE 
+          q-select je dropdown meni
+          v-model="noviKomentar.ocjena" veže odabranu ocjenu od 1-5 u objekt noviKomentar
+          :options="[1,2,3,4,5]", opcije za ocjenu
+          label="Ocjena" prikazuje label iznad opcije za dropdown
+          class="q-mt-md", razmak iznad (margin top)-->
           <q-select
             v-model="noviKomentar.ocjena"
             :options="[1,2,3,4,5]"
@@ -57,6 +86,12 @@
             class="q-mt-md"
           />
 
+          <!--GUMB ZA SLANJE KOMENTARA
+          q-btn je quasar gumb
+          label="Pošalji komentar", tekst na gumbu
+          color green je da je gumb zelen
+          class="q-mt-lg full-width", razmak iznad i da gumb puni cijelu širinu kartice
+          @click je da kada se klikne pokrece se funckija posaljiKomentar-->
           <q-btn
             label="Pošalji komentar"
             color="green"
@@ -67,9 +102,19 @@
         </q-card-section>
       </q-card>
 
-      <!-- Prikaz svih komentara -->
+      <!-- PRIKAZ SVIH KOMENTARA
+        <div class="svi-komentari q-mt-lg">, odlomak gdje su svi komentari
+          q-mt-lg je razmak od vrha
+          h3 naslov sekcije-->
       <div class="svi-komentari q-mt-lg">
         <h3 class="komentar-naslov">Komentari korisnika</h3>
+
+        <!--JEDAN KOMENTAR IZGLED
+        v-for="kom in komentari", prolazi kroz sve komentare koje imamo u nizu komentari
+        :key="kom.ID_komentara", Vue treba jedinstveni ključ za svaki element u listi
+        komentar-item, stil kartice 
+        komentar-user, prikazuje ime, prezime i ocjenu korisnika
+        komentar-text, tekst samog komentara-->
         <q-card
           v-for="kom in komentari"
           :key="kom.ID_komentara"
@@ -90,43 +135,43 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import axios from "axios";
+<script setup> 
+import { ref, onMounted } from "vue"; //ref stvara reaktivne varijable, kada se promjene vue automatski ažurira stranicu, onMOunted se pokreće kada se komponenta učita
+import { useRoute } from "vue-router"; //useRoute služi da dobijemo parametre iz URL
+import axios from "axios"; //axios je alat za slanje zahtjeva serveru
 
 const route = useRoute();
-const objektID = Number(route.query.objektID);
+const objektID = Number(route.query.objektID); //dohvaća ID kafica iz URL-a, Number pretvara iz stringa u broj
 
-const stavke = ref([]);
-const kafic = ref({});
-const komentari = ref([]);
+const stavke = ref([]); //niz svih svaki jelovnika 
+const kafic = ref({}); //sve informacije o kafiću
+const komentari = ref([]); //niz svih komentara za taj kafić
 
+//varijabla u koju spremamo tekst i ocjenu koju korisnik upisuje
 const noviKomentar = ref({
   sadrzaj: "",
   ocjena: null
 });
 
-// ----------------------
 // Čitanje korisnika iz localStorage
-// ----------------------
 const korisnikID = ref(null);
 const korisnikIme = ref("");
 
-onMounted(() => {
-  const storedUserID = localStorage.getItem("userID");
+
+onMounted(() => { //dohvaca id i ime korisnika, ako je prijavljen:
+  const storedUserID = localStorage.getItem("userID");// localstorage je mjesto gdje browser cuva podatke, npr. kad se korisnik prijavio
   const storedUserName = localStorage.getItem("userName");
 
+  //korisnikID.value i korisnikIme.value su reaktivne vrijenosti koje vue prati
   if (storedUserID) korisnikID.value = Number(storedUserID);
   if (storedUserName) korisnikIme.value = storedUserName;
 });
 
-// ----------------------
-// Dohvat jelovnika i objekta
-// ----------------------
+// DOHVAT PODATAKA KAFIĆA I JELOVNIKA
+//prvo dohvaca informacije o kaficu, onda jelovnik
 const loadPodaci = async () => {
   try {
-    const kaficRes = await axios.get("http://localhost:3000/objekti", {
+    const kaficRes = await axios.get("http://localhost:3000/objekti", {//salje serveru da dobije podatke
       params: { objektID }
     });
     kafic.value = kaficRes.data[0];
@@ -136,6 +181,7 @@ const loadPodaci = async () => {
     });
     stavke.value = res.data;
 
+    //dohvaca i komentare
     await loadKomentari();
   } catch (err) {
     console.error(err);
@@ -144,9 +190,10 @@ const loadPodaci = async () => {
 
 onMounted(loadPodaci);
 
-// ----------------------
-// Funkcija za dohvat komentara
-// ----------------------
+//FUNKCIJA ZA DOHVAT KOMENTARA
+//poziv servera da dobije sve komentare za ovaj kafic 
+//spremaju se u komentari.value
+//vue automatski prikazuju listu komentara
 const loadKomentari = async () => {
   try {
     const res = await axios.get("http://localhost:3000/komentari", {
@@ -158,36 +205,42 @@ const loadKomentari = async () => {
   }
 };
 
-// ----------------------
-// Slanje komentara
-// ----------------------
+
+//FUNKCIJA ZA SLANJE KOMENTARA
+
 const posaljiKomentar = async () => {
   
+  //dohvaca token iz localstorega, token sadrzi ID korisnika
   const token = JSON.parse(localStorage.getItem('token'))
   
   const userId = token.id
-  if (!userId) {
+  if (!userId) { //ako korisnik nije prijavljen ne može ostaviti komentar
     alert("Morate biti prijavljeni da biste ostavili komentar.");
     return;
   }
 
+  //provjerava je li korisnik unesao tekst i ocjenu
+  //ako nije javlja grešku
   if (!noviKomentar.value.sadrzaj || !noviKomentar.value.ocjena) {
     alert("Molimo unesite komentar i ocjenu.");
     return;
   }
 
+  //ako je sve uredu šalje se post zahtjev serveru da spremi komentar
+  //nakon uspjeha: prazni polja za komentar i ocjenu i prikazuje alert da je uspješno
+  //ponovno dohvaca komentare da se novi odmah prikazu
   try {
     await axios.post("http://localhost:3000/komentari", {
-      Sadrzaj_komentara: noviKomentar.value.sadrzaj,
-      Ocjena: noviKomentar.value.ocjena,
-      ID_korisnika: userId,
+      Sadrzaj_komentara: noviKomentar.value.sadrzaj, //dohvaca sadrzaj novog komentara
+      Ocjena: noviKomentar.value.ocjena, //dohvaca sadrzaj ocjene
+      ID_korisnika: userId,  
       ID_objekta: objektID
     });
 
     noviKomentar.value.sadrzaj = "";
     noviKomentar.value.ocjena = null;
 
-    alert("Komentar uspješno spremljen!");
+    alert("Komentar uspješno spremljen!"); //potvrdni alert da je komentar uspjesno unesen
     await loadKomentari();
   } catch (err) {
     console.error("Greška backend:", err.response?.data || err.message);

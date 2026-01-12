@@ -33,7 +33,6 @@
       @click.stop
     >
       <q-list>
-
         <!-- Početna-->
         <q-item clickable v-ripple to="/">
           <q-item-section>Početna</q-item-section>
@@ -113,11 +112,44 @@
     <!-- CONTENT -->
     <q-page-container>
       <router-view />
+
+      <!-- FOOTER -->
+      <footer class="page-footer">
+        <div class="footer-columns">
+          <!-- Stupac 1: Kontakt -->
+          <div class="footer-section">
+            <strong>Kontakt</strong>
+            <div>
+              <q-icon name="mail" /> 
+              <a href="mailto:safebite.gmail.com">safebite.gmail.com</a>
+            </div>
+            <div>
+              <q-icon name="phone" /> 
+              <span>+385 51 123 456</span>
+            </div>
+          </div>
+
+          <!-- Stupac 2: Lokacija + copyright -->
+          <div class="footer-section">
+            <strong>Lokacija</strong>
+            <div>
+              <q-icon name="place" /> 
+              <a href="https://www.google.com/maps/search/?api=1&query=Rijeka+Korzo+22" target="_blank">
+                Rijeka, Korzo 22
+              </a>
+            </div>
+
+            <!-- Licenca / copyright -->
+            <div class="footer-bottom">
+              © 2026 SafeBite. Sva prava pridržana.
+            </div>
+          </div>
+        </div>
+      </footer>
+
     </q-page-container>
 
   </q-layout>
-
-
 </template>
 
 <script setup>
@@ -150,6 +182,76 @@ function toggleDrawer() {
 </script>
 
 <style lang="scss">
+/* Sticky footer setup */
+html, body, #q-app {
+  height: 100%;
+}
+
+q-layout {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+q-page-container {
+  flex: 1 0 auto; /* sadržaj raste, footer ostaje na dnu */
+}
+
+.page-footer {
+  background-color: $primary; // koristi svoj $primary
+  color: white;
+  padding: 40px 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-shrink: 0;
+
+  .footer-columns {
+    display: flex;
+    justify-content: center; /* centriramo stupce */
+    width: 100%;
+    max-width: 900px;
+    gap: 80px;
+    flex-wrap: wrap; /* responsive */
+    text-align: center;
+  }
+
+  .footer-section {
+    flex: 1 1 250px; /* svaki stupac minimalno 250px */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+
+    strong {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s;
+      &:hover {
+        color: #ffeb3b;
+        text-decoration: underline;
+      }
+    }
+
+    q-icon {
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .footer-bottom {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}
+
 .top-drawer {
   position: absolute;
   top: 0;
@@ -159,19 +261,13 @@ function toggleDrawer() {
   z-index: 2000;
 }
 
-.page-footer {
-  background-color: $primary;
-  padding: 16px 0;
-  width: 100%;
-}
-
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.3); // blago zatamnjena
+  background: rgba(0, 0, 0, 0.3);
   z-index: 1500;
 }
 </style>
