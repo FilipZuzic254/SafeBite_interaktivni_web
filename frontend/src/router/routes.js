@@ -22,7 +22,8 @@ const routes = [
       {path: '/unosJela', component:() => import('pages/UnosJelaPage.vue')},  
       {path: '/unosKorisnikPI', component:() => import('pages/UnosKorisnikoveIntolerancijePage.vue')}, 
       {path: '/uredivanjeJela', component:() => import('pages/UredivanjeJelaPage.vue')}, 
-      { path: '/test', component: () => import('pages/TestPage.vue') }
+      { path: '/test', component: () => import('pages/TestPage.vue') },
+      { path: '/slike', component: () => import('pages/DodavanjeSlika.vue') }
     ],
   },
 
