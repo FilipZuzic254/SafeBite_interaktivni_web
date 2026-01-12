@@ -4,7 +4,7 @@ const cors = require("cors");
 const mysql = require('mysql2');
 const multer = require('multer')
 
-// Stvaranje veze na mysql, test
+// Stvaranje veze na mysql
 const db = mysql.createConnection({
     host: 'ucka.veleri.hr',
     user: 'fzuzic',
@@ -61,10 +61,9 @@ const storage = multer.diskStorage({
   },
 
   filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
 
-    cb(null, `${uniqueName}${path.extname(file.originalname)}`);
+    cb(null, `${uniqueName}${file.originalname}`);
   },
 });
 
@@ -123,7 +122,7 @@ app.put("/img/create/objekt", upload.fields([{ name: "thumbnail", maxCount: 1 },
 
 /* NEDOVRSENO */
 
-app.put("/img/create/objekt", upload.single("image"), (req, res) => {
+app.put("/img/add/objekt", upload.single("image"), (req, res) => {
     const { id } = req.body;
 
     if (!req.file) {
