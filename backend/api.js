@@ -1378,6 +1378,57 @@ app.get("/jelovnik", (req, res) => {
     });
 });
 
+// Backend (Express) – app.js / server.js
+
+// OBAVEZNO
+app.use(express.json());
+
+app.post("/komentari", (req, res) => {
+  const { Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta } = req.body;
+
+  if (!Sadrzaj_komentara || !Ocjena || !ID_korisnika || !ID_objekta) {
+    return res.status(400).send("Nedostaju podaci");
+  }
+
+  const sql = `
+    INSERT INTO Komentar
+    (Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  db.query(sql, [Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta], (err) => {
+    if (err) {
+      console.error("Greška pri unosu komentara:", err);
+      return res.status(500).send("Greška na serveru");
+    }
+    res.status(201).send("Komentar spremljen");
+  });
+});
+
+app.get("/komentari", (req, res) => {
+  const { ID_objekta } = req.query;
+
+  if (!ID_objekta) return res.status(400).send("Nedostaje ID objekta");
+
+  const sql = `
+    SELECT k.ID_komentara, k.Sadrzaj_komentara, k.Ocjena,
+           u.Ime_korisnika, u.Prezime_korisnika
+    FROM Komentar k
+    JOIN Korisnik u ON k.ID_korisnika = u.ID_korisnika
+    WHERE k.ID_objekta = ?
+    ORDER BY k.ID_komentara DESC
+  `;
+
+  db.query(sql, [ID_objekta], (err, result) => {
+    if (err) {
+      console.error("Greška pri dohvaćanju komentara:", err);
+      return res.status(500).send("Greška na serveru");
+    }
+    res.json(result);
+  });
+});
+
+
 
 // ispis vlasnika objekta
 
