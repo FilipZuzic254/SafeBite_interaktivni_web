@@ -94,7 +94,7 @@ const submitForm = async () => {
       korIme.value = ''
       lozinka.value = ''
 
-      router.push('/') // ili neki dashboard
+      router.push('/') 
     }, 1500)
 
   } catch (err) {
