@@ -119,21 +119,6 @@ app.put("/img/add/objekt", upload.single("image"), (req, res) => {
 
 
 
-/* NEDOVRSENO */
-app.get("/img/delete/objekt/:id", (req, res) => {
-    const {id} = req.params;
-
-    const folderPath = `./uploads/restorani/${id}`;
-
-    fs.rm(folderPath+id, { recursive: true, force: true }, err => {
-        if (err) {
-            throw err;
-        }
-
-        res.json({message: `${folderPath+id} is deleted!`});
-    });
-})
-
 
 /*
 ▀███▀▀▀██▄   ███▀▀▀███ ▀████▀     ███▀▀▀████ ██▀▀██▀▀███ ███▀▀▀███ 
@@ -222,7 +207,7 @@ app.delete("/objekti/:id", (req, res) => {
     }
 
         
-    const folderPath = `./uploads/restorani/${id}`;
+    const folderPath = `./uploads/${id}`;
 
     fs.rm(folderPath, { recursive: true, force: true }, err => {
         if (err) {
@@ -1321,6 +1306,8 @@ app.get("/admin", (req, res) => {
 
 //})
 
+//Elena
+//prikaz objekata na stranicama Kafići i Restorani
 app.get("/objekti", (req, res) => { 
     const { vlasnikID, objektID, tip } = req.query;
 
@@ -1383,6 +1370,8 @@ app.get("/objekti", (req, res) => {
    // });
 //});
 
+//Elena
+//prikaz jelovnika, svih stavki u jelovniku
 app.get("/jelovnik", (req, res) => {
     const { objektID } = req.query; // ID od kafića
 

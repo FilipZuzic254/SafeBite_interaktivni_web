@@ -7,11 +7,13 @@
       </q-card-section>
 
       <q-card-section>
-        <q-form @submit.prevent="submitForm" ref="ObrazacPrijava">
+        <q-form @submit.prevent="submitForm" ref="ObrazacPrijava"> <!-- qform hvata submit događaj, prevent spriječava default refresh-->
           <q-input filled v-model="korIme" label="Korisničko ime" required />
-          <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" />
+          <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" /> <!--input za loz admina, type passw skriva unos-->
 
+          <!--gumb za submit forme-->
           <div class="q-mt-md">
+            <!--tip submit da se pokrene submitForm, tekst gumba, boja gumba, zaobljeni rubovi gumba, prikazuje loading spinner dok traje request-->
             <q-btn type="submit" label="Prijava" color="primary" rounded :loading="loading" />
           </div>
 
@@ -28,37 +30,40 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
-const korIme = ref('')
-const lozinka = ref('')
-const loading = ref(false)
-const error = ref(null)
-const success = ref(null)
-const ObrazacPrijava = ref(null)
+//reaktivna varijabla
+const router = useRouter() //router za navigaciju između stranica
+const korIme = ref('') //veze se na input korisnickog imena
+const lozinka = ref('') //veze se na input lozinke
+const loading = ref(false) //status loading spinnera
+const error = ref(null) //poruka o gresci
+const success = ref(null) //poruka o uspjehu
+const ObrazacPrijava = ref(null) //ref na formu da se moze resetirati
 
-const submitForm = async () => {
-  loading.value = true
+const submitForm = async () => { //funkcija za submit forme
+  //aktiviraj loading i ocisti stare poruke
+  loading.value = true 
   error.value = null
   success.value = null
 
   try {
+    //posalji POST request na backend endpoint za login admina
     const response = await axios.post('http://localhost:3000/admin/login', {
-      Ime_admina: korIme.value,
-      Lozinka_admina: lozinka.value,
+      Ime_admina: korIme.value, //korisnicko ime koje je unio admin
+      Lozinka_admina: lozinka.value, //lozinka koju je admin unio
     })
 
     // Spremi token u localStorage
     const tokenObj = {
-    id: response.data.admin.ID_admina,
-    korIme: response.data.admin.Ime_admina,
-    uloga: 'admin'
+    id: response.data.admin.ID_admina, //ID admina
+    korIme: response.data.admin.Ime_admina, //korisnicko ime admina
+    uloga: 'admin' //uloga
     }
-    localStorage.setItem('token', JSON.stringify(tokenObj))
+    localStorage.setItem('token', JSON.stringify(tokenObj)) //spremi u localStorage
     window.dispatchEvent(new CustomEvent('prijava', { detail: tokenObj }))
 
 
     // Navigacija na pocetnu stranicu
-    router.push('/')
+    router.push('/') 
     
 
     success.value = response.data.message
@@ -76,7 +81,7 @@ const submitForm = async () => {
 
 <style scoped>
 .q-page {
-  min-height: 100vh;
-  background-color: #f5f5f5;
+  min-height: 100vh; /*visina pokriva cijeli ekran */
+  background-color: #f5f5f5; /*svijetlo siva pozadina */
 }
 </style>
