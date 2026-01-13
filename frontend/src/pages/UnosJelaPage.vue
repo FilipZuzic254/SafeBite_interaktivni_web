@@ -1,4 +1,4 @@
-<!-- Matea Matković / Unos jela -->
+<!-- Matea Matković, Filip Žužić -->
 <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 500px">

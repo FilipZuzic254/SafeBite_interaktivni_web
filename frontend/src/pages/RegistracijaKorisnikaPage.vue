@@ -1,4 +1,4 @@
-<!-- Petra Grgić -->
+<!-- Matea Lesica -->
 <template>
   <q-page class="flex flex-center"> <!-- centriran sadržaj -->
     <q-card class="q-pa-md" style="width: 400px"> <!-- kartica gdje je obrazac -->

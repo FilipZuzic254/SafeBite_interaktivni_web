@@ -1,19 +1,24 @@
-<!-- Petra Grgić-->
+<!-- Petra Grgić -->
 <template>
+  <!-- q-page predstavlja jednu stranicu aplikacije -->
+  <!-- centriranje sadržaja -->
   <q-page class="q-pa-md flex flex-center">
-    <q-card style="width: 700px"> <!-- glavni dio stranice --> 
 
-      <!-- Naslov -->
+    <!-- Glavna kartica profila korisnika -->
+    <q-card style="width: 700px">
+
+      <!-- naslov -->
       <q-card-section>
         <div class="text-h5">Moj profil</div>
       </q-card-section>
 
       <q-separator />
 
-      <!-- Osnovni podaci -->
+      <!-- podatci -->
       <q-card-section>
         <div class="text-subtitle1 q-mb-sm">Osnovni podaci</div>
 
+        <!-- ispis podataka korisnika dohvaćenih s backenda -->
         <div><strong>Ime:</strong> {{ korisnik.Ime_korisnika }}</div>
         <div><strong>Prezime:</strong> {{ korisnik.Prezime_korisnika }}</div>
         <div><strong>Email:</strong> {{ korisnik.Email_korisnika }}</div>
@@ -22,14 +27,18 @@
 
       <q-separator />
 
-      <!-- Prehrambene intolerancije -->
+      <!-- prehrambene intolerancije korisnika -->
       <q-card-section>
-        <div class="text-subtitle1 q-mb-sm">Prehrambene intolerancije</div>
+        <div class="text-subtitle1 q-mb-sm">
+          Prehrambene intolerancije
+        </div>
 
+        <!-- ako korisnik nema intolerancija -->
         <div v-if="intolerancije.length === 0">
           Korisnik nema evidentiranih intolerancija.
         </div>
 
+        <!-- prikaz intolerancija pomocu chipova -->
         <q-chip
           v-for="(pi, index) in intolerancije"
           :key="index"
@@ -37,42 +46,53 @@
           text-color="white"
           class="q-mr-sm q-mb-sm"
         >
-          {{ pi.Naziv_pi || pi }} <!-- podrška za niz stringova ili objekata -->
+          <!-- podrzava i niz stringova i niz objekata -->
+          {{ pi.Naziv_pi || pi }}
         </q-chip>
 
-        <!-- Gumb za unos nove intolerancije -->
-        <div class="q-mt-md flex justify-center"> <!-- srednje margine, centar -->
+        <!-- gumb za dodavanje nove intolerancije -->
+        <div class="q-mt-md flex justify-center">
           <q-btn
             color="primary"
             label="Unos svojih prehrambenih intolerancija"
             icon="add"
-            @click="dodajIntoleranciju"
             rounded
-          /> <!-- na klik poziva funkciju koja otvara stranicu za dodavanje nove intolerancije-->
+            @click="dodajIntoleranciju"
+          />
+          <!-- klik vodi na stranicu za unos intolerancija -->
         </div>
       </q-card-section>
 
       <q-separator />
 
-      <!-- Komentari -->
+      <!-- komentari korisnika -->
       <q-card-section>
         <div class="text-subtitle1 q-mb-sm">Moji komentari</div>
 
+        <!-- ako korisnik nema komentara -->
         <div v-if="komentari.length === 0">
           Korisnik nema komentara.
         </div>
 
+        <!-- lista komentara -->
         <q-list bordered separator v-else>
-          <q-item v-for="kom in komentari" :key="kom.ID_komentara">
+          <q-item
+            v-for="kom in komentari"
+            :key="kom.ID_komentara"
+          >
             <q-item-section>
+
+              <!-- naziv objekta na koji se komentar odnosi -->
               <div class="text-weight-medium">
                 {{ kom.Ime_objekta }}
               </div>
 
+              <!-- sadrzaj komentara -->
               <div class="q-mt-xs">
                 {{ kom.Sadrzaj_komentara }}
               </div>
 
+              <!-- ocjena komentara -->
               <q-rating
                 v-model="kom.Ocjena"
                 max="5"
@@ -95,17 +115,20 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-// reaktivni podaci
+// reaktivne varijable
 const router = useRouter()
-const korisnik = ref({})
-const intolerancije = ref([])
-const komentari = ref([])
-const error = ref(null)
+const korisnik = ref({})         // podaci o korisniku
+const intolerancije = ref([])   // lista intolerancija
+const komentari = ref([])       // lista komentara
+const error = ref(null)         // poruke o grešci
+
 
 onMounted(async () => {
   try {
-    // Dohvat tokena iz localStorage
+    // dohvat tokena iz localStorage-a
     const token = JSON.parse(localStorage.getItem('token'))
+
+    // provjera je li korisnik prijavljen
     if (!token || !token.id) {
       error.value = 'Korisnik nije prijavljen'
       return
@@ -113,11 +136,12 @@ onMounted(async () => {
 
     const userId = token.id
 
-    // Dohvat api-ja profil korisnika
+    // API poziv za dohvat profila korisnika
     const response = await axios.get(
       `http://localhost:3000/korisnik/profil/${userId}`
     )
 
+    // spremanje podataka u reaktivne varijable
     korisnik.value = response.data.korisnik
     intolerancije.value = response.data.intolerancije
     komentari.value = response.data.komentari
@@ -128,8 +152,9 @@ onMounted(async () => {
   }
 })
 
+// otvaranje stranice za unos intolerancija
 function dodajIntoleranciju() {
-  router.push('/unosKorisnikPI') 
+  router.push('/unosKorisnikPI')
 }
 </script>
 

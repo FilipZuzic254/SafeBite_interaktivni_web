@@ -161,8 +161,8 @@ app.delete("/pi/:id", (req, res) => {
 })
 
 
+//Petra Grgić
 // brisanje stavki u jelovniku
-
 app.delete("/jelovnici/:id", (req, res) => { 
 
     // povlaci query ako je unesen ( /jelovnici/2 )
@@ -283,9 +283,8 @@ app.delete("/gradovi/:id", (req, res) => {
 
 })
 
-
+// Petra Grgić
 // brisanje komentara
-
 app.delete("/komentari/:id", (req, res) => { 
 
     // povlaci query ako je unesen ( /komentari/2 )
@@ -912,7 +911,7 @@ app.post("/komentari", (req, res) => {
 
 })
 
-//Petra Grgić
+//Matea Lesica
 // registracija korisnika
 app.post("/korisnik", async (req, res) => { 
 
@@ -1758,7 +1757,7 @@ app.post("/vlasnik/prijava", (req, res) => {
 });
 
 
-//Petra Grgić
+//Matea Lesica
 app.post("/korisnik/prijava", (req, res) => {
     const { Korisnicko_ime, Lozinka_korisnika } = req.body;
 

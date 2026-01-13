@@ -1,19 +1,25 @@
 <!-- Petra Grgić -->
 <template>
+  <!-- q-page predstavlja jednu stranicu -->
+  <!-- srednji padding, centriranje -->
   <q-page class="q-pa-md flex flex-center">
-    <q-card style="width: 1100px"> <!-- galvni dio stranice -->
 
-      <!-- NASLOV -->
+    <!-- glavna kartica koja sadrži cijeli sadržaj profila -->
+    <q-card style="width: 1100px">
+
+      <!-- naslov -->
       <q-card-section>
         <div class="text-h5">Moj profil</div>
       </q-card-section>
 
+      <!-- linija koja razdvaja -->
       <q-separator />
 
-      <!-- OSNOVNI PODACI -->
+      <!-- podatci -->
       <q-card-section>
         <div class="text-subtitle1 q-mb-sm">Osnovni podaci</div>
 
+        <!-- ispis podataka dohvacenih iz baze -->
         <div><strong>Ime:</strong> {{ admin.ime }}</div>
         <div><strong>Prezime:</strong> {{ admin.prezime }}</div>
         <div><strong>Korisničko ime:</strong> {{ admin.Ime_admina }}</div>
@@ -21,54 +27,56 @@
 
       <q-separator />
 
-      <!-- GUMB ZA DODAVANJE OBJEKTA -->
+      <!-- gumb za dodati novi objekt -->
       <q-card-section class="text-center">
-          <q-btn
-            color="primary"
-            label="Unos novog poslovnog objekta"
-            icon="add"
-            @click="dodajObjekt"
-            rounded
-          /> <!-- klikom se poziva metoda koja otvara stranicu za dodavanje objekta-->
-    
+        <q-btn
+          color="primary"
+          label="Unos novog poslovnog objekta"
+          icon="add"
+          rounded
+          @click="dodajObjekt"
+        />
+        <!-- dlikom na gumb poziva se funkcija -->
       </q-card-section>
 
       <q-separator />
 
-      <!-- SVI OBJEKTI -->
+      <!-- prikaz svih objekata-->
       <q-card-section>
-        <div class="text-subtitle1 q-mb-md">Svi restorani i kafići</div>
+        <div class="text-subtitle1 q-mb-md">
+          Svi restorani i kafići
+        </div>
 
+        <!-- ako nema objekata -->
         <div v-if="objekti.length === 0">
           Nema evidentiranih objekata.
         </div>
 
-        <div
-          v-else
-          class="row q-col-gutter-lg"
-        >
+        <!-- ako objekti postoje -->
+        <div v-else class="row q-col-gutter-lg">
+
+          <!-- petlja koja prolazi kroz sve objekte -->
           <div
             v-for="obj in objekti"
             :key="obj.ID_objekta"
             class="col-12 col-md-6"
           >
-            <q-card class="objekt-card" bordered>
-
-                 <!-- KLIKABILNA KARTICA -->
-           <q-card
-  class="objekt-card cursor-pointer"
-  bordered
-  @click="otvoriJelovnik(obj)"
->
-              
+            <!-- kartica jednog objekta -->
+            <q-card
+              class="objekt-card cursor-pointer"
+              bordered
+              @click="otvoriJelovnik(obj)"
+            >
+              <!-- slika objekta -->
+              <!-- ako objekt ima sliku, koristi se slika s backenda -->
               <q-img
                 :src="obj.Slika_objekta
-                ? 'http://localhost:3000' + obj.Slika_objekta
-                : '/images/default.jpg'"
+                  ? 'http://localhost:3000' + obj.Slika_objekta
+                  : '/images/default.jpg'"
                 class="card-img"
               />
 
-
+              <!-- osnovni podaci o objektu -->
               <q-card-section>
                 <div class="row items-center justify-between">
                   <div class="text-h6">
@@ -83,6 +91,7 @@
                   {{ obj.Adresa_objekta }}
                 </div>
 
+                <!-- prosjecna ocjena objekta -->
                 <q-rating
                   :model-value="obj.prosjecna_ocjena"
                   max="5"
@@ -93,21 +102,25 @@
                 />
               </q-card-section>
 
+              <!-- opis objekta -->
               <q-card-section class="q-pt-none">
                 <div class="text-caption">
                   {{ obj.Opis_objekta }}
                 </div>
               </q-card-section>
-             <div class="row justify-center q-mt-md q-mb-md">
-  <q-btn
-    color="negative"
-    label="Izbriši objekt"
-    rounded
-    @click.stop="confirmDelete(obj)"
-  />
-</div>
+
+              <!-- gumb za brisanje objekta -->
+              <!-- .stop da klik na gumb ne otvori jelovnik -->
+              <div class="row justify-center q-mt-md q-mb-md">
+                <q-btn
+                  color="negative"
+                  label="Izbriši objekt"
+                  rounded
+                  @click.stop="confirmDelete(obj)"
+                />
+              </div>
+
             </q-card>
-          </q-card>
           </div>
         </div>
       </q-card-section>
@@ -120,32 +133,37 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import {Notify, useQuasar} from 'quasar'
+import { Notify, useQuasar } from 'quasar'
 
 const $q = useQuasar()
+const router = useRouter()
 
-const router = useRouter() //za navigaciju
-const admin = ref({})
-const objekti = ref([])
-const error = ref(null)
+// reaktivne varijable
+const admin = ref({})       // podaci o adminu
+const objekti = ref([])     // lista objekata
+const error = ref(null)     // poruke o grešci
+
 
 onMounted(async () => {
   try {
-    // ID admina iz tokena
+    // dohvat tokena iz localStorage-a
     const token = JSON.parse(localStorage.getItem('token'))
     const adminId = token?.id
 
+    // ako admin nije prijavljen
     if (!adminId) {
-      error.value = 'Admin nije prijavljen' //ako token ne postoji
+      error.value = 'Admin nije prijavljen'
       return
     }
 
+    // API poziv za dohvat admin profila i objekata
     const response = await axios.get(
-      `http://localhost:3000/admin/profil/${adminId}` //dohvat podataka iz api-ja
+      `http://localhost:3000/admin/profil/${adminId}`
     )
 
-    admin.value = response.data.admin //spreljeni podatci o adminu
-    objekti.value = response.data.objekti //spremljeni podatci o objektima
+    // spremanje podataka u varijable
+    admin.value = response.data.admin
+    objekti.value = response.data.objekti
 
   } catch (err) {
     console.error(err)
@@ -153,7 +171,7 @@ onMounted(async () => {
   }
 })
 
-// 🔹 OTVARANJE STRANICE ZA MODIFICIRANJE JELOVNIKA
+// otvaranje stranice sa jelovnicima za admina
 function otvoriJelovnik(obj) {
   router.push({
     path: '/jelovnikModificiraj',
@@ -163,12 +181,12 @@ function otvoriJelovnik(obj) {
   })
 }
 
- // funkcija za otvaranje stranice za unos novog objekta
+// otvaranje stranice za dodavanje objekta
 function dodajObjekt() {
   router.push('/unosObjekta')
 }
 
-// funkcija za poruku o brisanju
+// prozor za potvdu brisanja objekta koja na potvdu pokreće funkciju za brisanje objekta
 const confirmDelete = (obj) => {
   $q.dialog({
     title: 'Potvrda brisanja',
@@ -180,17 +198,18 @@ const confirmDelete = (obj) => {
   })
 }
 
-
- //funkcija za brisanje objekta iz baze
+// brisanje objekta iz baze podataka
 const deleteObjekt = async (id) => {
   try {
+    // API poziv za brisanje
     await axios.delete(`http://localhost:3000/objekti/${id}`)
 
-    // ukloni objekt iz liste bez reloadanja
+    // uklanjanje objekta iz liste bez ponovnog ucitavanja stranice
     objekti.value = objekti.value.filter(
       obj => obj.ID_objekta !== id
     )
 
+    // obavijest o uspjehu
     Notify.create({
       type: 'positive',
       message: 'Poslovni objekt je uspješno obrisan'
@@ -199,6 +218,7 @@ const deleteObjekt = async (id) => {
   } catch (err) {
     console.error(err)
 
+    // obavijest o gresci
     Notify.create({
       type: 'negative',
       message: 'Greška pri brisanju poslovnog objekta'
@@ -206,7 +226,6 @@ const deleteObjekt = async (id) => {
   }
 }
 </script>
-
 
 <style scoped>
 .q-page {
@@ -228,5 +247,3 @@ const deleteObjekt = async (id) => {
   object-fit: cover;
 }
 </style>
-
-

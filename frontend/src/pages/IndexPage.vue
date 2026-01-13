@@ -1,10 +1,13 @@
+<!-- Petra Grgić, Matea Lesica -->
 <template>
+  <!-- glavna stranica -->
   <q-page class="home-page">
 
-    <!--SPLIT SCREEN-->
+    <!-- split screen -->
     <section class="hero row no-wrap">
 
-      <!--LIJEVO-LOGO-->
+      <!-- lijevo ide logo-->
+      <!-- col-12 na mobitelu, col-md-6 na vecim ekranima -->
       <div class="col-12 col-md-6 flex flex-center left-side">
         <q-img
           src="src/assets/SafeBite.png"
@@ -13,15 +16,19 @@
         />
       </div>
 
-      <!--DESNO-TEKST-->
+      <!-- desno idu opis i gumb -->
       <div class="col-12 col-md-6 flex items-center right-side">
         <div class="text-container">
+
+          <!-- opis aplikacije -->
           <p class="description">
             Ne morate više pogađati što smijete jesti. <br><br>
             SafeBite vam omogućuje da pronađete ugostiteljske objekte prilagođene vašim prehrambenim intolerancijama i osobnim preferencijama.
-            <br><br><b>Jednostavno. Sigurno. Bez stresa.</b>
+            <br><br>
+            <b>Jednostavno. Sigurno. Bez stresa.</b>
           </p>
 
+          <!-- gumb koji scrolla na donju sekciju -->
           <q-btn
             label="Saznaj više"
             unelevated
@@ -34,8 +41,10 @@
       </div>
     </section>
 
-    <!--DRUGI DIO STRANICE-->
+    <!-- ref koristimo kako bismo mogli scrollati do ove sekcije -->
     <section ref="infoSection" class="info-section">
+
+      <!-- Ttekst -->
       <div class="content">
         <h2>Vaš sljedeći siguran izbor</h2>
         <p>
@@ -44,10 +53,10 @@
         </p>
       </div>
 
-      <!--KARTICE-->
+      <!-- kartice sa restoranima i kaficima -->
       <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
 
-        <!--RESTORANI-->
+        <!-- kartica restorani -->
         <div class="col-12 col-md-5">
           <q-card
             class="choice-card"
@@ -58,6 +67,7 @@
               src="src/assets/rijekarestoran.jpg"
               class="choice-img"
             >
+              <!-- overlay s naslovom -->
               <div class="choice-overlay">
                 <div class="choice-title">Restorani</div>
               </div>
@@ -65,7 +75,7 @@
           </q-card>
         </div>
 
-        <!--KAFICI-->
+        <!-- kartica kafici -->
         <div class="col-12 col-md-5">
           <q-card
             class="choice-card"
@@ -76,12 +86,14 @@
               src="src/assets/kaficrijeka.jpg"
               class="choice-img"
             >
+              <!-- overlay s naslovom -->
               <div class="choice-overlay">
                 <div class="choice-title">Kafići</div>
               </div>
             </q-img>
           </q-card>
         </div>
+
       </div>
       
       <div class="spacing"></div>
@@ -129,9 +141,11 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+// reaktivne varijable
 const restorani = ref([])
 const infoSection = ref(null)
 
+// funkcija za scroll do donjeg dijela stranica
 const scrollToInfo = () => {
   infoSection.value?.scrollIntoView({
     behavior: 'smooth'
@@ -167,30 +181,28 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-/* FULL SCREEN */
 .home-page {
   min-height: 100vh;
 }
 
-/*HERO */
 .hero {
   width: 100%;
   height: 100vh;
 }
 
-/*LIJEVA STRANICA*/
+// lijeva strana
 .left-side {
   background-color: #ffffff;
 }
 
-/*LOGO*/
+// logo
 .logo-img {
   width: 75%;
   max-width: 800px;
   min-width: 200px;
 }
 
-/*DESNA STRANA*/
+// desna strana
 .right-side {
   background-color: $primary;
   padding: 80px;
@@ -202,7 +214,6 @@ onMounted(async () => {
   background-color: #ffffff;
 }
 
-/*TEKST*/
 .text-container {
   max-width: 500px;
   text-align: left;
@@ -213,7 +224,6 @@ onMounted(async () => {
   line-height: 1.7;
 }
 
-/*DRUGI DIO*/
 .info-section {
   min-height: 100vh;
   padding: 80px 20px;

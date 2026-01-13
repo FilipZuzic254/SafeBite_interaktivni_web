@@ -1,4 +1,4 @@
-<!-- Ana Krišto-->
+<!-- Ana Krišto -->
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- HEADER -->
@@ -61,11 +61,6 @@
         <!-- Kafići -->
         <q-item v-if="token && (token.uloga === 'korisnik' || token.uloga === 'admin')" clickable v-ripple to="/kafici">
           <q-item-section>Kafići</q-item-section>
-        </q-item>
-
-        <!-- Unos jela – vlasnik i admin -->
-        <q-item v-if="token && token.uloga === 'vlasnik'" clickable v-ripple to="/unosJela">
-          <q-item-section>Unos jela</q-item-section>
         </q-item>
 
         <!-- Unos prehrambene intolerancije – admin -->
