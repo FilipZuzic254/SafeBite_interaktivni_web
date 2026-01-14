@@ -1,22 +1,44 @@
-<!-- Matea Matković-->
+<!-- Matea Matković -->
 <template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 400px">
+
+      <!-- Naslov kartice -->
       <q-card-section>
         <div class="text-h6">Unos prehrambene intolerancije</div>
       </q-card-section>
 
       <q-card-section>
+        <!-- Forma za unos intolerancije
+        @submit.prevent -> sprječava refresh stranice i poziva submitForm -->
         <q-form @submit.prevent="submitForm" ref="formIntolerancija">
-          <!-- Naziv intolerancije -->
+
+          <!-- Input polje za naziv intolerancije
+          v-model veže vrijednost u varijablu naziv_pi -->
           <q-input filled v-model="naziv_pi" label="Naziv intolerancije" required />
 
+          <!-- Gumb za slanje forme -->
           <div class="q-mt-md">
-            <q-btn type="submit" label="Unesi" color="primary" rounded :loading="loading" />
+            <!-- loading prikazuje spinner dok se šalje -->
+            <q-btn
+              type="submit"
+              label="Unesi"
+              color="primary"
+              rounded
+              :loading="loading"
+            />
           </div>
 
-          <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
-          <div v-if="success" class="text-positive q-mt-sm">{{ success }}</div>
+          <!-- Ako postoji greška, prikaži poruku crveno -->
+          <div v-if="error" class="text-negative q-mt-sm">
+            {{ error }}
+          </div>
+
+          <!-- Ako je uspješno, prikaži poruku zeleno -->
+          <div v-if="success" class="text-positive q-mt-sm">
+            {{ success }}
+          </div>
+
         </q-form>
       </q-card-section>
     </q-card>
@@ -24,61 +46,79 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
+import { ref } from 'vue' // ref stvara reaktivne varijable
+import axios from 'axios' // axios za slanje zahtjeva backendu
 
-const naziv_pi = ref('')
-const loading = ref(false)
-const error = ref(null)
-const success = ref(null)
-const formIntolerancija = ref(null)
+// Reaktivne varijable
+const naziv_pi = ref('') // naziv intolerancije
+const loading = ref(false) // stanje učitavanja
+const error = ref(null) // poruka greške
+const success = ref(null) // poruka uspjeha
+const formIntolerancija = ref(null) // referenca na formu
 
+// Funkcija koja se poziva kad se pošalje forma
 const submitForm = async () => {
+
+  // Provjera je li polje prazno
   if (!naziv_pi.value.trim()) {
     error.value = 'Nedostaju obavezna polja.'
     return
   }
 
+  // Postavljanje početnih stanja
   loading.value = true
   error.value = null
   success.value = null
 
   try {
-    // Dohvati token iz localStorage
+    // Dohvat tokena iz localStorage
     const token = JSON.parse(localStorage.getItem('token'))
     if (!token) throw new Error('Niste prijavljeni.')
 
-    // ID admina iz tokena
+    // Provjera je li korisnik admin
     const ID_admina = token?.uloga === 'admin' ? token.id : null
     if (!ID_admina) throw new Error('Neispravan token – korisnik nije admin.')
 
-    // Podaci za backend
+    // Podaci koje šaljemo backendu
     const dataToSend = {
       Naziv_pi: naziv_pi.value,
       ID_admina: ID_admina
     }
 
-    const res = await axios.post('http://localhost:3000/pi', dataToSend)
+    // Slanje POST zahtjeva serveru
+    const res = await axios.post(
+      'http://localhost:3000/pi',
+      dataToSend
+    )
 
-    success.value = res.data.message || 'Intolerancija uspješno unesena!'
+    // Poruka uspjeha
+    success.value =
+      res.data.message || 'Intolerancija uspješno unesena!'
 
+    // Reset forme nakon 1.5 sekundi
     setTimeout(() => {
       formIntolerancija.value?.reset()
       naziv_pi.value = ''
     }, 1500)
 
   } catch (err) {
+    // Ako dođe do greške
     console.error(err)
-    error.value = err.response?.data?.message || err.message || 'Greška – backend nije dostupan'
+    error.value =
+      err.response?.data?.message ||
+      err.message ||
+      'Greška – backend nije dostupan'
   } finally {
+    // Uvijek se izvrši – gasi loading
     loading.value = false
   }
 }
 </script>
 
 <style scoped>
+/* Stil za stranicu */
 .q-page {
-  min-height: 100vh;
-  background-color: #f5f5f5;
+  min-height: 100vh; /* puna visina ekrana */
+  background-color: #f5f5f5; 
 }
 </style>

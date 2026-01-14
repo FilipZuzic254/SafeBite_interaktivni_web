@@ -1,18 +1,29 @@
 <!-- Matea Matković, Filip Žužić -->
- <template>
+<template>
   <q-page class="flex flex-center">
     <q-card class="q-pa-md" style="width: 500px">
+
+      <!-- Naslov stranice -->
       <q-card-section>
         <div class="text-h6">Uređivanje jela</div>
       </q-card-section>
 
       <q-card-section>
+        <!-- Forma za uređivanje jela
+        @submit.prevent sprječava refresh i poziva updateForm -->
         <q-form @submit.prevent="updateForm">
 
           <!-- NAZIV JELA -->
-          <q-input filled v-model="naziv" label="Naziv jela" required />
+          <!-- v-model veže unos u varijablu naziv -->
+          <q-input
+            filled
+            v-model="naziv"
+            label="Naziv jela"
+            required
+          />
 
           <!-- CIJENA -->
+          <!-- v-model.number automatski pretvara u broj -->
           <q-input
             filled
             v-model.number="cijena"
@@ -23,6 +34,7 @@
           />
 
           <!-- SASTAV -->
+          <!-- textarea za duži tekst -->
           <q-input
             filled
             v-model="sastav"
@@ -32,6 +44,10 @@
           />
 
           <!-- INTOLERANCIJE -->
+          <!-- q-select s više izbora -->
+          <!-- options = sve intolerancije iz baze -->
+          <!-- multiple = može se više odabrati -->
+          <!-- use-chips = prikazuje odabrane kao oznake -->
           <q-select
             filled
             v-model="selectedIntolerances"
@@ -46,7 +62,9 @@
             class="q-mt-sm"
           />
 
+          <!-- Gumb za spremanje -->
           <div class="q-mt-md">
+            <!-- loading prikazuje spinner -->
             <q-btn
               type="submit"
               label="Spremi izmjene"
@@ -63,46 +81,52 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import axios from "axios"
+import { ref, onMounted } from "vue" // ref = reaktivne varijable
+import { useRoute, useRouter } from "vue-router" // za rad s URL-om i navigacijom
+import axios from "axios" // za backend zahtjeve
 
 const route = useRoute()
 const router = useRouter()
-const idStavke = route.query.ID_stavke // dobiva se iz URL-a
+
+// ID stavke dolazi iz URL-a
+const idStavke = route.query.ID_stavke
 
 // POLJA FORME
-const naziv = ref("")
-const cijena = ref(null)
-const sastav = ref("")
+const naziv = ref("") // naziv jela
+const cijena = ref(null) // cijena
+const sastav = ref("") // sastav
 const idObjekta = ref(null)
 const idAdmina = ref(null)
 const idVlasnika = ref(null)
-const selectedIntolerances = ref([])
+const selectedIntolerances = ref([]) // odabrane intolerancije
 
-// Opcije za select
+// Opcije za dropdown (sve intolerancije)
 const piOptions = ref([])
 
 const loading = ref(false)
 
+// Pokreće se kad se stranica učita
 onMounted(async () => {
   try {
-    // 1. Učitaj sve prehrambene intolerancije
+    // 1. Dohvati sve intolerancije
     const piRes = await axios.get("http://localhost:3000/pi")
     piOptions.value = piRes.data
 
-    // 2. Dohvati podatke jela po ID_stavke
-    const res = await axios.get(`http://localhost:3000/jelovnici/${idStavke}`)
+    // 2. Dohvati podatke jela po ID-u
+    const res = await axios.get(
+      `http://localhost:3000/jelovnici/${idStavke}`
+    )
     const jelo = res.data
 
-    // 3. Popuni formu
+    // 3. Popuni formu postojećim podacima
     naziv.value = jelo.Naziv_stavke
     cijena.value = jelo.Cijena_stavke
     sastav.value = jelo.Sastav_stavke
     idObjekta.value = jelo.ID_objekta
     idAdmina.value = jelo.ID_admina
     idVlasnika.value = jelo.ID_vlasnika
-    selectedIntolerances.value = jelo.Intolerancije || []
+    selectedIntolerances.value =
+      jelo.Intolerancije || []
 
     console.log(jelo.ID_objekta)
 
@@ -111,27 +135,32 @@ onMounted(async () => {
   }
 })
 
+// Funkcija za spremanje izmjena
 const updateForm = async () => {
   loading.value = true
-  try {
-    await axios.put(`http://localhost:3000/jelovnici/${idStavke}`, {
-      Naziv_stavke: naziv.value,
-      Cijena_stavke: cijena.value,
-      Sastav_stavke: sastav.value,
-      ID_objekta: idObjekta.value,
-      ID_admina: idAdmina.value,
-      ID_vlasnika: idVlasnika.value,
-      Intolerancije: selectedIntolerances.value
-    })
 
-    // ✅ Vrati korisnika na jelovnikModificiraj s točnim ID_objekta
-   
+  try {
+    // PUT zahtjev za ažuriranje jela
+    await axios.put(
+      `http://localhost:3000/jelovnici/${idStavke}`,
+      {
+        Naziv_stavke: naziv.value,
+        Cijena_stavke: cijena.value,
+        Sastav_stavke: sastav.value,
+        ID_objekta: idObjekta.value,
+        ID_admina: idAdmina.value,
+        ID_vlasnika: idVlasnika.value,
+        Intolerancije: selectedIntolerances.value
+      }
+    )
+
+    // Nakon uspjeha vraća korisnika na listu jelovnika
     router.push({
-    path: '/jelovnikModificiraj',
-    query: {
-      objektID: idObjekta.value
-    }
-  })
+      path: '/jelovnikModificiraj',
+      query: {
+        objektID: idObjekta.value
+      }
+    })
 
   } catch (err) {
     console.error("Greška pri ažuriranju jela:", err)
@@ -143,6 +172,7 @@ const updateForm = async () => {
 </script>
 
 <style scoped>
+/* Stil stranice */
 .q-page {
   min-height: 100vh;
   background-color: #f5f5f5;
