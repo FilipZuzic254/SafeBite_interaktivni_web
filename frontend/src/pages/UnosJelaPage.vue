@@ -46,32 +46,6 @@
             class="q-mt-sm"
           />
 
-          <!-- ADMIN -->
-          <q-select
-            filled
-            v-model="idAdmina"
-            :options="adminOptions"
-            option-value="ID_admina"
-            option-label="Ime_admina"
-            label="Odaberi admina"
-            emit-value
-            map-options
-            class="q-mt-sm"
-          />
-
-          <!-- VLASNIK -->
-          <q-select
-            filled
-            v-model="idVlasnika"
-            :options="vlasnikOptions"
-            option-value="ID_vlasnika"
-            option-label="Ime_vlasnika"
-            label="Odaberi vlasnika"
-            emit-value
-            map-options
-            class="q-mt-sm"
-          />
-
           <!-- INTOLERANCIJE -->
           <q-select
             filled
@@ -121,21 +95,17 @@ const route = useRoute()
 const router = useRouter()
 
 // Ako je došlo s jelovnikaModificiraj ili iz objekta
-const idObjekta = ref(route.query.objektID || null)
+const idObjekta = ref(null)
 
 // Polja forme
 const naziv = ref('')
 const cijena = ref(null)
 const sastav = ref('')
-const idAdmina = ref(null)
-const idVlasnika = ref(null)
 const selectedIntolerances = ref([])
 
 // Opcije za select
 const piOptions = ref([])
 const objektOptions = ref([])
-const adminOptions = ref([])
-const vlasnikOptions = ref([])
 
 const loading = ref(false)
 const error = ref(null)
@@ -152,16 +122,22 @@ onMounted(async () => {
     }))
 
     // OBJEKTI
-    const objRes = await axios.get('http://localhost:3000/objekti')
-    objektOptions.value = objRes.data
+    const token = JSON.parse(localStorage.getItem('token'))
+    const idVlasnika = token?.uloga === 'vlasnik' ? token.id : null
 
-    // ADMIN
-    const admRes = await axios.get('http://localhost:3000/admin')
-    adminOptions.value = admRes.data
+    if (idVlasnika === null) {
+      const objRes = await axios.get('http://localhost:3000/objekti')
+      
+      objektOptions.value = objRes.data
+    } else {
+      const objRes = await axios.get('http://localhost:3000/objekti', {
+        params: {vlasnikID: idVlasnika}
+      })
+      
+      objektOptions.value = objRes.data
+    }
 
-    // VLASNICI
-    const vlasRes = await axios.get('http://localhost:3000/vlasnik')
-    vlasnikOptions.value = vlasRes.data
+    idObjekta.value = route.query.objektID? Number(route.query.objektID) : null
 
   } catch (err) {
     console.error(err)
@@ -174,6 +150,10 @@ const submitForm = async () => {
   error.value = null
   success.value = null
 
+  const token = JSON.parse(localStorage.getItem('token'))
+  const idVlasnika = token?.uloga === 'vlasnik' ? token.id : null
+  const idAdmina = token?.uloga === 'admin' ? token.id : null
+
   const selectedIDs = selectedIntolerances.value
     .filter(n => n != null)
     .map(n => Number(n))
@@ -181,9 +161,9 @@ const submitForm = async () => {
   const dataToSend = {
     Naziv_stavke: naziv.value,
     Cijena_stavke: cijena.value,
-    ID_admina: idAdmina.value,
+    ID_admina: idAdmina,
     ID_objekta: idObjekta.value,
-    ID_vlasnika: idVlasnika.value,
+    ID_vlasnika: idVlasnika,
     Sastav_stavke: sastav.value,
     Intolerancije: selectedIDs
   }
@@ -202,8 +182,6 @@ const submitForm = async () => {
       cijena.value = null
       sastav.value = ''
       idObjekta.value = null
-      idAdmina.value = null
-      idVlasnika.value = null
       selectedIntolerances.value = []
     }, 1500)
 
