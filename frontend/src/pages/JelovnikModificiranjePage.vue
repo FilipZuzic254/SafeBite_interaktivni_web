@@ -61,7 +61,7 @@
           </div>
 
           <!-- gumbi uredi i izbrisi -->
-          <div class="q-mt-md q-gutter-sm button-wrapper">
+          <div class="q-mt-md q-gutter-sm button-wrapper flex flex-center">
             <!-- uredi stavku otvara stranicu sa popunjenim obrascem za uredivanje-->
             <q-btn
               color="primary"
