@@ -2,7 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const mysql = require('mysql2');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt'); 
 const multer = require('multer')
 
 // Stvaranje veze na mysql
