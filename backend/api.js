@@ -3,7 +3,7 @@ const fs = require("fs");
 const cors = require("cors");
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
-const multer = require('multer')
+const multer = require('multer') //sluzi za slanje/spremanje slika pomocu apija
 
 // Stvaranje veze na mysql
 const db = mysql.createConnection({
@@ -35,13 +35,13 @@ app.use(cors()); //cors je način da server dozvoli pristup svojim resursima iz 
  * THIS IS THE IMPORTANT PART
  * It exposes the "uploads" folder as a public URL
  */
-app.use("/uploads", express.static("uploads"));
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+app.use("/uploads", express.static("uploads")); //otvara mapu uploads da je se može pretraživat preko interneta
+ 
+const storage = multer.diskStorage({ //pokrece se kada api preko form date dobije sliku, kada se posalje i api dobije
+  destination: (req, file, cb) => { //destination provjerava postoji li mapa s id-ijem objekta ako ne kreira mapu
     const { id } = req.body;
 
-    if (!id) {
+    if (!id) { 
       return cb(new Error("Missing restoran ID"));
     }
 
@@ -53,44 +53,42 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
 
-  filename: (req, file, cb) => {
+  filename: (req, file, cb) => { //kreira novo originalno ime, milisekunde od 1.1.1970, cb-sprema sliku s jedinstvenim imenom
     const uniqueName = Date.now() + "-" + file.originalname;
 
     cb(null, `${uniqueName}`);
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage }); //koristi se ta biblioteka
 
 
-/* NEDOVRSENO */
-
-app.put("/img/add/objekt", upload.single("image"), (req, res) => {
+//funkcija za spremanje slike
+app.put("/img/add/objekt", upload.single("image"), (req, res) => {//single pokreće kako se sprema slika
     const { id } = req.body;
 
     if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const newImagePath = `/uploads/${id}/${req.file.filename}`;
+    const newImagePath = `/uploads/${id}/${req.file.filename}`; //sprema putoanju slike da je može kasnije spremat u bazu
 
-    // 1️⃣ Get old image path
-    db.query(
+    db.query( //provjerava je li u bazi postoji putanja do slike
         "SELECT Slika_objekta FROM Poslovni_objekt WHERE ID_objekta = ?", [id], (err, result) => {
             if (err) {
                 console.error("Greška pri dohvatu podataka:", err);
                 return res.status(500).json({ message: "Greška na serveru" });
             }
 
-            const oldImage = result?.[0]?.Slika_objekta;
+            const oldImage = result?.[0]?.Slika_objekta; //putanja do stare slika, ako postoji
 
-            // 2️⃣ Delete old image ONLY if it exists
+            //ako postoji putanja do stare slike 
             if (oldImage) {
                 const filePath = `.${oldImage}`;
 
-                fs.access(filePath, fs.constants.F_OK, (accessErr) => {
+                fs.access(filePath, fs.constants.F_OK, (accessErr) => { //dode do te slike da provjeri 
                     if (!accessErr) {
-                        fs.rm(filePath, { force: true }, (rmErr) => {
+                        fs.rm(filePath, { force: true }, (rmErr) => {//ako uspije doci do slike fs.rm(remove) brise tu sliku
                             if (rmErr) {
                                 console.error("Greška pri brisanju slike:", rmErr);
                             }
@@ -99,7 +97,8 @@ app.put("/img/add/objekt", upload.single("image"), (req, res) => {
                 });
             }
 
-            // 3️⃣ Update DB with new image
+            // unutar baze ažurira putanju do slike
+            //svaka slika ima drugu putanju
             db.query(
                 "UPDATE Poslovni_objekt SET Slika_objekta = ? WHERE ID_objekta = ?", [newImagePath, id], (updateErr) => {
                     if (updateErr) {
@@ -109,7 +108,7 @@ app.put("/img/add/objekt", upload.single("image"), (req, res) => {
 
                     res.json({
                         message: "Slika uspješno unesena!",
-                        image: newImagePath
+                        image: newImagePath //u slučaju da treba a ne treba nova putanja slike
                     });
                 }
             );
@@ -209,7 +208,7 @@ app.delete("/objekti/:id", (req, res) => {
         
     const folderPath = `./uploads/${id}`;
 
-    fs.rm(folderPath, { recursive: true, force: true }, err => {
+    fs.rm(folderPath, { recursive: true, force: true }, err => { //briše cijelu mapu objekta
         if (err) {
             throw err;
         }
@@ -985,7 +984,7 @@ app.post("/admin", async (req, res) => {
     }
 
     try {
-        // ✅ Hashiranje lozinke
+        // Haširanje lozinke
         const hashedPassword = await bcrypt.hash(Lozinka_admina, 10);
 
         const sqlQuery = `
@@ -1035,7 +1034,7 @@ app.post("/admin/login", (req, res) => {
 
         try {
             // Provjera lozinke s bcrypt
-            const isPasswordValid = await bcrypt.compare(Lozinka_admina, admin.Lozinka_admina);
+            const isPasswordValid = await bcrypt.compare(Lozinka_admina, admin.Lozinka_admina); //proverava lozinku s haširanom lozinkom
 
             if (!isPasswordValid) {
                 return res.status(401).json({ message: "Neispravno korisničko ime ili lozinka." });
@@ -1250,60 +1249,6 @@ app.get("/admin", (req, res) => {
 
 })
 
-
-// ispis objekata
-
-//app.get("/objekti", (req, res) => { 
-
-    // povlaci query ako je unesen ( /objekti?vlasnikID=2&objektID=2 )
-   // const {vlasnikID, objektID} = req.query;
-
-   // console.log(vlasnikID, objektID);
-
-    // provjerava ukoliko je unesen req.query
-    // ako nije sql query nema WHERE
-    //if (isNaN(vlasnikID) && isNaN(objektID)){
-       // const sqlQuery = 'SELECT * FROM Poslovni_objekt;';
-
-        //db.query(sqlQuery, (err, result) => {
-            //if (err) {
-             //   console.error('Greška pri dohvatu podataka:', err);
-               // return res.status(500).send("Greška na serveru");
-            //}
-    
-            //res.json(result);
-        //})
-    //}
-    // ako je unesen samo vlasnikID sql query ima WHERE ID_vlasnika = ?
-    //else if (isNaN(objektID)) {
-        // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_vlasnika = ?;';
-
-        //db.query(sqlQuery, [Number(vlasnikID)], (err, result) => {
-          //  if (err) {
-            //    console.error('Greška pri dohvatu podataka:', err);
-              //  return res.status(500).send("Greška na serveru");
-            //}
-    
-            //res.json(result);
-      //  })
-    //}
-    // ako je unesen samo objektID sql query ima WHERE ID_objekta = ?
-    //else if (isNaN(vlasnikID)) {
-        // stvara sql query, upitnici se zamjenjuju sa podacima iz varijable (2 reda ispod unutar uglatih zagrada)
-      //  const sqlQuery = 'SELECT * FROM Poslovni_objekt WHERE ID_objekta = ?;';
-
-        //db.query(sqlQuery, [Number(objektID)], (err, result) => {
-          //  if (err) {
-            //    console.error('Greška pri dohvatu podataka:', err);
-              //  return res.status(500).send("Greška na serveru");
-            //}
-    
-            //res.json(result);
-        //})
-    //}
-
-//})
 
 //Elena
 //prikaz objekata na stranicama Kafići i Restorani

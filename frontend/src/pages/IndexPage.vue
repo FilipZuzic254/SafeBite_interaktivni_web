@@ -204,7 +204,7 @@ onMounted(async () => {
 
 // desna strana
 .right-side {
-  background-color: $primary;
+  background-color: $primary; //zadan u main layoutu
   padding: 80px;
   color: white;
 }

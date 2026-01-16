@@ -150,14 +150,14 @@ const submitForm = async () => {
     const res = await axios.post('http://localhost:3000/objekti', dataToSend)
     const id_objekta = res.data.id
 
-    const imgData = new FormData()
-    imgData.append('id', id_objekta)
-    imgData.append('image', thumbnail.value)
+    const imgData = new FormData() //kreira formData ("lista")
+    imgData.append('id', id_objekta) //dodaje u listu pod ključ "id" - id objekta
+    imgData.append('image', thumbnail.value) //dodaje u listu pod ključ "image" - slika objekta
 
-    await axios.put('http://localhost:3000/img/add/objekt',
-      imgData,
+    await axios.put('http://localhost:3000/img/add/objekt', //šalje podatke apiju
+      imgData, //šalje se i imageData ("lista")
       {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' } //imagedata se sastoji od dijelova, znaci od id-ija i slike
       }
     )
 
