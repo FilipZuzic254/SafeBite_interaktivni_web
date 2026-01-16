@@ -98,7 +98,7 @@
       
       <div class="spacing"></div>
 
-      <!--POPULARNI RESTORANI/KAFIĆI-->
+      <!--NAŠE PREPORUKE ESTORANI/KAFIĆI-->
       <div class="content">
       <h4>Naše preporuke:</h4>
       <div class="q-pa-md">
