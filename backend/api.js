@@ -129,6 +129,7 @@ app.put("/img/add/objekt", upload.single("image"), (req, res) => {//single pokre
 ▄████████▀   ██████████ █████████ ██████████   ▄████▄    ██████████
 */
 
+//Matea Matković
 // brisanje prehrambenih intolerancija
 
 app.delete("/pi/:id", (req, res) => { 
@@ -354,7 +355,7 @@ app.delete("/korisnik/:id", (req, res) => {
   ▀██████▀▀   ▄████▄     ▄████████▀  ▄███▄   ▄████▄  ▄████▄    ██████████
 */
 
-
+//Matea Matković
 // brisanje prehrambenih intolerancija
 
 app.delete("/pi/:id", (req, res) => { 
@@ -384,7 +385,7 @@ app.delete("/pi/:id", (req, res) => {
 
 })
 
-
+//Matea Matković
 // ažuriranje stavki u jelovniku
 
 app.put("/jelovnici/:id", (req, res) => { 
@@ -633,7 +634,7 @@ app.put("/korisnik/:id", (req, res) => {
 ▄████▄ ▄███▄    ██  █▀█████▀  ██████████ ████▄ ▄███▄   ▄████▄   
 */
 
-//Ana Kristo 
+//Matea Matković
 // --- Dohvati sve postojeće intolerancije
 app.get('/pi', (req, res) => {
   db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => { //iz baze dohvaca ID_pi i Naziv_pi
@@ -645,6 +646,8 @@ app.get('/pi', (req, res) => {
   });
 });
 
+
+//Matea Matković
 // --- Unos nove intolerancije
 app.post('/pi', (req, res) => {
   const { Naziv_pi, ID_admina } = req.body;
@@ -664,6 +667,7 @@ app.post('/pi', (req, res) => {
   });
 });
 
+//Matea Matković
 // --- Unos stavke u jelovniku s odabranim intolerancijama
 app.post('/jelovnici', (req, res) => {
   const { Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke, Intolerancije } = req.body;
@@ -1140,7 +1144,7 @@ app.get("/jelovnici", (req, res) => {
 
 })
 
-
+//Matea Matković
 // ispis stavke u jelovniku
 
 app.get("/jelovnici/:id", (req, res) => { 
@@ -1176,7 +1180,7 @@ app.get("/jelovnici/:id", (req, res) => {
 
 })
 
-
+//Matea Matković
 // ispis prehrambenih intolerancija
 
 app.get("/pi", (req, res) => { 
