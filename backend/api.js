@@ -632,9 +632,11 @@ app.put("/korisnik/:id", (req, res) => {
   ██     █     ███  ██     ██  ██     ▄█  ██   ▀██▄      ██     
 ▄████▄ ▄███▄    ██  █▀█████▀  ██████████ ████▄ ▄███▄   ▄████▄   
 */
+
+//Ana Kristo 
 // --- Dohvati sve postojeće intolerancije
 app.get('/pi', (req, res) => {
-  db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => {
+  db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => { //iz baze dohvaca ID_pi i Naziv_pi
     if (err) {
       console.error('Greška pri dohvaćanju intolerancija:', err);
       return res.status(500).json({ message: 'Greška pri dohvaćanju intolerancija.' });
@@ -801,7 +803,8 @@ app.post("/vlasnik", async (req, res) => {
 });
 
 
-
+//Ana Kristo
+//unos novog poslovnog objekta
 app.post("/objekti", (req, res) => {
     const unos = req.body;
 
@@ -814,13 +817,14 @@ app.post("/objekti", (req, res) => {
         return res.status(400).json({ message: "Missing required fields." });
     }
 
+    //poslovni objekt moze biti dodan od admina ili od vlasnika (nece odjednom imati obadva ID-a)
     if (unos.ID_admina) {
         unos.ID_vlasnika=null
     } else {
         unos.ID_admina=null        
     }
 
-
+    //upis u bazu
     const sqlQuery = 'INSERT INTO Poslovni_objekt(ID_objekta, Ime_objekta, Adresa_objekta, Opis_objekta, ID_admina, ID_vlasnika, Postanski_broj, Tip_objekta, Email_objekta, OIB_objekta) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     db.query(sqlQuery, [
         unos.Ime_objekta,
@@ -974,7 +978,7 @@ app.post("/korisnik", async (req, res) => {
 
 });
 
-
+//Ana Kristo
 //registracija admina
 app.post("/admin", async (req, res) => {
     const { ime, prezime, Ime_admina, Lozinka_admina } = req.body;
@@ -985,6 +989,8 @@ app.post("/admin", async (req, res) => {
 
     try {
         // Haširanje lozinke
+        //Lozinka_admina je originalna lozinka
+        //10 je broj salt rounds (algoritam se izvrti priblizno 1024 puta (2 na desetu))
         const hashedPassword = await bcrypt.hash(Lozinka_admina, 10);
 
         const sqlQuery = `
@@ -992,7 +998,8 @@ app.post("/admin", async (req, res) => {
             VALUES (?, ?, ?, ?)
         `;
 
-        db.query(sqlQuery, [ime, prezime, Ime_admina, hashedPassword], (err, result) => {
+        //hashedPassword ide u bazu umjesto prave lozinke
+        db.query(sqlQuery, [ime, prezime, Ime_admina, hashedPassword], (err, result) => { 
             if (err) {
                 console.error("Greška pri unosu admina:", err);
                 return res.status(500).send("Greška na serveru");
@@ -1009,8 +1016,8 @@ app.post("/admin", async (req, res) => {
 
 
 
-
-// login admina
+//Ana Kristo
+// prijava admina
 app.post("/admin/login", (req, res) => {
     const { Ime_admina, Lozinka_admina } = req.body;
 
@@ -1034,6 +1041,8 @@ app.post("/admin/login", (req, res) => {
 
         try {
             // Provjera lozinke s bcrypt
+            //admin.Lozinka_admina je hash iz baze podataka
+            //bcrypt.compare uzme unesenu lozinku, uzme salt iz hasha, izracuna hash i usporedi
             const isPasswordValid = await bcrypt.compare(Lozinka_admina, admin.Lozinka_admina); //proverava lozinku s haširanom lozinkom
 
             if (!isPasswordValid) {
@@ -1050,6 +1059,7 @@ app.post("/admin/login", (req, res) => {
     });
 });
 
+//Ana Kristo
 // spremanje prehrambenih intolerancija korisnika
 app.post('/korisnik/intolerancije', (req, res) => {
   const { ID_korisnika, intolerancije } = req.body
@@ -1441,9 +1451,8 @@ app.get("/vlasnik", (req, res) => {
 
 })
 
-
+//Ana Kristo
 // ispis gradova
-
 app.get("/gradovi", (req, res) => { 
 
     // stvara sql query
@@ -1600,9 +1609,8 @@ app.get("/korisnik", (req, res) => {
 
 })
 
-
+//Ana Kristo
 // ispis zasebnog korisnika i njegovih intolerancija
-
 app.get("/korisnik/:id", (req, res) => { 
 
     // povlaci query ako je unesen ( /korisnik/2 )
