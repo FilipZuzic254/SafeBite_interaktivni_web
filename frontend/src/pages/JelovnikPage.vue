@@ -158,6 +158,8 @@ const korisnikID = ref(null);
 const korisnikIme = ref("");
 
 
+const api_url=import.meta.env.VITE_API_URL
+
 onMounted(() => { //dohvaca id i ime korisnika, ako je prijavljen:
   const storedUserID = localStorage.getItem("userID");// localstorage je mjesto gdje browser cuva podatke, npr. kad se korisnik prijavio
   const storedUserName = localStorage.getItem("userName");
@@ -171,12 +173,12 @@ onMounted(() => { //dohvaca id i ime korisnika, ako je prijavljen:
 //prvo dohvaca informacije o kaficu, onda jelovnik
 const loadPodaci = async () => {
   try {
-    const kaficRes = await axios.get("http://localhost:3000/objekti", {//salje serveru da dobije podatke
+    const kaficRes = await axios.get(`${api_url}/objekti`, {//salje serveru da dobije podatke
       params: { objektID }
     });
     kafic.value = kaficRes.data[0];
 
-    const res = await axios.get("http://localhost:3000/jelovnik", {
+    const res = await axios.get(`${api_url}/jelovnik`, {
       params: { objektID }
     });
     stavke.value = res.data;
@@ -196,7 +198,7 @@ onMounted(loadPodaci);
 //vue automatski prikazuju listu komentara
 const loadKomentari = async () => {
   try {
-    const res = await axios.get("http://localhost:3000/komentari", {
+    const res = await axios.get(`${api_url}/komentari`, {
       params: { ID_objekta: objektID }
     });
     komentari.value = res.data;
@@ -230,7 +232,7 @@ const posaljiKomentar = async () => {
   //nakon uspjeha: prazni polja za komentar i ocjenu i prikazuje alert da je uspješno
   //ponovno dohvaca komentare da se novi odmah prikazu
   try {
-    await axios.post("http://localhost:3000/komentari", {
+    await axios.post(`${api_url}/komentari`, {
       Sadrzaj_komentara: noviKomentar.value.sadrzaj, //dohvaca sadrzaj novog komentara
       Ocjena: noviKomentar.value.ocjena, //dohvaca sadrzaj ocjene
       ID_korisnika: userId,  

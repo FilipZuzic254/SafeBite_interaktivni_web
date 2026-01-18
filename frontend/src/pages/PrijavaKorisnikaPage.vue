@@ -46,6 +46,9 @@ const success = ref(null)
 // Ref na formu (za reset)
 const ObrazacPrijava = ref(null)
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // Funkcija za submit
 const submitForm = async () => {
   loading.value = true
@@ -60,7 +63,7 @@ const submitForm = async () => {
 
   try {
     const response = await axios.post(
-      'http://localhost:3000/korisnik/prijava',
+      `${api_url}/korisnik/prijava`,
       {
         Korisnicko_ime: korIme.value,
         Lozinka_korisnika: lozinka.value

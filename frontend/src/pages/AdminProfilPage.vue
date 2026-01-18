@@ -71,7 +71,7 @@
               <!-- ako objekt ima sliku, koristi se slika s backenda -->
               <q-img
                 :src="obj.Slika_objekta
-                  ? 'http://localhost:3000' + obj.Slika_objekta
+                  ? api_url + obj.Slika_objekta
                   : '/images/default.jpg'"
                 class="card-img"
               />
@@ -144,6 +144,8 @@ const objekti = ref([])     // lista objekata
 const error = ref(null)     // poruke o grešci
 
 
+const api_url=import.meta.env.VITE_API_URL
+
 onMounted(async () => {
   try {
     // dohvat tokena iz localStorage-a
@@ -158,7 +160,7 @@ onMounted(async () => {
 
     // API poziv za dohvat admin profila i objekata
     const response = await axios.get(
-      `http://localhost:3000/admin/profil/${adminId}`
+      `${api_url}/admin/profil/${adminId}`
     )
 
     // spremanje podataka u varijable
@@ -202,7 +204,7 @@ const confirmDelete = (obj) => {
 const deleteObjekt = async (id) => {
   try {
     // API poziv za brisanje
-    await axios.delete(`http://localhost:3000/objekti/${id}`)
+    await axios.delete(`${api_url}/objekti/${id}`)
 
     // uklanjanje objekta iz liste bez ponovnog ucitavanja stranice
     objekti.value = objekti.value.filter(

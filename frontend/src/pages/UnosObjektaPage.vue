@@ -114,10 +114,12 @@ const success = ref(null) //poruka o uspjehu
 const formObjekt = ref(null) //ref na formu da se moze resetirati
 
 
+const api_url=import.meta.env.VITE_API_URL
+
 // Dobivanje gradova iz baze
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/gradovi') //get request za gradove
+    const res = await axios.get(`${api_url}/gradovi`) //get request za gradove
     gradOptions.value = res.data // očekuje se niz objekata { Postanski_broj, Naziv_grada }
   } catch (err) {
     console.error(err)
@@ -160,14 +162,14 @@ const submitForm = async () => {
     }
 
     //post request za unos objekta u bazu
-    const res = await axios.post('http://localhost:3000/objekti', dataToSend)
+    const res = await axios.post(`${api_url}/objekti`, dataToSend)
     const id_objekta = res.data.id
 
     const imgData = new FormData() //kreira formData ("lista")
     imgData.append('id', id_objekta) //dodaje u listu pod ključ "id" - id objekta
     imgData.append('image', thumbnail.value) //dodaje u listu pod ključ "image" - slika objekta
 
-    await axios.put('http://localhost:3000/img/add/objekt', //šalje podatke apiju
+    await axios.put(`${api_url}/img/add/objekt`, //šalje podatke apiju
       imgData, //šalje se i imageData ("lista")
       {
         headers: { 'Content-Type': 'multipart/form-data' } //imagedata se sastoji od dijelova, znaci od id-ija i slike

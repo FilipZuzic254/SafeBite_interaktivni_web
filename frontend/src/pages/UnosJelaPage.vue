@@ -126,11 +126,14 @@ const error = ref(null)
 const success = ref(null)
 const formJelo = ref(null)
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // Pokreće se kad se stranica učita
 onMounted(async () => {
   try {
     // DOHVAT INTOLERANCIJA
-    const piRes = await axios.get('http://localhost:3000/pi')
+    const piRes = await axios.get(`${api_url}/pi`)
     piOptions.value = piRes.data.map(p => ({
       ID_pi: Number(p.ID_pi),
       Naziv_pi: p.Naziv_pi
@@ -145,14 +148,14 @@ onMounted(async () => {
     // Ako nije vlasnik -> dohvaća sve objekte
     if (idVlasnika === null) {
       const objRes = await axios.get(
-        'http://localhost:3000/objekti'
+        `${api_url}/objekti`
       )
       objektOptions.value = objRes.data
     } 
     // Ako je vlasnik -> dohvaća samo njegove objekte
     else {
       const objRes = await axios.get(
-        'http://localhost:3000/objekti',
+        `${api_url}/objekti`,
         { params: { vlasnikID: idVlasnika } }
       )
       objektOptions.value = objRes.data
@@ -201,7 +204,7 @@ const submitForm = async () => {
   try {
     // POST zahtjev za unos jela
     const res = await axios.post(
-      'http://localhost:3000/jelovnici',
+      `${api_url}/jelovnici`,
       dataToSend
     )
 

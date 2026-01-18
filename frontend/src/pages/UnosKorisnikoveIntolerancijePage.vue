@@ -74,6 +74,9 @@ const loading = ref(false) //kontrolira spinner na gumbu
 const error = ref(null) //poruka greske
 const success = ref(null) //poruka uspjeha
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // DOHVAT INTOLERANCIJA
 onMounted(async () => {
   try {
@@ -82,11 +85,11 @@ onMounted(async () => {
     const token = JSON.parse(localStorage.getItem('token'))
 
     // dohvat svih opcija
-    const resOptions = await axios.get('http://localhost:3000/pi')
+    const resOptions = await axios.get(`${api_url}/pi`)
     piOptions.value = resOptions.data
 
     // dohvat korisnikovih odabranih intolerancija (i onih vec spremljenih)
-    const resUser = await axios.get(`http://localhost:3000/korisnik/${token.id}`)
+    const resUser = await axios.get(`${api_url}/korisnik/${token.id}`)
     
     // Postavi samo ID-eve u odabranePI
     //odabranePI treba biti lista ID-eva
@@ -112,7 +115,7 @@ const submitForm = async () => {
 
     // SPREMI odgovor u varijablu res
     //salje ID_korisnika: koji korisnik sprema, i listu odabranih ID-eva intolerancija
-    const res = await axios.post('http://localhost:3000/korisnik/intolerancije', {
+    const res = await axios.post(`${api_url}/korisnik/intolerancije`, {
       ID_korisnika: token.id,
       intolerancije: odabranePI.value
     })

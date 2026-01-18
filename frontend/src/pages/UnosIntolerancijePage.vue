@@ -56,6 +56,9 @@ const error = ref(null) // poruka greške
 const success = ref(null) // poruka uspjeha
 const formIntolerancija = ref(null) // referenca na formu
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // Funkcija koja se poziva kad se pošalje forma
 const submitForm = async () => {
 
@@ -87,7 +90,7 @@ const submitForm = async () => {
 
     // Slanje POST zahtjeva serveru
     const res = await axios.post(
-      'http://localhost:3000/pi',
+      `${api_url}/pi`,
       dataToSend
     )
 

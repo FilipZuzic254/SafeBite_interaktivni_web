@@ -122,6 +122,7 @@ const intolerancije = ref([])   // lista intolerancija
 const komentari = ref([])       // lista komentara
 const error = ref(null)         // poruke o grešci
 
+const api_url=import.meta.env.VITE_API_URL
 
 onMounted(async () => {
   try {
@@ -138,7 +139,7 @@ onMounted(async () => {
 
     // API poziv za dohvat profila korisnika
     const response = await axios.get(
-      `http://localhost:3000/korisnik/profil/${userId}`
+      `${api_url}/korisnik/profil/${userId}`
     )
 
     // spremanje podataka u reaktivne varijable

@@ -43,6 +43,9 @@ const success = ref(null)
 // Ref na formu
 const ObrazacRegistracija = ref(null)
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // Submit funkcija
 const submitForm = async () => {
   loading.value = true
@@ -57,7 +60,7 @@ const submitForm = async () => {
       Email_vlasnika: email.value,
     })
 
-    await axios.post('http://localhost:3000/vlasnik', {
+    await axios.post(`${api_url}/vlasnik`, {
       Ime_vlasnika: ime.value,
       Lozinka_vlasnika: lozinka.value,
       Prezime_vlasnika: prezime.value,

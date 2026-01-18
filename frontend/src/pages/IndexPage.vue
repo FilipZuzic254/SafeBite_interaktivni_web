@@ -157,9 +157,11 @@ const slide = ref(null)
 // ID-evi restorana koje želiš prikazati
 const trazeniID = [1, 3, 5, 6]
 
+const api_url=import.meta.env.VITE_API_URL
+
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/objekti')
+    const res = await axios.get(`${api_url}/objekti`)
 
     // filtriramo samo odabrane i dodajemo opis fallback
     restorani.value = res.data
