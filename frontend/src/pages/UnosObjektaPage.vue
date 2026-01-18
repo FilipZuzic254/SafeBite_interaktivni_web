@@ -1,7 +1,7 @@
 <!-- Ana Krišto, Filip žužić-->
 <template>
   <q-page class="flex flex-center">
-    <q-card class="q-pa-md" style="width: 600px">
+    <q-card class="q-pa-md" style="width: 600px"> <!--sirina ogranicena na 600px-->
       <q-card-section>
         <div class="text-h6">Unos poslovnog objekta</div>
       </q-card-section>
@@ -11,6 +11,7 @@
         <q-form @submit.prevent="submitForm" ref="formObjekt">
 
           <!-- input za ime objekta -->
+          <!--v-model veze vrijednost inputa s varijablom imeObjekta--> 
           <q-input filled v-model="imeObjekta" label="Ime objekta" required />
 
           <!-- input za adresu -->
@@ -20,8 +21,17 @@
           <q-input filled v-model="opisObjekta" label="Opis objekta" type="textarea" class="q-mt-sm" />
 
           <!-- dropdown za odabir grada -->
-           <!-- 26 linija - veze odabrani postanski broj, 28 dohacene opcije iz baze
-            29 sto se sprema u model, 30 sto se prikazuje u dropdoqnu-->
+          <!--
+          v-model="postanskiBroj" -> u ,pdel se sprema vrijednost postanskog broja
+          :options="gradOptions" -> opcije se dohvacaju iz baze (GET /gradovi)
+          option-value="Postanski_broj" -> vrijednost opcije je Postanski_broj
+          option-label="Naziv_grada" -> tekst prikaza je Naziv_grada
+          label="Grad"
+          emit-value -> u v-model se sprema samo value (postanski broj), a ne cijeli objekt
+          map-options -> mapira option-value/option-label
+          required
+          class="q-mt-sm"
+          -->
           <q-select
             filled
             v-model="postanskiBroj" 
@@ -52,6 +62,9 @@
           <q-input filled v-model="emailObjekta" label="Email objekta" type="email" required class="q-mt-sm" />
 
           <!-- input za OIB -->
+           <!--maxlenght/minlenght 11 -> cilj je tocno 11 znakova
+           @input="validateOIB"-> na svaki unos poziva se funkcija koja mice sve sto nije broj, reze na max 11 znamenki
+           -->
           <q-input
             filled
             v-model="oibObjekta"
@@ -64,7 +77,7 @@
             @input="validateOIB"
           />
 
-          
+          <!--FILE UPLOAD: maslovna slika objekta-->
           <q-file filled v-model="thumbnail" label="Naslovna slika objekta" class="q-mt-sm"/>
 
           <!--sumbit gumb-->
@@ -85,14 +98,14 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const imeObjekta = ref('') //ime objekta
-const adresaObjekta = ref('') //adresa objekta
-const opisObjekta = ref('') //opis objekta
-const postanskiBroj = ref(null) //odabrani grad (postanski broj)
-const tipObjekta = ref(null) //tip objekta
+const imeObjekta = ref('') //ime objekta (q-input)
+const adresaObjekta = ref('') //adresa objekta(q-input)
+const opisObjekta = ref('') //opis objekta (textarea)
+const postanskiBroj = ref(null) //odabrani grad (postanski broj) (q-select)
+const tipObjekta = ref(null) //tip objekta (q-select -> objekt {label,value})
 const emailObjekta = ref('') //email objekta
-const oibObjekta = ref('') //OIB objekta
-const thumbnail = ref(null)
+const oibObjekta = ref('') //OIB objekta (11 znamenki)
+const thumbnail = ref(null) //file objekt (q-file)
 
 const gradOptions = ref([]) //opcije gradova dohvacene iz baze
 const loading = ref(false) //status loading spinnra
