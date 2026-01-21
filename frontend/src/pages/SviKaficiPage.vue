@@ -33,12 +33,13 @@
         />
 
       
-        <q-card-section> <!--imena kafića i adresa kafića u jednom redu, neće se prelomiti-->
+        <q-card-section> <!--imena kafića i adresa kafića u jednom redu, neće se prelomiti, adresa kafića-->
           <div class="row no-wrap items-center">
             <div class="col text-h6 ellipsis">{{ kafic.Ime_objekta }}</div>        <!--ellipsis sprječava preljevanje teksta--> 
             <div class="col-auto text-grey text-caption">{{ kafic.Adresa_objekta }}</div>
           </div>
-                  
+          
+          <!--ZVJEZDICE OCJENE--> 
           <!--q-rating prikazuje prosječnu ocjenu--> 
           <!--|| 0 sprječava prikaz undefined--> 
           <q-rating :model-value="kafic.prosjecna_ocjena || 0" :max="5" size="22px" readonly />
@@ -47,7 +48,7 @@
           <!--prikazuje opis kafića--> 
           <!--q-pt-none uklanja padding na vrhu sekcije -->
         <q-card-section class="q-pt-none">
-          <div class="text-caption text-grey">{{ kafic.Opis_objekta }}</div>
+          <div class="text-caption text-grey">{{ kafic.Opis_objekta }}</div> 
         </q-card-section>
       </q-card>
     </div>
@@ -68,8 +69,8 @@ const api_url=import.meta.env.VITE_API_URL
 //onMounted dohvaća podatke kada se komponenta učita
 onMounted(async () => {
   try {
-    const res = await axios.get(`${api_url}/objekti`, {
-      params: { tip: 'Kafić' }
+    const res = await axios.get(`${api_url}/objekti`, { //poziva se api /objekti
+      params: { tip: 'Kafić' } //prikazuju se samo kafići na ovoj stranici, a on u apiju povlači sve objekte, ako zelimo sve samo maknemo skroz ljubicaste zagrade
     })
     kafici.value = res.data
   } catch (err) {

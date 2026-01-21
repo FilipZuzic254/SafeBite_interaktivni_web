@@ -1264,11 +1264,15 @@ app.get("/admin", (req, res) => {
 })
 
 
-//Elena Jašarević,Matea
+//Elena Jašarević,Matea Lesica
 //prikaz objekata na stranicama Kafići i Restorani
-app.get("/objekti", (req, res) => { 
-    const { vlasnikID, objektID, tip } = req.query;
 
+app.get("/objekti", (req, res) => {  //Definira se GET ruta /objekti u Express aplikaciji
+    const { vlasnikID, objektID, tip } = req.query; //omogućuje filtriranje rezultata prema vlasniku, određenom objektu ili tipu objekta
+    //SQL upit za dohvat podataka iz tablice Poslovni_objekt
+    //p.* dohvaća sve kolone iz tablice Poslovni_objekt
+    //ROUND(AVG(k.ocjena),1) AS prosjecna_ocjena računa prosječnu ocjenu svih komentara za taj objekt i zaokružuje je na jednu decimalu.
+    //LEFT JOIN Komentar k ON p.ID_objekta = k.ID_objekta spaja komentare s objektima i LEFT JOIN osigurava da objekti bez komentara također budu uključeni
     let sqlQuery = `
         SELECT p.*, ROUND(AVG(k.ocjena),1) AS prosjecna_ocjena
         FROM Poslovni_objekt p
@@ -1276,24 +1280,34 @@ app.get("/objekti", (req, res) => {
         WHERE 1=1
     `;
 
+    //Kreira se prazan niz params u kojem ćemo pohranjivati vrijednosti za parametre upita (?)
     const params = [];
 
+    //Provjerava se postoji li vlasnikID 
+    //Ako postoji, dodaje se uvjet u SQL upit da filtrira objekte po ID-u vlasnika
+    //Vrijednost se dodaje u params niz za sigurno umetanje u upit
     if (!isNaN(vlasnikID)) {
         sqlQuery += ' AND p.ID_vlasnika = ?';
         params.push(Number(vlasnikID));
     }
 
+    //Provjerava se postoji li ID_objekta
+    //Ako postoji, dodaje se uvjet u SQL upit da filtrira objekte po ID-u objekta
+    //Vrijednost se dodaje u params niz za sigurno umetanje u upit
     if (!isNaN(objektID)) {
         sqlQuery += ' AND p.ID_objekta = ?';
         params.push(Number(objektID));
     }
 
+
+    //Ako je zadani tip prisutan (npr. "Kafić"), dodaje se uvjet da se dohvaćaju samo objekti tog tipa
     if (tip) {
         sqlQuery += ' AND p.Tip_objekta = ?';
         params.push(tip); // tip = "Kafić"
     }
     
 
+    //Grupira rezultate po ID_objekta kako bi AVG(k.ocjena) bio ispravan i da se ne dupliraju objekti u rezultatu
     sqlQuery += ' GROUP BY p.ID_objekta;';
 
     db.query(sqlQuery, params, (err, result) => {
