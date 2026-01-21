@@ -1250,7 +1250,7 @@ app.get("/admin", (req, res) => {
 })
 
 
-//Elena
+//Elena, Matea L
 //prikaz objekata na stranicama Kafići i Restorani
 app.get("/objekti", (req, res) => { 
     const { vlasnikID, objektID, tip } = req.query;
