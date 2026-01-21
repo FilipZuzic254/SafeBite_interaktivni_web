@@ -1376,7 +1376,7 @@ app.get("/jelovnik", (req, res) => {
     });
 });
 
-// Backend (Express) – app.js / server.js
+
 
 //Elena Jašarević, objava komentara, spremanje komentara
 
