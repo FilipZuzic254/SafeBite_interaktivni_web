@@ -11,7 +11,7 @@
     :key="stavka.ID_stavke", jedinstveni ključ za svaku stavku 
     klasa za css uredivanje
     flat kartica bez sjene
-    bordered znači da kartica ima rub-->
+    bordered znači da kartica ima rub--> 
     <div class="q-gutter-md">
       <q-card
         v-for="stavka in stavke"
@@ -20,7 +20,7 @@
         flat
         bordered
       >
-      
+
         <q-card-section> <!--sadržaj kartice-->
           <div class="stavka-header"> <!--naziv i cijena u jednom retku-->
             <div class="stavka-naziv">{{ stavka.Naziv_stavke }}</div> <!--naziv jela-->
