@@ -1264,7 +1264,7 @@ app.get("/admin", (req, res) => {
 })
 
 
-//Elena Jašarević,Matea Lesica
+//Elena Jašarević, Matea Lesica
 //prikaz objekata na stranicama Kafići i Restorani
 
 app.get("/objekti", (req, res) => {  //Definira se GET ruta /objekti u Express aplikaciji
@@ -1321,15 +1321,24 @@ app.get("/objekti", (req, res) => {  //Definira se GET ruta /objekti u Express a
 
 
 //STRANICA JELOVNIK APIJI
-//Elena
+//Elena Jašarević
 //prikaz jelovnika, svih stavki u jelovniku
 app.get("/jelovnik", (req, res) => {
     const { objektID } = req.query; // ID od kafića
 
+    //Provjerava se je li objektID poslan.
+    //Ako nije, server vraća HTTP 400 i poruku da nedostaje ID objekta
     if (!objektID) {
         return res.status(400).send("Nedostaje ID objekta");
     }
 
+    //prikaz svih stavki u jelovniku, jedne kartice, jedan dio
+    //SQL upit dohvaća sve stavke jelovnika (Stavka_jelovnika) za određeni objekt.
+    //s.ID_stavke, s.Naziv_stavke, s.Sastav_stavke, s.Cijena_stavke dohvaća osnovne podatke o jelu koji se prikazuju na stranici
+    //spaja se s tablicom PI_u_stavci_jelovnika po ID_stavke uzima intolerancije
+    //GROUP_CONCAT(pi.Naziv_pi SEPARATOR ', ') AS intolerancije spaja sve intolerancije u jedan string odvojen zarezima
+    //WHERE s.ID_objekta = ? filtrira jelovnik samo za odabrani kafić
+    //GROUP BY s.ID_stavke osigurava da se svaka stavka prikaže samo jednom  
     const sqlQuery = `
         SELECT 
             s.ID_stavke,
@@ -1346,6 +1355,9 @@ app.get("/jelovnik", (req, res) => {
         GROUP BY s.ID_stavke
     `;
 
+    //Izvršava SQL upit u bazi.
+    //Number(objektID) zamjenjuje ? u upitu i osigurava da je ID broj.
+    //err hvata eventualne greške, a result sadrži niz stavki jelovnika
     db.query(sqlQuery, [Number(objektID)], (err, result) => {
         if (err) {
             console.error("Greška pri dohvatu jelovnika:", err);
@@ -1357,21 +1369,28 @@ app.get("/jelovnik", (req, res) => {
 
 
 //Elena Jašarević, objava komentara, spremanje komentara
+
 app.use(express.json());
 
-app.post("/komentari", (req, res) => {
+app.post("/komentari", (req, res) => { //definira se post za slanje novog komentara
+    //iz tijela se povlače sadržaj komentara, ocjena, ID korisnika i ID objekta 
   const { Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta } = req.body;
 
+    //provjerava jesu li svi podaci upisani, ako nisu vraća grešku da nedostaju podaci
   if (!Sadrzaj_komentara || !Ocjena || !ID_korisnika || !ID_objekta) {
     return res.status(400).send("Nedostaju podaci");
   }
 
+  //SQL upit za unos novog komentara u bazu podataka
   const sql = `
     INSERT INTO Komentar
     (Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta)
     VALUES (?, ?, ?, ?)
   `;
 
+    //Izvršava SQL upit u bazi i prosljeđuje vrijednosti iz POST zahtjeva umjesto ?
+    //ako dođe do greške u bazi, ispisuje se u konzolu i vraća HTTP 500
+    //ako je unos uspješan ispisuje se KOmentar spremljen
   db.query(sql, [Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta], (err) => {
     if (err) {
       console.error("Greška pri unosu komentara:", err);
@@ -1381,10 +1400,13 @@ app.post("/komentari", (req, res) => {
   });
 });
 
-//Elena Jašarević, prikaz komentara
-app.get("/komentari", (req, res) => {
-  const { ID_objekta } = req.query;
 
+//Elena Jašarević
+// prikaz komentara na stranici Jelovnik
+app.get("/komentari", (req, res) => { //Definira se GET ruta /komentari za dohvat komentara
+  const { ID_objekta } = req.query; //Iz URL query parametara dohvaća se ID_objekta, tj. ID objketa čije komentare želimo prikazati
+
+  //Provjerava je li poslan ID_objekta, ako nedostaje, vraća se HTTP 400 i poruka da nedostaje ID objekta
   if (!ID_objekta) return res.status(400).send("Nedostaje ID objekta");
 
   const sql = `
