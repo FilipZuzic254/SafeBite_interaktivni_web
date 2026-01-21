@@ -42,6 +42,9 @@ const success = ref(null)
 const router = useRouter()
 const ObrazacPrijava = ref(null)
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // Funkcija za login
 const submitForm = async () => {
   loading.value = true
@@ -55,7 +58,7 @@ const submitForm = async () => {
     })
 
     // POST request na backend
-    const response = await axios.post('http://localhost:3000/vlasnik/prijava', {
+    const response = await axios.post(`${api_url}/vlasnik/prijava`, {
       Email_vlasnika: email.value,
       Lozinka_vlasnika: lozinka.value
     })

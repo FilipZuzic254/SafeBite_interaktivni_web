@@ -51,6 +51,10 @@ const success = ref(null) //tekst o uspješnoj registraciji
 // ref na obrazac
 const ObrazacRegistracija = ref(null)
 
+
+const api_url=import.meta.env.VITE_API_URL
+
+
 // funkcija koja se pokreće kada se pošalje obrazac
 const submitForm = async () => {
   loading.value = true //pokreće se animacija loading
@@ -59,7 +63,7 @@ const submitForm = async () => {
 
   try {
     //šaljemo podatke backendu POST-om
-    await axios.post('http://localhost:3000/korisnik', {
+    await axios.post(`${api_url}/korisnik`, {
       Korisnicko_ime: korisnickoIme.value,
       Lozinka_korisnika: lozinka.value,
       Ime_korisnika: ime.value,

@@ -151,6 +151,9 @@ const objekt = ref({})        // podaci o objektu
 const komentari = ref([])    // komentari korisnika
 const isAdmin = ref(false)   // kontrola admin funkcija
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // provjera je li prijavljen admin 
 const provjeriAdmin = () => {
   const tokenStr = localStorage.getItem("token")
@@ -173,13 +176,13 @@ provjeriAdmin()
 const loadPodaci = async () => {
   try {
     // dohvat podataka o objektu
-    const objektRes = await axios.get("http://localhost:3000/objekti", {
+    const objektRes = await axios.get(`${api_url}/objekti`, {
       params: { objektID }
     })
     objekt.value = objektRes.data[0]
 
     // dohvat stavki jelovnika
-    const res = await axios.get("http://localhost:3000/jelovnik", {
+    const res = await axios.get(`${api_url}/jelovnik`, {
       params: { objektID }
     })
     stavke.value = res.data
@@ -194,7 +197,7 @@ const loadPodaci = async () => {
 // dohvat komentara
 const loadKomentari = async () => {
   try {
-    const res = await axios.get("http://localhost:3000/komentari", {
+    const res = await axios.get(`${api_url}/komentari`, {
       params: { ID_objekta: objektID }
     })
     komentari.value = res.data
@@ -229,7 +232,7 @@ function confirmDelete(stavka) {
 // drisanje stavke jelovnika iz baze podataka
 const deleteStavku = async (id) => {
   try {
-    await axios.delete(`http://localhost:3000/jelovnici/${id}`)
+    await axios.delete(`${api_url}/jelovnici/${id}`)
 
     // uklanjanje iz liste bez ponovnog ucitavanja
     stavke.value = stavke.value.filter(st => st.ID_stavke !== id)
@@ -262,7 +265,7 @@ function confirmDeleteKomentar(kom) {
 // brisanje komentara
 const deleteKomentar = async (id) => {
   try {
-    await axios.delete(`http://localhost:3000/komentari/${id}`)
+    await axios.delete(`${api_url}/komentari/${id}`)
 
     komentari.value = komentari.value.filter(
       k => k.ID_komentara !== id

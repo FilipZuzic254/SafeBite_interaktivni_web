@@ -45,6 +45,9 @@ const success = ref(null) //poruka o uspjehu
 // Ref na formu da se moze resetirati nakon uspjesne registracije
 const ObrazacRegistracija = ref(null)
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // Submit funkcija
 const submitForm = async () => {
   //aktiviraj loading i ocisti stare poruke
@@ -62,7 +65,7 @@ const submitForm = async () => {
     })
 
     //post request na backend endpoint za registraciju admina
-    await axios.post('http://localhost:3000/admin', {
+    await axios.post(`${api_url}/admin`, {
       ime: ime.value, //ime admina
       prezime: prezime.value, //prezime admina
       Ime_admina: korIme.value, //korisnicko ime admina

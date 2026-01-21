@@ -72,7 +72,7 @@
               <!-- ako objekt ima sliku, koristi se backend URL -->
               <q-img
                 :src="obj.Slika_objekta
-                  ? 'http://localhost:3000' + obj.Slika_objekta
+                  ? api_url + obj.Slika_objekta
                   : '/images/default.jpg'"
                 class="card-img"
               />
@@ -144,6 +144,9 @@ const vlasnik = ref({})   // podaci o vlasniku
 const objekti = ref([])   // niz objekata vlasnika
 const error = ref(null)   // poruke o grešci
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 onMounted(async () => {
   try {
     // dohvat tokena iz localStorage-a
@@ -159,7 +162,7 @@ onMounted(async () => {
 
     // API poziv za dohvat profila vlasnika i njegovih objekata
     const response = await axios.get(
-      `http://localhost:3000/vlasnik/profil/${vlasnikId}`
+      `${api_url}/vlasnik/profil/${vlasnikId}`
     )
 
     // spremanje podataka u reaktivne varijable
@@ -203,7 +206,7 @@ const confirmDelete = (obj) => {
 const deleteObjekt = async (id) => {
   try {
     // API poziv za brisanje objekta
-    await axios.delete(`http://localhost:3000/objekti/${id}`)
+    await axios.delete(`${api_url}/objekti/${id}`)
 
     // uklanjanje objekta iz liste bez ponovnog učitavanja
     objekti.value = objekti.value.filter(

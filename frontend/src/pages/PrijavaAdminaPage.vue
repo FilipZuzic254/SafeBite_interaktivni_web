@@ -39,6 +39,9 @@ const error = ref(null) //poruka o gresci
 const success = ref(null) //poruka o uspjehu
 const ObrazacPrijava = ref(null) //ref na formu da se moze resetirati
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 const submitForm = async () => { //funkcija za submit forme
   //aktiviraj loading i ocisti stare poruke
   loading.value = true 
@@ -47,7 +50,7 @@ const submitForm = async () => { //funkcija za submit forme
 
   try {
     //posalji POST request na backend endpoint za login admina
-    const response = await axios.post('http://localhost:3000/admin/login', {
+    const response = await axios.post(`${api_url}/admin/login`, {
       Ime_admina: korIme.value, //korisnicko ime koje je unio admin
       Lozinka_admina: lozinka.value, //lozinka koju je admin unio
     })

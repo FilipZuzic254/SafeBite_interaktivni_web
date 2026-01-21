@@ -28,7 +28,7 @@
       >
       <!--ako kafic nema sliku koristi se '/images/default.jpg'--> 
         <q-img
-          :src="kafic.Slika_objekta ? 'http://localhost:3000' + kafic.Slika_objekta : '/images/default.jpg'"
+          :src="kafic.Slika_objekta ? api_url + kafic.Slika_objekta : '/images/default.jpg'"
           class="card-img"
         />
 
@@ -62,10 +62,13 @@ import axios from 'axios'
 const kafici = ref([])
 
 
+const api_url=import.meta.env.VITE_API_URL
+
+
 //onMounted dohvaća podatke kada se komponenta učita
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/objekti', {
+    const res = await axios.get(`${api_url}/objekti`, {
       params: { tip: 'Kafić' }
     })
     kafici.value = res.data

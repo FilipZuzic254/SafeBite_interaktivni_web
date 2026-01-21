@@ -105,16 +105,19 @@ const piOptions = ref([])
 
 const loading = ref(false)
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 // Pokreće se kad se stranica učita
 onMounted(async () => {
   try {
     // 1. Dohvati sve intolerancije
-    const piRes = await axios.get("http://localhost:3000/pi")
+    const piRes = await axios.get(`${api_url}/pi`)
     piOptions.value = piRes.data
 
     // 2. Dohvati podatke jela po ID-u
     const res = await axios.get(
-      `http://localhost:3000/jelovnici/${idStavke}`
+      `${api_url}/jelovnici/${idStavke}`
     )
     const jelo = res.data
 
@@ -142,7 +145,7 @@ const updateForm = async () => {
   try {
     // PUT zahtjev za ažuriranje jela
     await axios.put(
-      `http://localhost:3000/jelovnici/${idStavke}`,
+      `${api_url}/jelovnici/${idStavke}`,
       {
         Naziv_stavke: naziv.value,
         Cijena_stavke: cijena.value,

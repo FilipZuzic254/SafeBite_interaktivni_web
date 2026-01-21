@@ -25,7 +25,7 @@
         style="cursor: pointer"
       >
         <q-img
-          :src="restoran.Slika_objekta ? 'http://localhost:3000' + restoran.Slika_objekta : '/images/default.jpg'"
+          :src="restoran.Slika_objekta ? api_url + restoran.Slika_objekta : '/images/default.jpg'"
           class="card-img"
         />
         <q-card-section>
@@ -50,9 +50,12 @@ import axios from 'axios'
 
 const restorani = ref([])
 
+
+const api_url=import.meta.env.VITE_API_URL
+
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/objekti', {
+    const res = await axios.get(`${api_url}/objekti`, {
       params: { tip: 'Restoran' }
     })
     restorani.value = res.data
