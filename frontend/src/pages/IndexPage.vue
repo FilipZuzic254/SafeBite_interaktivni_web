@@ -313,4 +313,21 @@ h4 {
   visibility: visible !important;
   pointer-events: all !important;
 }
+
+@media (max-width: 599px) {
+  .cards-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .cards-wrapper .col-12 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .choice-card {
+    margin-left: -3px; 
+  }
+}
+
 </style>
