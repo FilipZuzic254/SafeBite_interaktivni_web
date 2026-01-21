@@ -20,6 +20,7 @@
         flat
         bordered
       >
+      
         <q-card-section> <!--sadržaj kartice-->
           <div class="stavka-header"> <!--naziv i cijena u jednom retku-->
             <div class="stavka-naziv">{{ stavka.Naziv_stavke }}</div> <!--naziv jela-->

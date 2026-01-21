@@ -1264,7 +1264,7 @@ app.get("/admin", (req, res) => {
 })
 
 
-//Elena
+//Elena Jašarević
 //prikaz objekata na stranicama Kafići i Restorani
 app.get("/objekti", (req, res) => { 
     const { vlasnikID, objektID, tip } = req.query;
@@ -1305,30 +1305,8 @@ app.get("/objekti", (req, res) => {
     });
 });
 
-//jelovnik
-// Dohvat jelovnika za određeni objekt/kafić
-//app.get("/jelovnik", (req, res) => {
-  //  const { objektID } = req.query; // ID od kafića
-//
-  //  if (!objektID) {
-    //    return res.status(400).send("Nedostaje ID objekta");
-    //}
 
-    //const sqlQuery = `
-      //  SELECT *
-        //FROM Stavka_jelovnika
-        //WHERE ID_objekta = ?
-    //`;
-
-    //db.query(sqlQuery, [Number(objektID)], (err, result) => {
-     //   if (err) {
-       //     console.error("Greška pri dohvatu jelovnika:", err);
-         //   return res.status(500).send("Greška na serveru");
-        //}
-        //res.json(result);
-   // });
-//});
-
+//STRANICA JELOVNIK APIJI
 //Elena
 //prikaz jelovnika, svih stavki u jelovniku
 app.get("/jelovnik", (req, res) => {
@@ -1363,9 +1341,8 @@ app.get("/jelovnik", (req, res) => {
     });
 });
 
-// Backend (Express) – app.js / server.js
 
-// OBAVEZNO
+//Elena Jašarević, objava komentara, spremanje komentara
 app.use(express.json());
 
 app.post("/komentari", (req, res) => {
@@ -1390,6 +1367,7 @@ app.post("/komentari", (req, res) => {
   });
 });
 
+//Elena Jašarević, prikaz komentara
 app.get("/komentari", (req, res) => {
   const { ID_objekta } = req.query;
 
