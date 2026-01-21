@@ -1,6 +1,6 @@
 <!-- Elena Jašarević-->
 <template>
-  <div class="q-pa-md">     <!--quasar klasa za "padding medium"-->
+  <div class="q-pa-md"> <!--quasar klasa za "padding medium"-->
     <!--slika na vrhu stranice -->
     <q-card flat class="my-card">     <!--kartica nema sjenu -->
       <q-img src="src/assets/Kafici.png" :height="400" /> 

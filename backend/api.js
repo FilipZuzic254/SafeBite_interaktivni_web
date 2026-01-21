@@ -1264,7 +1264,7 @@ app.get("/admin", (req, res) => {
 })
 
 
-//Elena Jašarević
+//Elena Jašarević,Matea
 //prikaz objekata na stranicama Kafići i Restorani
 app.get("/objekti", (req, res) => { 
     const { vlasnikID, objektID, tip } = req.query;
