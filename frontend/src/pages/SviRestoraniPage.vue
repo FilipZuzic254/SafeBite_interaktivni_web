@@ -20,7 +20,7 @@
         :key="restoran.ID_objekta"
         class="my-card restorani-card"
         flat
-        bordered
+        bordered 
         @click="$router.push({ path: '/jelovnik', query: { objektID: restoran.ID_objekta } })"
         style="cursor: pointer"
       >
