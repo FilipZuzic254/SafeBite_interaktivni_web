@@ -62,7 +62,7 @@ const storage = multer.diskStorage({ //pokrece se kada api preko form date dobij
 
 const upload = multer({ storage }); //koristi se ta biblioteka
 
-
+//Filip Žužić, Ana Kristo
 //funkcija za spremanje slike
 app.put("/img/add/objekt", upload.single("image"), (req, res) => {//single pokreće kako se sprema slika
     const { id } = req.body;
@@ -634,7 +634,7 @@ app.put("/korisnik/:id", (req, res) => {
 ▄████▄ ▄███▄    ██  █▀█████▀  ██████████ ████▄ ▄███▄   ▄████▄   
 */
 
-//Matea Matković
+//Matea Matković, Ana Kristo
 // --- Dohvati sve postojeće intolerancije
 app.get('/pi', (req, res) => {
   db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => {
@@ -805,7 +805,8 @@ app.post("/vlasnik", async (req, res) => {
 });
 
 
-
+//Ana Kristo
+//prikaz objekata sa dropdown   
 app.post("/objekti", (req, res) => {
     const unos = req.body;
 
@@ -852,9 +853,8 @@ app.post("/objekti", (req, res) => {
 });
 
 
-
+//Ana Kristo
 // unos gradova
-
 app.post("/gradovi", (req, res) => { 
 
     // povlaci json koji salje aplikacija
@@ -978,7 +978,7 @@ app.post("/korisnik", async (req, res) => {
 
 });
 
-
+//Ana Kristo
 //registracija admina
 app.post("/admin", async (req, res) => {
     const { ime, prezime, Ime_admina, Lozinka_admina } = req.body;
@@ -1013,7 +1013,7 @@ app.post("/admin", async (req, res) => {
 
 
 
-
+//Ana Kristo
 // login admina
 app.post("/admin/login", (req, res) => {
     const { Ime_admina, Lozinka_admina } = req.body;
@@ -1054,6 +1054,7 @@ app.post("/admin/login", (req, res) => {
     });
 });
 
+//Ana Kristo
 // spremanje prehrambenih intolerancija korisnika
 app.post('/korisnik/intolerancije', (req, res) => {
   const { ID_korisnika, intolerancije } = req.body
@@ -1649,9 +1650,8 @@ app.get("/korisnik", (req, res) => {
 
 })
 
-
+//Ana Kristo
 // ispis zasebnog korisnika i njegovih intolerancija
-
 app.get("/korisnik/:id", (req, res) => { 
 
     // povlaci query ako je unesen ( /korisnik/2 )
