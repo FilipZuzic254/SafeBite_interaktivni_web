@@ -914,70 +914,6 @@ app.post("/komentari", (req, res) => {
 
 })
 
-//Matea Lesica
-// registracija korisnika
-app.post("/korisnik", async (req, res) => { 
-
-    const {
-        Korisnicko_ime,
-        Lozinka_korisnika,
-        Ime_korisnika,
-        Prezime_korisnika,
-        Email_korisnika,
-        Intolerancije
-    } = req.body;
-
-    if (!Korisnicko_ime || !Lozinka_korisnika || !Ime_korisnika || !Prezime_korisnika || !Email_korisnika) {
-        return res.status(400).json({ message: "Missing required fields." });
-    }
-
-    try {
-        // HASHIRANJE LOZINKE
-        const hashedPassword = await bcrypt.hash(Lozinka_korisnika, 10);
-
-        const sqlInsertStavka = `
-            INSERT INTO Korisnik 
-            (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
-            VALUES (?, ?, ?, ?, ?)
-        `;
-
-        // sada šaljemo hashedPassword u bazu umjesto plain text lozinke
-        db.query(sqlInsertStavka, [Korisnicko_ime, hashedPassword, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
-            if (err) {
-                console.error("Insert error (menu item):", err);
-                return res.status(500).json({ message: "Error inserting menu item." });
-            }
-
-            const insertKorisnikID = result.insertId;
-
-            if (!Intolerancije || Intolerancije.length === 0) {
-                return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
-            }
-
-            const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
-
-            const sqlInsertIntolerancije = `
-                INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
-                VALUES ?
-            `;
-
-            db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
-                if (err2) {
-                    console.error("Insert error (intolerances):", err2);
-                    return res.status(500).json({ message: "Error inserting intolerances." });
-                }
-
-                res.json({ message: "Korisnik i njegove intolerancije uspješno unesene" });
-            });
-        });
-
-    } catch (err) {
-        console.error("Hashing error:", err);
-        res.status(500).json({ message: "Greška pri hashiranju lozinke." });
-    }
-
-});
-
 
 //registracija admina
 app.post("/admin", async (req, res) => {
@@ -1253,6 +1189,110 @@ app.get("/admin", (req, res) => {
 
 })
 
+//Matea Lesica
+// registracija korisnika
+app.post("/korisnik", async (req, res) => { 
+
+    const {
+        Korisnicko_ime,
+        Lozinka_korisnika,
+        Ime_korisnika,
+        Prezime_korisnika,
+        Email_korisnika,
+        Intolerancije
+    } = req.body;
+
+    if (!Korisnicko_ime || !Lozinka_korisnika || !Ime_korisnika || !Prezime_korisnika || !Email_korisnika) {
+        return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    try {
+        // HASHIRANJE LOZINKE
+        const hashedPassword = await bcrypt.hash(Lozinka_korisnika, 10);
+
+        const sqlInsertStavka = `
+            INSERT INTO Korisnik 
+            (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+
+        // sada šaljemo hashedPassword u bazu umjesto plain text lozinke
+        db.query(sqlInsertStavka, [Korisnicko_ime, hashedPassword, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
+            if (err) {
+                console.error("Insert error (menu item):", err);
+                return res.status(500).json({ message: "Error inserting menu item." });
+            }
+
+            const insertKorisnikID = result.insertId;
+
+            if (!Intolerancije || Intolerancije.length === 0) {
+                return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
+            }
+
+            const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
+
+            const sqlInsertIntolerancije = `
+                INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
+                VALUES ?
+            `;
+
+            db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
+                if (err2) {
+                    console.error("Insert error (intolerances):", err2);
+                    return res.status(500).json({ message: "Error inserting intolerances." });
+                }
+
+                res.json({ message: "Korisnik i njegove intolerancije uspješno unesene" });
+            });
+        });
+
+    } catch (err) {
+        console.error("Hashing error:", err);
+        res.status(500).json({ message: "Greška pri hashiranju lozinke." });
+    }
+
+});
+
+//Matea Lesica
+//prijava korisnika
+app.post("/korisnik/prijava", (req, res) => {
+    const { Korisnicko_ime, Lozinka_korisnika } = req.body;
+
+    if (!Korisnicko_ime || !Lozinka_korisnika) {
+        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." });
+    }
+
+    // Dohvati korisnika po korisničkom imenu
+    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ?';
+    db.query(sqlQuery, [Korisnicko_ime], async (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a korisnika:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
+        }
+
+        const user = result[0];
+
+        try {
+            // Provjera lozinke s bcrypt
+            const isPasswordValid = await bcrypt.compare(Lozinka_korisnika, user.Lozinka_korisnika);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
+            }
+
+            // Prijava uspješna
+            res.json({ message: "Uspješna prijava", user });
+
+        } catch (bcryptErr) {
+            console.error("Greška pri provjeri lozinke:", bcryptErr);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+    });
+});
 
 //Elena Jašarević, Matea Lesica
 //prikaz objekata na stranicama Kafići i Restorani
@@ -1751,45 +1791,6 @@ app.post("/vlasnik/prijava", (req, res) => {
 });
 
 
-//Matea Lesica
-app.post("/korisnik/prijava", (req, res) => {
-    const { Korisnicko_ime, Lozinka_korisnika } = req.body;
-
-    if (!Korisnicko_ime || !Lozinka_korisnika) {
-        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." });
-    }
-
-    // Dohvati korisnika po korisničkom imenu
-    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ?';
-    db.query(sqlQuery, [Korisnicko_ime], async (err, result) => {
-        if (err) {
-            console.error('Greška pri provjeri login-a korisnika:', err);
-            return res.status(500).json({ message: "Greška na serveru" });
-        }
-
-        if (result.length === 0) {
-            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
-        }
-
-        const user = result[0];
-
-        try {
-            // Provjera lozinke s bcrypt
-            const isPasswordValid = await bcrypt.compare(Lozinka_korisnika, user.Lozinka_korisnika);
-
-            if (!isPasswordValid) {
-                return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
-            }
-
-            // Prijava uspješna
-            res.json({ message: "Uspješna prijava", user });
-
-        } catch (bcryptErr) {
-            console.error("Greška pri provjeri lozinke:", bcryptErr);
-            return res.status(500).json({ message: "Greška na serveru" });
-        }
-    });
-});
 
 
 //Petra Grgić

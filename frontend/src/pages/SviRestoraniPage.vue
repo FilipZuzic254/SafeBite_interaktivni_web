@@ -30,7 +30,7 @@
         />
         <q-card-section>
           <div class="row no-wrap items-center">
-            <div class="col text-h6 ellipsis">{{ restoran.Ime_objekta }}</div>
+            <div class="col text-h6ellipsis">{{ restoran.Ime_objekta }}</div>
             <div class="col-auto text-grey text-caption">{{ restoran.Adresa_objekta }}</div>
           </div>
 
@@ -105,4 +105,5 @@ onMounted(async () => {
   height: 200px;
   object-fit: cover;
 }
+
 </style>
