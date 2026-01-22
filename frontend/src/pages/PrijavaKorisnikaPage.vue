@@ -11,7 +11,7 @@
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="ObrazacPrijava">
           <!-- Polja -->
-          <q-input filled v-model="korIme" label="Korisničko ime" required />
+          <q-input filled v-model="korIme" label="Korisničko ime" required/>
           <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" />
 
           <!-- Gumb za prijavu -->

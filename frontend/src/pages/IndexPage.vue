@@ -122,7 +122,7 @@
           navigation
           padding
           arrows
-          class="bg-primary text-white rounded-borders show-arrows"
+          class="bg-primary text-white rounded-borders show-arrows" 
         >
         
           <q-carousel-slide
