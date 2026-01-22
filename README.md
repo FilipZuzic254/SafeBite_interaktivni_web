@@ -29,4 +29,9 @@ node api.js / nodemon api.js
 ```
 Izgled se može uzeti iz RegistracijeKorisnika ako hoćete da bude slično
 ```
-
+##kloniranje i to
+git init
+git config user.email
+git config user.name
+git clone
+cd pa dalje
