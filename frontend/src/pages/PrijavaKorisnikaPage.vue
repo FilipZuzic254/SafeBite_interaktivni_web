@@ -1,6 +1,7 @@
 <!-- Matea Lesica -->
 <template>
   <q-page class="flex flex-center">
+    <!-- ako trebamo mijenajti obrazac onda je to tu-->
     <q-card class="q-pa-md" style="width: 400px">
       <!-- Naslov obrasca -->
       <q-card-section>
@@ -11,7 +12,7 @@
       <q-card-section>
         <q-form @submit.prevent="submitForm" ref="ObrazacPrijava">
           <!-- Polja -->
-          <q-input filled v-model="korIme" label="Korisničko ime" required/>
+          <q-input filled v-model="korIme" label="Korisničko ime" required />
           <q-input filled v-model="lozinka" label="Lozinka" type="password" required class="q-mt-sm" />
 
           <!-- Gumb za prijavu -->
@@ -19,7 +20,7 @@
             <q-btn type="submit" label="Prijava" color="primary" rounded :loading="loading" />
           </div>
 
-          <!-- Poruke o grešci / uspjehu -->
+          <!-- Poruke o gresci / uspjehu -->
           <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
           <div v-if="success" class="text-positive q-mt-sm">{{ success }}</div>
         </q-form>
@@ -63,9 +64,9 @@ const submitForm = async () => {
 
   try {
     const response = await axios.post(
-      `${api_url}/korisnik/prijava`,
+      `${api_url}/korisnik/prijava`, //API ruta
       {
-        Korisnicko_ime: korIme.value,
+        Korisnicko_ime: korIme.value, 
         Lozinka_korisnika: lozinka.value
       },
       {
@@ -118,5 +119,9 @@ const submitForm = async () => {
 .q-page {
   min-height: 100vh;
   background-color: #f5f5f5;
+}
+
+.q-input {
+  background-color: rgb(255, 255, 255);
 }
 </style>
