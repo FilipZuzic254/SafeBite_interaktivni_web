@@ -727,13 +727,17 @@ app.post("/komentari", (req, res) => {
     return res.status(400).send("Nedostaju podaci");
   }
 
+  const d = new Date();
+  let Datum = d.toISOString().split('T')[0];
+
+
   const sql = `
     INSERT INTO Komentar
-    (Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta)
-    VALUES (?, ?, ?, ?)
+    (Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta, Datum)
+    VALUES (?, ?, ?, ?,?)
   `;
 
-  db.query(sql, [Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta], (err) => {
+  db.query(sql, [Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta, Datum], (err) => {
     if (err) {
       console.error("Greška pri unosu komentara:", err);
       return res.status(500).send("Greška na serveru");
@@ -1798,6 +1802,7 @@ app.get('/korisnik/profil/:id', (req, res) => {
       k.ID_komentara,
       k.Sadrzaj_komentara,
       k.Ocjena,
+    k.Datum,
       po.Ime_objekta
     FROM Komentar k
     JOIN Poslovni_objekt po 
@@ -1829,6 +1834,13 @@ app.get('/korisnik/profil/:id', (req, res) => {
           console.error('Greška pri dohvatu komentara:', err3) //greska pri dohvacanju komentara
           return res.status(500).json({ message: 'Greška pri dohvatu komentara', error: err3 })
         }
+
+        komentariResult.forEach(komentar => {
+        if (komentar.Datum) {
+        komentar.Datum = komentar.Datum.toISOString().split('T')[0];
+    }
+});
+        
 
         // json sa podatcia o korisniku, intolerancijama i komentarima
         res.json({

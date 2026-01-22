@@ -87,6 +87,11 @@
                 {{ kom.Ime_objekta }}
               </div>
 
+               <!-- naziv objekta na koji se komentar odnosi -->
+              <div class="q-mt-xs">
+                {{ kom.Datum }}
+              </div>
+
               <!-- sadrzaj komentara -->
               <div class="q-mt-xs">
                 {{ kom.Sadrzaj_komentara }}
@@ -146,6 +151,7 @@ onMounted(async () => {
     korisnik.value = response.data.korisnik
     intolerancije.value = response.data.intolerancije
     komentari.value = response.data.komentari
+
 
   } catch (err) {
     console.error(err)
