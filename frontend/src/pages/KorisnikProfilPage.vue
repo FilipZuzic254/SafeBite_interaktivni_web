@@ -29,8 +29,8 @@
 
       <!-- prehrambene intolerancije korisnika -->
       <q-card-section>
-        <div class="text-subtitle1 q-mb-sm">
-          Prehrambene intolerancije
+        <div class="text-subtitle1 q-mb-sm" style= "color:black">
+          Prehrambene intolerancije 
         </div>
 
         <!-- ako korisnik nema intolerancija -->

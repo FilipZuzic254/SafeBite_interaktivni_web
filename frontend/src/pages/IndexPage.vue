@@ -122,8 +122,8 @@
           navigation
           padding
           arrows
-          class="bg-primary text-white rounded-borders show-arrows"
-        > <!-- raste sa sadrzajem--> 
+          class="bg-primary text-white rounded-borders show-arrows" 
+        >
         
           <q-carousel-slide
             v-for="r in restorani"
