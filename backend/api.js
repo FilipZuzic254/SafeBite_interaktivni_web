@@ -31,10 +31,6 @@ app.use(express.json());
 app.use(cors()); //cors je način da server dozvoli pristup svojim resursima iz različitih domena
 
 
-/**
- * THIS IS THE IMPORTANT PART
- * It exposes the "uploads" folder as a public URL
- */
 app.use("/uploads", express.static("uploads")); //otvara mapu uploads da je se može pretraživat preko interneta
  
 const storage = multer.diskStorage({ //pokrece se kada api preko form date dobije sliku, kada se posalje i api dobije
@@ -47,7 +43,6 @@ const storage = multer.diskStorage({ //pokrece se kada api preko form date dobij
 
     let uploadPath = `./uploads/${id}`;
 
-    // Ensure directory exists
     fs.mkdirSync(uploadPath, { recursive: true });
 
     cb(null, uploadPath);

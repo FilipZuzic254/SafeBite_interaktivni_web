@@ -123,7 +123,7 @@
           padding
           arrows
           class="bg-primary text-white rounded-borders show-arrows"
-        >
+        > <!-- raste sa sadrzajem--> 
         
           <q-carousel-slide
             v-for="r in restorani"
