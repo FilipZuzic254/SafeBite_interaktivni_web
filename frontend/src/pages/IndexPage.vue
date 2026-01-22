@@ -8,6 +8,7 @@
 
       <!-- lijevo ide logo-->
       <!-- col-12 na mobitelu, col-md-6 na vecim ekranima -->
+      <!-- ako trebamo promijeniti veličinu onda mijenjamo ovo di je 6-->
       <div class="col-12 col-md-6 flex flex-center left-side">
         <q-img
           src="src/assets/SafeBite.png"
@@ -17,6 +18,7 @@
       </div>
 
       <!-- desno idu opis i gumb -->
+      <!-- ako trebamo promijeniti veličinu onda mijenjamo ovo di je 6-->
       <div class="col-12 col-md-6 flex items-center right-side">
         <div class="text-container">
 
@@ -57,6 +59,7 @@
       <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
 
         <!-- kartica restorani -->
+        <!-- kada se klikne gumb vodi na stranicu sa restoranima-->
         <div class="col-12 col-md-5">
           <q-card
             class="choice-card"
