@@ -60,6 +60,7 @@
 
         <!-- kartica restorani -->
         <!-- kada se klikne gumb vodi na stranicu sa restoranima-->
+        <!-- za manjiti ili povecati se mijenja ovo di je 5 -->
         <div class="col-12 col-md-5">
           <q-card
             class="choice-card"
@@ -79,6 +80,7 @@
         </div>
 
         <!-- kartica kafici -->
+        <!-- za manjiti ili povecati se mijenja ovo di je 5 -->
         <div class="col-12 col-md-5">
           <q-card
             class="choice-card"
@@ -106,6 +108,7 @@
       
       <div class="content">
       <h4>Naše preporuke:</h4>
+       <!-- ako ocemo da ide lijevo-desno mijenjamo transition-->
       <div class="q-pa-md">
         <q-carousel 
           v-model="slide"
@@ -166,7 +169,7 @@ const api_url=import.meta.env.VITE_API_URL
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`${api_url}/objekti`)
+    const res = await axios.get(`${api_url}/objekti`) //API ruta
 
     // filtriramo samo odabrane i dodajemo opis fallback
     restorani.value = res.data
