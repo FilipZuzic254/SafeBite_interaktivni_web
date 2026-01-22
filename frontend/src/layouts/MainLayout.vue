@@ -23,7 +23,7 @@
       </q-toolbar>
     </q-header>
 
-    <!-- DRAWER -->
+    <!-- navigacija -->
     <q-drawer
       v-model="leftDrawer"
       side="left"
@@ -97,14 +97,13 @@
       </q-list>
     </q-drawer>
 
-    <!-- ZATAMNJENJE -->
+    <!-- tamnija pozadina kada se otvori navigacija -->
     <div
       v-if="leftDrawer"
       class="overlay"
       @click="leftDrawer = false"
     ></div>
 
-    <!-- CONTENT -->
     <q-page-container>
       <router-view />
 
@@ -160,6 +159,7 @@ window.addEventListener('prijava', (event) => {
   token.value = event.detail
 })
 
+// da se ne mijenjaju prijavljeni ako se refresha
 watchEffect(() => {
   const t = JSON.parse(localStorage.getItem('token'))
   token.value = t
@@ -172,7 +172,7 @@ function logout() {
 }
 
 function toggleDrawer() {
-  leftDrawer.value = !leftDrawer.value  //Mijenja stanje bočnog izbornika
+  leftDrawer.value = !leftDrawer.value  //mijenja stanje navigacije
 }
 </script>
 
