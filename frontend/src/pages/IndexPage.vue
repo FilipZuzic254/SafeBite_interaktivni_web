@@ -99,6 +99,8 @@
       <div class="spacing"></div>
 
       <!--NAŠE PREPORUKE ESTORANI/KAFIĆI-->
+      <!--Matea Lesica-->
+      
       <div class="content">
       <h4>Naše preporuke:</h4>
       <div class="q-pa-md">
@@ -110,7 +112,7 @@
           swipeable
           animated
           control-color="white"
-          navigation-icon="radio_button_unchecked"
+          navigation-icon="circle"
           navigation
           padding
           arrows
@@ -125,8 +127,8 @@
           >
             <div class=" text-center">
               <h3 class="q-mt-sm">{{ r.naziv }}</h3>
-              <p>{{ r.adresa }}</p>
-              <p>{{ r.opis }}</p> <!-- tvoji komentari/restoran opisi -->
+              <p class="tekst-adresa">{{ r.adresa }}</p>
+              <p>{{ r.opis }}</p> 
             </div>
           </q-carousel-slide>
         </q-carousel>
@@ -152,7 +154,7 @@ const scrollToInfo = () => {
   })
 }
 
-const slide = ref(null)
+const slide = ref(1)
 
 // ID-evi restorana koje želiš prikazati
 const trazeniID = [1, 3, 5, 6]
@@ -232,13 +234,13 @@ onMounted(async () => {
   background-color: #ffffff;
 }
 
-.content {
+.content { // istražite
   max-width: 900px;
   margin: auto;
   text-align: center;
 }
 
-.content h2 {
+.content h2 { // vaš sljedeći siguran izbor
   font-size: 36px;
   margin-bottom: 20px;
 }
@@ -279,6 +281,15 @@ h4 {
 .choice-card:hover {
   transform: scale(1.03);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+}
+h3{
+  color: white;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.319);
+  font-weight: bold;
+}
+
+.tekst-adresa{
+  font-weight: bold;
 }
 
 /*SLIKA*/
