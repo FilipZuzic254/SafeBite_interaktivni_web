@@ -637,7 +637,7 @@ app.put("/korisnik/:id", (req, res) => {
 //Matea Matković
 // --- Dohvati sve postojeće intolerancije
 app.get('/pi', (req, res) => {
-  db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => { //iz baze dohvaca ID_pi i Naziv_pi
+  db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => {
     if (err) {
       console.error('Greška pri dohvaćanju intolerancija:', err);
       return res.status(500).json({ message: 'Greška pri dohvaćanju intolerancija.' });
@@ -645,7 +645,6 @@ app.get('/pi', (req, res) => {
     res.json(rows);
   });
 });
-
 
 //Matea Matković
 // --- Unos nove intolerancije
@@ -667,7 +666,6 @@ app.post('/pi', (req, res) => {
   });
 });
 
-//Matea Matković
 // --- Unos stavke u jelovniku s odabranim intolerancijama
 app.post('/jelovnici', (req, res) => {
   const { Naziv_stavke, Cijena_stavke, ID_admina, ID_objekta, Sastav_stavke, Intolerancije } = req.body;
@@ -807,8 +805,7 @@ app.post("/vlasnik", async (req, res) => {
 });
 
 
-//Ana Kristo
-//unos novog poslovnog objekta
+
 app.post("/objekti", (req, res) => {
     const unos = req.body;
 
@@ -821,14 +818,13 @@ app.post("/objekti", (req, res) => {
         return res.status(400).json({ message: "Missing required fields." });
     }
 
-    //poslovni objekt moze biti dodan od admina ili od vlasnika (nece odjednom imati obadva ID-a)
     if (unos.ID_admina) {
         unos.ID_vlasnika=null
     } else {
         unos.ID_admina=null        
     }
 
-    //upis u bazu
+
     const sqlQuery = 'INSERT INTO Poslovni_objekt(ID_objekta, Ime_objekta, Adresa_objekta, Opis_objekta, ID_admina, ID_vlasnika, Postanski_broj, Tip_objekta, Email_objekta, OIB_objekta) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     db.query(sqlQuery, [
         unos.Ime_objekta,
@@ -918,71 +914,7 @@ app.post("/komentari", (req, res) => {
 
 })
 
-//Matea Lesica
-// registracija korisnika
-app.post("/korisnik", async (req, res) => { 
 
-    const {
-        Korisnicko_ime,
-        Lozinka_korisnika,
-        Ime_korisnika,
-        Prezime_korisnika,
-        Email_korisnika,
-        Intolerancije
-    } = req.body;
-
-    if (!Korisnicko_ime || !Lozinka_korisnika || !Ime_korisnika || !Prezime_korisnika || !Email_korisnika) {
-        return res.status(400).json({ message: "Missing required fields." });
-    }
-
-    try {
-        // HASHIRANJE LOZINKE
-        const hashedPassword = await bcrypt.hash(Lozinka_korisnika, 10);
-
-        const sqlInsertStavka = `
-            INSERT INTO Korisnik 
-            (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
-            VALUES (?, ?, ?, ?, ?)
-        `;
-
-        // sada šaljemo hashedPassword u bazu umjesto plain text lozinke
-        db.query(sqlInsertStavka, [Korisnicko_ime, hashedPassword, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
-            if (err) {
-                console.error("Insert error (menu item):", err);
-                return res.status(500).json({ message: "Error inserting menu item." });
-            }
-
-            const insertKorisnikID = result.insertId;
-
-            if (!Intolerancije || Intolerancije.length === 0) {
-                return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
-            }
-
-            const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
-
-            const sqlInsertIntolerancije = `
-                INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
-                VALUES ?
-            `;
-
-            db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
-                if (err2) {
-                    console.error("Insert error (intolerances):", err2);
-                    return res.status(500).json({ message: "Error inserting intolerances." });
-                }
-
-                res.json({ message: "Korisnik i njegove intolerancije uspješno unesene" });
-            });
-        });
-
-    } catch (err) {
-        console.error("Hashing error:", err);
-        res.status(500).json({ message: "Greška pri hashiranju lozinke." });
-    }
-
-});
-
-//Ana Kristo
 //registracija admina
 app.post("/admin", async (req, res) => {
     const { ime, prezime, Ime_admina, Lozinka_admina } = req.body;
@@ -993,8 +925,6 @@ app.post("/admin", async (req, res) => {
 
     try {
         // Haširanje lozinke
-        //Lozinka_admina je originalna lozinka
-        //10 je broj salt rounds (algoritam se izvrti priblizno 1024 puta (2 na desetu))
         const hashedPassword = await bcrypt.hash(Lozinka_admina, 10);
 
         const sqlQuery = `
@@ -1002,8 +932,7 @@ app.post("/admin", async (req, res) => {
             VALUES (?, ?, ?, ?)
         `;
 
-        //hashedPassword ide u bazu umjesto prave lozinke
-        db.query(sqlQuery, [ime, prezime, Ime_admina, hashedPassword], (err, result) => { 
+        db.query(sqlQuery, [ime, prezime, Ime_admina, hashedPassword], (err, result) => {
             if (err) {
                 console.error("Greška pri unosu admina:", err);
                 return res.status(500).send("Greška na serveru");
@@ -1020,8 +949,8 @@ app.post("/admin", async (req, res) => {
 
 
 
-//Ana Kristo
-// prijava admina
+
+// login admina
 app.post("/admin/login", (req, res) => {
     const { Ime_admina, Lozinka_admina } = req.body;
 
@@ -1045,8 +974,6 @@ app.post("/admin/login", (req, res) => {
 
         try {
             // Provjera lozinke s bcrypt
-            //admin.Lozinka_admina je hash iz baze podataka
-            //bcrypt.compare uzme unesenu lozinku, uzme salt iz hasha, izracuna hash i usporedi
             const isPasswordValid = await bcrypt.compare(Lozinka_admina, admin.Lozinka_admina); //proverava lozinku s haširanom lozinkom
 
             if (!isPasswordValid) {
@@ -1063,7 +990,6 @@ app.post("/admin/login", (req, res) => {
     });
 });
 
-//Ana Kristo
 // spremanje prehrambenih intolerancija korisnika
 app.post('/korisnik/intolerancije', (req, res) => {
   const { ID_korisnika, intolerancije } = req.body
@@ -1263,8 +1189,112 @@ app.get("/admin", (req, res) => {
 
 })
 
+//Matea Lesica
+// registracija korisnika
+app.post("/korisnik", async (req, res) => { 
 
-//Elena Jašarević,Matea Lesica
+    const {
+        Korisnicko_ime,
+        Lozinka_korisnika,
+        Ime_korisnika,
+        Prezime_korisnika,
+        Email_korisnika,
+        Intolerancije
+    } = req.body;
+
+    if (!Korisnicko_ime || !Lozinka_korisnika || !Ime_korisnika || !Prezime_korisnika || !Email_korisnika) {
+        return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    try {
+        // HASHIRANJE LOZINKE
+        const hashedPassword = await bcrypt.hash(Lozinka_korisnika, 10);
+
+        const sqlInsertStavka = `
+            INSERT INTO Korisnik 
+            (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+
+        // sada šaljemo hashedPassword u bazu umjesto plain text lozinke
+        db.query(sqlInsertStavka, [Korisnicko_ime, hashedPassword, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
+            if (err) {
+                console.error("Insert error (menu item):", err);
+                return res.status(500).json({ message: "Error inserting menu item." });
+            }
+
+            const insertKorisnikID = result.insertId;
+
+            if (!Intolerancije || Intolerancije.length === 0) {
+                return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
+            }
+
+            const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
+
+            const sqlInsertIntolerancije = `
+                INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
+                VALUES ?
+            `;
+
+            db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
+                if (err2) {
+                    console.error("Insert error (intolerances):", err2);
+                    return res.status(500).json({ message: "Error inserting intolerances." });
+                }
+
+                res.json({ message: "Korisnik i njegove intolerancije uspješno unesene" });
+            });
+        });
+
+    } catch (err) {
+        console.error("Hashing error:", err);
+        res.status(500).json({ message: "Greška pri hashiranju lozinke." });
+    }
+
+});
+
+//Matea Lesica
+//prijava korisnika
+app.post("/korisnik/prijava", (req, res) => {
+    const { Korisnicko_ime, Lozinka_korisnika } = req.body;
+
+    if (!Korisnicko_ime || !Lozinka_korisnika) {
+        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." });
+    }
+
+    // Dohvati korisnika po korisničkom imenu
+    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ?';
+    db.query(sqlQuery, [Korisnicko_ime], async (err, result) => {
+        if (err) {
+            console.error('Greška pri provjeri login-a korisnika:', err);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
+        }
+
+        const user = result[0];
+
+        try {
+            // Provjera lozinke s bcrypt
+            const isPasswordValid = await bcrypt.compare(Lozinka_korisnika, user.Lozinka_korisnika);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
+            }
+
+            // Prijava uspješna
+            res.json({ message: "Uspješna prijava", user });
+
+        } catch (bcryptErr) {
+            console.error("Greška pri provjeri lozinke:", bcryptErr);
+            return res.status(500).json({ message: "Greška na serveru" });
+        }
+    });
+});
+
+//Elena Jašarević, Matea Lesica
 //prikaz objekata na stranicama Kafići i Restorani
 
 app.get("/objekti", (req, res) => {  //Definira se GET ruta /objekti u Express aplikaciji
@@ -1319,17 +1349,49 @@ app.get("/objekti", (req, res) => {  //Definira se GET ruta /objekti u Express a
     });
 });
 
+//jelovnik
+// Dohvat jelovnika za određeni objekt/kafić
+//app.get("/jelovnik", (req, res) => {
+  //  const { objektID } = req.query; // ID od kafića
+//
+  //  if (!objektID) {
+    //    return res.status(400).send("Nedostaje ID objekta");
+    //}
+
+    //const sqlQuery = `
+      //  SELECT *
+        //FROM Stavka_jelovnika
+        //WHERE ID_objekta = ?
+    //`;
+
+    //db.query(sqlQuery, [Number(objektID)], (err, result) => {
+     //   if (err) {
+       //     console.error("Greška pri dohvatu jelovnika:", err);
+         //   return res.status(500).send("Greška na serveru");
+        //}
+        //res.json(result);
+   // });
+//});
 
 //STRANICA JELOVNIK APIJI
-//Elena
+//Elena Jašarević
 //prikaz jelovnika, svih stavki u jelovniku
 app.get("/jelovnik", (req, res) => {
     const { objektID } = req.query; // ID od kafića
 
+    //Provjerava se je li objektID poslan.
+    //Ako nije, server vraća HTTP 400 i poruku da nedostaje ID objekta
     if (!objektID) {
         return res.status(400).send("Nedostaje ID objekta");
     }
 
+    //prikaz svih stavki u jelovniku, jedne kartice, jedan dio
+    //SQL upit dohvaća sve stavke jelovnika (Stavka_jelovnika) za određeni objekt.
+    //s.ID_stavke, s.Naziv_stavke, s.Sastav_stavke, s.Cijena_stavke dohvaća osnovne podatke o jelu koji se prikazuju na stranici
+    //spaja se s tablicom PI_u_stavci_jelovnika po ID_stavke uzima intolerancije
+    //GROUP_CONCAT(pi.Naziv_pi SEPARATOR ', ') AS intolerancije spaja sve intolerancije u jedan string odvojen zarezima
+    //WHERE s.ID_objekta = ? filtrira jelovnik samo za odabrani kafić
+    //GROUP BY s.ID_stavke osigurava da se svaka stavka prikaže samo jednom  
     const sqlQuery = `
         SELECT 
             s.ID_stavke,
@@ -1346,6 +1408,9 @@ app.get("/jelovnik", (req, res) => {
         GROUP BY s.ID_stavke
     `;
 
+    //Izvršava SQL upit u bazi.
+    //Number(objektID) zamjenjuje ? u upitu i osigurava da je ID broj.
+    //err hvata eventualne greške, a result sadrži niz stavki jelovnika
     db.query(sqlQuery, [Number(objektID)], (err, result) => {
         if (err) {
             console.error("Greška pri dohvatu jelovnika:", err);
@@ -1356,22 +1421,30 @@ app.get("/jelovnik", (req, res) => {
 });
 
 
+
 //Elena Jašarević, objava komentara, spremanje komentara
+
 app.use(express.json());
 
-app.post("/komentari", (req, res) => {
+app.post("/komentari", (req, res) => { //definira se post za slanje novog komentara
+    //iz tijela se povlače sadržaj komentara, ocjena, ID korisnika i ID objekta 
   const { Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta } = req.body;
 
+    //provjerava jesu li svi podaci upisani, ako nisu vraća grešku da nedostaju podaci
   if (!Sadrzaj_komentara || !Ocjena || !ID_korisnika || !ID_objekta) {
     return res.status(400).send("Nedostaju podaci");
   }
 
+  //SQL upit za unos novog komentara u bazu podataka
   const sql = `
     INSERT INTO Komentar
     (Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta)
     VALUES (?, ?, ?, ?)
   `;
 
+    //Izvršava SQL upit u bazi i prosljeđuje vrijednosti iz POST zahtjeva umjesto ?
+    //ako dođe do greške u bazi, ispisuje se u konzolu i vraća HTTP 500
+    //ako je unos uspješan ispisuje se KOmentar spremljen
   db.query(sql, [Sadrzaj_komentara, Ocjena, ID_korisnika, ID_objekta], (err) => {
     if (err) {
       console.error("Greška pri unosu komentara:", err);
@@ -1381,11 +1454,18 @@ app.post("/komentari", (req, res) => {
   });
 });
 
-//Elena Jašarević, prikaz komentara
-app.get("/komentari", (req, res) => {
-  const { ID_objekta } = req.query;
 
+//Elena Jašarević
+// prikaz komentara na stranici Jelovnik
+app.get("/komentari", (req, res) => { //Definira se GET ruta /komentari za dohvat komentara
+  const { ID_objekta } = req.query; //Iz URL query parametara dohvaća se ID_objekta, tj. ID objketa čije komentare želimo prikazati
+
+  //Provjerava je li poslan ID_objekta, ako nedostaje, vraća se HTTP 400 i poruka da nedostaje ID objekta
   if (!ID_objekta) return res.status(400).send("Nedostaje ID objekta");
+
+    //SQL upit koji dohvaća sve komentare za određeni kafić (ID_objekta).
+    //Spaja tablicu Komentar s tablicom Korisnik da bi se dohvatila imena i prezimena korisnika koji su ostavili komentar.
+    //Rezultat je sortiran po ID-u komentara silazno, tako da najnoviji komentari budu prvi.
 
   const sql = `
     SELECT k.ID_komentara, k.Sadrzaj_komentara, k.Ocjena,
@@ -1396,6 +1476,9 @@ app.get("/komentari", (req, res) => {
     ORDER BY k.ID_komentara DESC
   `;
 
+    //zvršava SQL upit u bazi s proslijeđenim ID_objekta.
+    //Ako dođe do greške u bazi, vraća HTTP 500 i ispisuje grešku u konzolu.
+    //Ako je upit uspješan, vraća JSON niz komentara, uključujući sadržaj, ocjenu i ime korisnika.
   db.query(sql, [ID_objekta], (err, result) => {
     if (err) {
       console.error("Greška pri dohvaćanju komentara:", err);
@@ -1447,8 +1530,9 @@ app.get("/vlasnik", (req, res) => {
 
 })
 
-//Ana Kristo
+
 // ispis gradova
+
 app.get("/gradovi", (req, res) => { 
 
     // stvara sql query
@@ -1605,8 +1689,9 @@ app.get("/korisnik", (req, res) => {
 
 })
 
-//Ana Kristo
+
 // ispis zasebnog korisnika i njegovih intolerancija
+
 app.get("/korisnik/:id", (req, res) => { 
 
     // povlaci query ako je unesen ( /korisnik/2 )
@@ -1706,45 +1791,6 @@ app.post("/vlasnik/prijava", (req, res) => {
 });
 
 
-//Matea Lesica
-app.post("/korisnik/prijava", (req, res) => {
-    const { Korisnicko_ime, Lozinka_korisnika } = req.body;
-
-    if (!Korisnicko_ime || !Lozinka_korisnika) {
-        return res.status(400).json({ message: "Unesite korisničko ime i lozinku." });
-    }
-
-    // Dohvati korisnika po korisničkom imenu
-    const sqlQuery = 'SELECT * FROM Korisnik WHERE Korisnicko_ime = ?';
-    db.query(sqlQuery, [Korisnicko_ime], async (err, result) => {
-        if (err) {
-            console.error('Greška pri provjeri login-a korisnika:', err);
-            return res.status(500).json({ message: "Greška na serveru" });
-        }
-
-        if (result.length === 0) {
-            return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
-        }
-
-        const user = result[0];
-
-        try {
-            // Provjera lozinke s bcrypt
-            const isPasswordValid = await bcrypt.compare(Lozinka_korisnika, user.Lozinka_korisnika);
-
-            if (!isPasswordValid) {
-                return res.status(401).json({ message: "Korisničko ime ili lozinka nisu ispravni" });
-            }
-
-            // Prijava uspješna
-            res.json({ message: "Uspješna prijava", user });
-
-        } catch (bcryptErr) {
-            console.error("Greška pri provjeri lozinke:", bcryptErr);
-            return res.status(500).json({ message: "Greška na serveru" });
-        }
-    });
-});
 
 
 //Petra Grgić
