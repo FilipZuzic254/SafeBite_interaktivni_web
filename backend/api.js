@@ -129,6 +129,7 @@ app.put("/img/add/objekt", upload.single("image"), (req, res) => {//single pokre
 ▄████████▀   ██████████ █████████ ██████████   ▄████▄    ██████████
 */
 
+//Matea Matković
 // brisanje prehrambenih intolerancija
 
 app.delete("/pi/:id", (req, res) => { 
@@ -354,7 +355,7 @@ app.delete("/korisnik/:id", (req, res) => {
   ▀██████▀▀   ▄████▄     ▄████████▀  ▄███▄   ▄████▄  ▄████▄    ██████████
 */
 
-
+//Matea Matković
 // brisanje prehrambenih intolerancija
 
 app.delete("/pi/:id", (req, res) => { 
@@ -384,7 +385,7 @@ app.delete("/pi/:id", (req, res) => {
 
 })
 
-
+//Matea Matković
 // ažuriranje stavki u jelovniku
 
 app.put("/jelovnici/:id", (req, res) => { 
@@ -632,6 +633,8 @@ app.put("/korisnik/:id", (req, res) => {
   ██     █     ███  ██     ██  ██     ▄█  ██   ▀██▄      ██     
 ▄████▄ ▄███▄    ██  █▀█████▀  ██████████ ████▄ ▄███▄   ▄████▄   
 */
+
+//Matea Matković
 // --- Dohvati sve postojeće intolerancije
 app.get('/pi', (req, res) => {
   db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => {
@@ -643,6 +646,7 @@ app.get('/pi', (req, res) => {
   });
 });
 
+//Matea Matković
 // --- Unos nove intolerancije
 app.post('/pi', (req, res) => {
   const { Naziv_pi, ID_admina } = req.body;
@@ -1130,7 +1134,7 @@ app.get("/jelovnici", (req, res) => {
 
 })
 
-
+//Matea Matković
 // ispis stavke u jelovniku
 
 app.get("/jelovnici/:id", (req, res) => { 
@@ -1166,7 +1170,7 @@ app.get("/jelovnici/:id", (req, res) => {
 
 })
 
-
+//Matea Matković
 // ispis prehrambenih intolerancija
 
 app.get("/pi", (req, res) => { 
@@ -1376,7 +1380,7 @@ app.get("/jelovnik", (req, res) => {
     });
 });
 
-// Backend (Express) – app.js / server.js
+
 
 //Elena Jašarević, objava komentara, spremanje komentara
 
@@ -1419,6 +1423,10 @@ app.get("/komentari", (req, res) => { //Definira se GET ruta /komentari za dohva
   //Provjerava je li poslan ID_objekta, ako nedostaje, vraća se HTTP 400 i poruka da nedostaje ID objekta
   if (!ID_objekta) return res.status(400).send("Nedostaje ID objekta");
 
+    //SQL upit koji dohvaća sve komentare za određeni kafić (ID_objekta).
+    //Spaja tablicu Komentar s tablicom Korisnik da bi se dohvatila imena i prezimena korisnika koji su ostavili komentar.
+    //Rezultat je sortiran po ID-u komentara silazno, tako da najnoviji komentari budu prvi.
+
   const sql = `
     SELECT k.ID_komentara, k.Sadrzaj_komentara, k.Ocjena,
            u.Ime_korisnika, u.Prezime_korisnika
@@ -1428,6 +1436,9 @@ app.get("/komentari", (req, res) => { //Definira se GET ruta /komentari za dohva
     ORDER BY k.ID_komentara DESC
   `;
 
+    //zvršava SQL upit u bazi s proslijeđenim ID_objekta.
+    //Ako dođe do greške u bazi, vraća HTTP 500 i ispisuje grešku u konzolu.
+    //Ako je upit uspješan, vraća JSON niz komentara, uključujući sadržaj, ocjenu i ime korisnika.
   db.query(sql, [ID_objekta], (err, result) => {
     if (err) {
       console.error("Greška pri dohvaćanju komentara:", err);
