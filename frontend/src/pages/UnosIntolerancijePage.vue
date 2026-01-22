@@ -1,7 +1,7 @@
 <!-- Matea Matković -->
 <template>
   <q-page class="flex flex-center">
-    <q-card class="q-pa-md" style="width: 400px">
+    <q-card class="q-pa-md" style="width: 520px">
 
       <!-- Naslov kartice -->
       <q-card-section>
@@ -9,17 +9,13 @@
       </q-card-section>
 
       <q-card-section>
-        <!-- Forma za unos intolerancije
-        @submit.prevent -> sprječava refresh stranice i poziva submitForm -->
+        <!-- Forma za unos intolerancije -->
         <q-form @submit.prevent="submitForm" ref="formIntolerancija">
-
-          <!-- Input polje za naziv intolerancije
-          v-model veže vrijednost u varijablu naziv_pi -->
+          <!-- Input polje za naziv intolerancije -->
           <q-input filled v-model="naziv_pi" label="Naziv intolerancije" required />
 
           <!-- Gumb za slanje forme -->
           <div class="q-mt-md">
-            <!-- loading prikazuje spinner dok se šalje -->
             <q-btn
               type="submit"
               label="Unesi"
@@ -38,90 +34,127 @@
           <div v-if="success" class="text-positive q-mt-sm">
             {{ success }}
           </div>
-
         </q-form>
       </q-card-section>
+
+      <q-separator />
+
+      <!-- ISPIS POSTOJEĆIH INTOLERANCIJA -->
+      <q-card-section>
+        <div class="text-subtitle1 q-mb-sm">Postojeće intolerancije:</div>
+
+        <div v-if="loadingList" class="text-grey-7">
+          Učitavanje...
+        </div>
+
+        <div v-else-if="intolerancije.length === 0" class="text-grey-7">
+          Trenutno nema unesenih intolerancija.
+        </div>
+
+        <q-list v-else bordered separator>
+          <q-item v-for="pi in intolerancije" :key="pi.ID_pi">
+            <q-item-section>
+              {{ pi.Naziv_pi }}
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </q-card-section>
+
     </q-card>
   </q-page>
 </template>
 
 <script setup>
-import { ref } from 'vue' // ref stvara reaktivne varijable
-import axios from 'axios' // axios za slanje zahtjeva backendu
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-// Reaktivne varijable
-const naziv_pi = ref('') // naziv intolerancije
-const loading = ref(false) // stanje učitavanja
-const error = ref(null) // poruka greške
-const success = ref(null) // poruka uspjeha
-const formIntolerancija = ref(null) // referenca na formu
+// Reaktivne varijable (forma)
+const naziv_pi = ref('')
+const loading = ref(false)
+const error = ref(null)
+const success = ref(null)
+const formIntolerancija = ref(null)
 
+// Reaktivne varijable (lista intolerancija)
+const intolerancije = ref([])
+const loadingList = ref(false)
 
-const api_url=import.meta.env.VITE_API_URL
+const api_url = import.meta.env.VITE_API_URL
+
+// Dohvat svih intolerancija (GET /pi)
+const fetchIntolerancije = async () => {
+  loadingList.value = true
+  try {
+    const res = await axios.get(`${api_url}/pi`)
+    intolerancije.value = res.data
+
+    // ispis u konzolu (ako ti treba)
+    console.log('Postojeće intolerancije:', intolerancije.value)
+  } catch (err) {
+    console.error(err)
+    // ne rušimo cijelu stranicu, ali možemo prikazati poruku
+    error.value = 'Greška pri dohvaćanju postojećih intolerancija.'
+  } finally {
+    loadingList.value = false
+  }
+}
+
+// Kad se stranica učita, dohvatimo sve intolerancije
+onMounted(async () => {
+  await fetchIntolerancije()
+})
 
 // Funkcija koja se poziva kad se pošalje forma
 const submitForm = async () => {
-
-  // Provjera je li polje prazno
   if (!naziv_pi.value.trim()) {
     error.value = 'Nedostaju obavezna polja.'
     return
   }
 
-  // Postavljanje početnih stanja
   loading.value = true
   error.value = null
   success.value = null
 
   try {
-    // Dohvat tokena iz localStorage
     const token = JSON.parse(localStorage.getItem('token'))
     if (!token) throw new Error('Niste prijavljeni.')
 
-    // Provjera je li korisnik admin
     const ID_admina = token?.uloga === 'admin' ? token.id : null
     if (!ID_admina) throw new Error('Neispravan token – korisnik nije admin.')
 
-    // Podaci koje šaljemo backendu
     const dataToSend = {
       Naziv_pi: naziv_pi.value,
       ID_admina: ID_admina
     }
 
-    // Slanje POST zahtjeva serveru
-    const res = await axios.post(
-      `${api_url}/pi`,
-      dataToSend
-    )
+    const res = await axios.post(`${api_url}/pi`, dataToSend)
 
-    // Poruka uspjeha
-    success.value =
-      res.data.message || 'Intolerancija uspješno unesena!'
+    success.value = res.data.message || 'Intolerancija uspješno unesena!'
 
-    // Reset forme nakon 1.5 sekundi
+    // osvježi listu da se nova intolerancija odmah vidi
+    await fetchIntolerancije()
+
+    // reset forme nakon 1.5 sekundi
     setTimeout(() => {
       formIntolerancija.value?.reset()
       naziv_pi.value = ''
     }, 1500)
 
   } catch (err) {
-    // Ako dođe do greške
     console.error(err)
     error.value =
       err.response?.data?.message ||
       err.message ||
       'Greška – backend nije dostupan'
   } finally {
-    // Uvijek se izvrši – gasi loading
     loading.value = false
   }
 }
 </script>
 
 <style scoped>
-/* Stil za stranicu */
 .q-page {
-  min-height: 100vh; /* puna visina ekrana */
-  background-color: #f5f5f5; 
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 </style>

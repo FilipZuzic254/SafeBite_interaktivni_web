@@ -264,7 +264,7 @@ h4 {
 
   .right-side {
     padding: 40px 20px;
-  }
+  } 
 
   .description {
     font-size: 18px;
