@@ -62,7 +62,7 @@ const storage = multer.diskStorage({ //pokrece se kada api preko form date dobij
 
 const upload = multer({ storage }); //koristi se ta biblioteka
 
-
+//Filip Žužić, Ana Kristo
 //funkcija za spremanje slike
 app.put("/img/add/objekt", upload.single("image"), (req, res) => {//single pokreće kako se sprema slika
     const { id } = req.body;
@@ -634,7 +634,7 @@ app.put("/korisnik/:id", (req, res) => {
 ▄████▄ ▄███▄    ██  █▀█████▀  ██████████ ████▄ ▄███▄   ▄████▄   
 */
 
-//Matea Matković
+//Matea Matković, Ana Kristo
 // --- Dohvati sve postojeće intolerancije
 app.get('/pi', (req, res) => {
   db.query('SELECT ID_pi, Naziv_pi FROM Prehrambena_intolerancija', (err, rows) => {
@@ -805,7 +805,8 @@ app.post("/vlasnik", async (req, res) => {
 });
 
 
-
+//Ana Kristo
+//prikaz objekata sa dropdown   
 app.post("/objekti", (req, res) => {
     const unos = req.body;
 
@@ -852,9 +853,8 @@ app.post("/objekti", (req, res) => {
 });
 
 
-
+//Ana Kristo
 // unos gradova
-
 app.post("/gradovi", (req, res) => { 
 
     // povlaci json koji salje aplikacija
@@ -914,7 +914,71 @@ app.post("/komentari", (req, res) => {
 
 })
 
+//Matea Lesica
+// registracija korisnika
+app.post("/korisnik", async (req, res) => { 
 
+    const {
+        Korisnicko_ime,
+        Lozinka_korisnika,
+        Ime_korisnika,
+        Prezime_korisnika,
+        Email_korisnika,
+        Intolerancije
+    } = req.body;
+
+    if (!Korisnicko_ime || !Lozinka_korisnika || !Ime_korisnika || !Prezime_korisnika || !Email_korisnika) {
+        return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    try {
+        // HASHIRANJE LOZINKE
+        const hashedPassword = await bcrypt.hash(Lozinka_korisnika, 10);
+
+        const sqlInsertStavka = `
+            INSERT INTO Korisnik 
+            (Korisnicko_ime, Lozinka_korisnika, Ime_korisnika, Prezime_korisnika, Email_korisnika)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+
+        // sada šaljemo hashedPassword u bazu umjesto plain text lozinke
+        db.query(sqlInsertStavka, [Korisnicko_ime, hashedPassword, Ime_korisnika, Prezime_korisnika, Email_korisnika], (err, result) => {
+            if (err) {
+                console.error("Insert error (menu item):", err);
+                return res.status(500).json({ message: "Error inserting menu item." });
+            }
+
+            const insertKorisnikID = result.insertId;
+
+            if (!Intolerancije || Intolerancije.length === 0) {
+                return res.json({ message: "Korisnik uspješno unesen (nema intolerancija)." });
+            }
+
+            const intolerancijeZaUnos = Intolerancije.map(id_pi => [insertKorisnikID, id_pi]);
+
+            const sqlInsertIntolerancije = `
+                INSERT INTO PI_korisnika (ID_korisnika, ID_pi)
+                VALUES ?
+            `;
+
+            db.query(sqlInsertIntolerancije, [intolerancijeZaUnos], (err2, result2) => {
+                if (err2) {
+                    console.error("Insert error (intolerances):", err2);
+                    return res.status(500).json({ message: "Error inserting intolerances." });
+                }
+
+                res.json({ message: "Korisnik i njegove intolerancije uspješno unesene" });
+            });
+        });
+
+    } catch (err) {
+        console.error("Hashing error:", err);
+        res.status(500).json({ message: "Greška pri hashiranju lozinke." });
+    }
+
+});
+
+//Ana Kristo
 //registracija admina
 app.post("/admin", async (req, res) => {
     const { ime, prezime, Ime_admina, Lozinka_admina } = req.body;
@@ -949,7 +1013,7 @@ app.post("/admin", async (req, res) => {
 
 
 
-
+//Ana Kristo
 // login admina
 app.post("/admin/login", (req, res) => {
     const { Ime_admina, Lozinka_admina } = req.body;
@@ -990,6 +1054,7 @@ app.post("/admin/login", (req, res) => {
     });
 });
 
+//Ana Kristo
 // spremanje prehrambenih intolerancija korisnika
 app.post('/korisnik/intolerancije', (req, res) => {
   const { ID_korisnika, intolerancije } = req.body
@@ -1667,9 +1732,8 @@ app.get("/korisnik", (req, res) => {
 
 })
 
-
+//Ana Kristo
 // ispis zasebnog korisnika i njegovih intolerancija
-
 app.get("/korisnik/:id", (req, res) => { 
 
     // povlaci query ako je unesen ( /korisnik/2 )
