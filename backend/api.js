@@ -43,7 +43,6 @@ const storage = multer.diskStorage({ //pokrece se kada api preko form date dobij
 
     let uploadPath = `./uploads/${id}`;
 
-    // Ensure directory exists
     fs.mkdirSync(uploadPath, { recursive: true });
 
     cb(null, uploadPath);

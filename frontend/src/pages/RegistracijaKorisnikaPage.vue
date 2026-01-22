@@ -1,3 +1,4 @@
+
 <!-- Matea Lesica -->
 <template>
   <q-page class="flex flex-center"> <!-- centriran sadržaj -->
@@ -19,7 +20,7 @@
             <q-btn type="submit" label="Registracija" color="primary" rounded :loading="loading" /> <!-- loading animacija dok se čeka potvrda ili grška -->
           </div>
 
-          <!-- Poruke o grešci ili uspjehu -->
+          <!-- Poruke o gresci ili uspjehu -->
           <div v-if="error" class="text-negative q-mt-sm">{{ error }}</div>
           <div v-if="success" class="text-positive q-mt-sm">{{ success }}</div>
         </q-form>
