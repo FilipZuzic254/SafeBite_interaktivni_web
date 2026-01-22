@@ -1,17 +1,20 @@
 <!-- Elena Jašarević-->
 <template>
   <div class="q-pa-md menu-wrapper"> <!--quasar klasa za medium padding, menu wrapper je klasa za centralizaciju sadržaja-->
+
     <!-- Naziv i adresa objekta -->
-    <h1 class="naslov">{{ kafic.Ime_objekta }}</h1> <!--dohvaća naziv iz kafica objekta-->
+    <h1 class="naslov">{{ kafic.Ime_objekta }}</h1> <!--kafic je definiran u SviKafici v-for, nakon je naziv stupca-->
     <p class="citat">{{ kafic.Adresa_objekta }}</p> <!--prikazuje adresu objekta-->
 
-    <!-- Jelovnik -->
+
+<!--JELOVNIK-->
+
     <!--q-gutter-md dodaje srednji razmak između karica
     v-for="stavka in stavke", iteracija kroz niz stavke (jelovnik kafića)
     :key="stavka.ID_stavke", jedinstveni ključ za svaku stavku 
     klasa za css uredivanje
     flat kartica bez sjene
-    bordered znači da kartica ima rub-->
+    bordered znači da kartica ima rub--> 
     <div class="q-gutter-md">
       <q-card
         v-for="stavka in stavke"
@@ -20,40 +23,42 @@
         flat
         bordered
       >
-        <q-card-section> <!--sadržaj kartice-->
-          <div class="stavka-header"> <!--naziv i cijena u jednom retku-->
+
+        <q-card-section> <!--sadržaj svake kartice-->
+          <!--naziv i cijena svake stavke-->
+          <div class="stavka-header"> <!--naziv i cijena u jednom retku, povlačimo iz apija, al mozemo i tu odlučiti sta cemo prikazati-->
             <div class="stavka-naziv">{{ stavka.Naziv_stavke }}</div> <!--naziv jela-->
             <div class="stavka-cijena">{{ stavka.Cijena_stavke }} €</div><!--cijena jela-->
           </div>
 
           <!--prikazuje opis stavke-->
-          <div class="stavka-opis">{{ stavka.Sastav_stavke }}</div>
+          <div class="stavka-opis">{{ stavka.Sastav_stavke }}</div> 
 
-          <!--v-if prikazuje samo ako postoje intolerancije za tu stavku
+          <!--v-if prikazuje samo ako postoje intolerancije za tu stavku, ako nema nista ne prikazuje
           stavka.intolerancije.split(', ') pretvara string s listom intolerancija u niz
-          intolerancija-badge je oznaka sa zelenom pozadinom i bijelim tekstom gdje je tekst intolerancije-->
+          intolerancija-badge je oznaka za svaku stavku sa zelenom pozadinom i bijelim tekstom gdje je tekst intolerancije-->
           <div v-if="stavka.intolerancije" class="intolerancije-wrapper">
             
-            <!--span je za inline sadržaj, unutar koda neka riječ npr.
-            span prikazuje jednu intoleranciju-->
             <span
               v-for="pi in stavka.intolerancije.split(', ')"
               :key="pi"
               class="intolerancija-badge"
             >
-              {{ pi }}
+              {{ pi }} <!--prikazuje naziv svake intolerancije, npr. “gluten” ili “laktoza”-->
             </span>
           </div>
         </q-card-section>
       </q-card>
     </div>
 
-    <!-- KOMENTARI -->
-    <div class="komentar-wrapper"> <!--wrapper je za sekciju komentara-->
+
+<!-- KOMENTARI -->
+    <div class="komentar-wrapper"> <!--wrapper je za sekciju komentara, cijeli box-->
       <h2 class="komentar-naslov">Ostavite komentar</h2> <!--naslov-->
 
 
       <!--UNOS NOVOG KOMENTARA
+      
       kartica za unos novog komentara
       q-card-section, unutrašnjost kartice, gdje stavljamo sadržaj
       q-input je textarea za unos teksta
@@ -270,6 +275,7 @@ const posaljiKomentar = async () => {
   margin-bottom: 40px; 
 }
 
+/**sve oko kartice za svaku stavku , jelo ili piće */
 .stavka-card { 
   max-width: 600px; 
   margin: 0 auto 20px auto; 
@@ -284,6 +290,7 @@ const posaljiKomentar = async () => {
   box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
 }
 
+/**naziv i cijena u jednom retku */
 .stavka-header { 
   display: flex; 
   justify-content: center; 
@@ -309,6 +316,7 @@ const posaljiKomentar = async () => {
   margin-bottom: 12px; 
 }
 
+/**tekst intolerancije npr.laktoza,gluten, sav tekst string , razmak izmedu teksta*/
 .intolerancije-wrapper { 
   display: flex; 
   justify-content: center; 
@@ -316,12 +324,13 @@ const posaljiKomentar = async () => {
   margin-top: 10px; 
 }
 
+/**uredenje intolerancija sve*/
 .intolerancija-badge { 
   background: #2e7d32; 
   color: white; 
   padding: 6px 14px; 
   border-radius: 20px; 
-  font-size: 12px; 
+  font-size: 14px; 
   font-weight: 500; 
 }
 

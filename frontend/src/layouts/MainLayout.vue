@@ -23,7 +23,7 @@
       </q-toolbar>
     </q-header>
 
-    <!-- DRAWER -->
+    <!-- navigacija -->
     <q-drawer
       v-model="leftDrawer"
       side="left"
@@ -97,14 +97,13 @@
       </q-list>
     </q-drawer>
 
-    <!-- ZATAMNJENJE -->
+    <!-- tamnija pozadina kada se otvori navigacija -->
     <div
       v-if="leftDrawer"
       class="overlay"
       @click="leftDrawer = false"
     ></div>
 
-    <!-- CONTENT -->
     <q-page-container>
       <router-view />
 
@@ -160,6 +159,7 @@ window.addEventListener('prijava', (event) => {
   token.value = event.detail
 })
 
+// da se ne mijenjaju prijavljeni ako se refresha
 watchEffect(() => {
   const t = JSON.parse(localStorage.getItem('token'))
   token.value = t
@@ -172,7 +172,7 @@ function logout() {
 }
 
 function toggleDrawer() {
-  leftDrawer.value = !leftDrawer.value
+  leftDrawer.value = !leftDrawer.value  //mijenja stanje navigacije
 }
 </script>
 
@@ -212,19 +212,21 @@ q-page-container {
     text-align: center;
   }
 
-  .footer-section {
+  .footer-section { // broj telefona
     flex: 1 1 250px; /* svaki stupac minimalno 250px */
     display: flex;
     flex-direction: column;
     gap: 8px;
     align-items: center;
+  
 
-    strong {
+    strong { //Kontakt i Lokacija
       font-size: 1.2rem;
       margin-bottom: 8px;
+      color: white;     
     }
 
-    a {
+    a { //mail i adresa
       color: white;
       text-decoration: none;
       transition: color 0.3s;
@@ -239,7 +241,7 @@ q-page-container {
       vertical-align: middle;
     }
 
-    .footer-bottom {
+    .footer-bottom { //@
       margin-top: 16px;
       font-size: 0.85rem;
       color: rgba(255, 255, 255, 0.7);

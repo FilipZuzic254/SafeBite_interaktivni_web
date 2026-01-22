@@ -8,6 +8,7 @@
 
       <!-- lijevo ide logo-->
       <!-- col-12 na mobitelu, col-md-6 na vecim ekranima -->
+      <!-- ako trebamo promijeniti veličinu onda mijenjamo ovo di je 6-->
       <div class="col-12 col-md-6 flex flex-center left-side">
         <q-img
           src="src/assets/SafeBite.png"
@@ -17,6 +18,7 @@
       </div>
 
       <!-- desno idu opis i gumb -->
+      <!-- ako trebamo promijeniti veličinu onda mijenjamo ovo di je 6-->
       <div class="col-12 col-md-6 flex items-center right-side">
         <div class="text-container">
 
@@ -57,6 +59,8 @@
       <div class="row justify-center q-mt-xl q-col-gutter-xl cards-wrapper">
 
         <!-- kartica restorani -->
+        <!-- kada se klikne gumb vodi na stranicu sa restoranima-->
+        <!-- za manjiti ili povecati se mijenja ovo di je 5 -->
         <div class="col-12 col-md-5">
           <q-card
             class="choice-card"
@@ -76,6 +80,7 @@
         </div>
 
         <!-- kartica kafici -->
+        <!-- za manjiti ili povecati se mijenja ovo di je 5 -->
         <div class="col-12 col-md-5">
           <q-card
             class="choice-card"
@@ -99,8 +104,11 @@
       <div class="spacing"></div>
 
       <!--NAŠE PREPORUKE ESTORANI/KAFIĆI-->
+      <!--Matea Lesica-->
+      
       <div class="content">
       <h4>Naše preporuke:</h4>
+       <!-- ako ocemo da ide lijevo-desno mijenjamo transition-->
       <div class="q-pa-md">
         <q-carousel 
           v-model="slide"
@@ -110,7 +118,7 @@
           swipeable
           animated
           control-color="white"
-          navigation-icon="radio_button_unchecked"
+          navigation-icon="circle"
           navigation
           padding
           arrows
@@ -125,8 +133,8 @@
           >
             <div class=" text-center">
               <h3 class="q-mt-sm">{{ r.naziv }}</h3>
-              <p>{{ r.adresa }}</p>
-              <p>{{ r.opis }}</p> <!-- tvoji komentari/restoran opisi -->
+              <p class="tekst-adresa">{{ r.adresa }}</p>
+              <p>{{ r.opis }}</p> 
             </div>
           </q-carousel-slide>
         </q-carousel>
@@ -152,7 +160,7 @@ const scrollToInfo = () => {
   })
 }
 
-const slide = ref(null)
+const slide = ref(1)
 
 // ID-evi restorana koje želiš prikazati
 const trazeniID = [1, 3, 5, 6]
@@ -161,7 +169,7 @@ const api_url=import.meta.env.VITE_API_URL
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`${api_url}/objekti`)
+    const res = await axios.get(`${api_url}/objekti`) //API ruta
 
     // filtriramo samo odabrane i dodajemo opis fallback
     restorani.value = res.data
@@ -232,13 +240,13 @@ onMounted(async () => {
   background-color: #ffffff;
 }
 
-.content {
+.content { // istražite
   max-width: 900px;
   margin: auto;
   text-align: center;
 }
 
-.content h2 {
+.content h2 { // vaš sljedeći siguran izbor
   font-size: 36px;
   margin-bottom: 20px;
 }
@@ -280,6 +288,15 @@ h4 {
   transform: scale(1.03);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
 }
+h3{
+  color: white;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.319);
+  font-weight: bold;
+}
+
+.tekst-adresa{
+  font-weight: bold;
+}
 
 /*SLIKA*/
 .choice-img {
@@ -313,4 +330,21 @@ h4 {
   visibility: visible !important;
   pointer-events: all !important;
 }
+
+@media (max-width: 599px) {
+  .cards-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .cards-wrapper .col-12 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .choice-card {
+    margin-left: -3px; 
+  }
+}
+
 </style>
