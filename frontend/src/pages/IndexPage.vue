@@ -197,7 +197,7 @@ onMounted(async () => {
 
 .hero {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 // lijeva strana
@@ -257,7 +257,7 @@ h4 {
 }
 
 /*RESPONSIVE*/
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .hero {
     flex-wrap: wrap;
   }
